@@ -14,6 +14,14 @@ const RoomProvider = ({ children }) => {
     setTotal(kids + adults);
   });
 
+  useEffect(() => {
+    // get the rooms based on the number of persons
+    const newRooms = roomData.filter((room) => {
+      return room.maxPerson >= total;
+    });
+    setRooms(newRooms);
+  }, [total]);
+
   const getAdults = (adults) => {
     const adultsNum = Number(adults.value);
     setAdults(adultsNum);
