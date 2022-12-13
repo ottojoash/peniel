@@ -24,7 +24,9 @@ const KidsDropdown = () => {
   const { kids, setKids } = useContext(RoomContext);
   return (
     <Menu as='div' className='w-full relative bg-green-300'>
-      <Menu.Button className='w-full h-full'>{kids}</Menu.Button>
+      <Menu.Button className='w-full h-full'>
+        {kids === '0 Kids' ? 'No Kids' : kids}
+      </Menu.Button>
       <Menu.Items
         as='ul'
         className='bg-white shadow-xl absolute w-full flex flex-col p-4 gap-y-4'
