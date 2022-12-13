@@ -1,13 +1,15 @@
 import React, { useContext } from 'react';
+// context
 import { RoomContext } from '../context/RoomContext';
+import AdultsDropdown from './AdultsDropdown';
+import KidsDropdown from './KidsDropdown';
 
 const BookForm = () => {
-  const { setAdults, setKids, setStartDate, setEndDate, handleSubmit } =
-    useContext(RoomContext);
+  const { setStartDate, setEndDate, handleClick } = useContext(RoomContext);
   return (
-    <form className='py-16 w-full bg-green-100'>
-      <div className='flex items-center flex-col lg:flex-row bg-pink-200 max-w-[80%] mx-auto'>
-        <div className='flex gap-x-4'>
+    <form className='lg:h-[80px] w-full bg-green-100'>
+      <div className='flex flex-col bg-pink-200 w-full h-full lg:flex-row'>
+        <div className='flex gap-x-4 flex-1'>
           <label htmlFor='checkIn'>Check in</label>
           <input
             onChange={(e) => setStartDate(e.target.value)}
@@ -16,7 +18,7 @@ const BookForm = () => {
           />
         </div>
 
-        <div className='flex gap-x-4'>
+        <div className='flex gap-x-4 flex-1'>
           <label htmlFor='checkOut'>Check out</label>
           <input
             onChange={(e) => setEndDate(e.target.value)}
@@ -25,30 +27,17 @@ const BookForm = () => {
           />
         </div>
 
-        <div className='flex gap-x-4'>
-          <label htmlFor='adults'>Adults</label>
-          <select onChange={(e) => setAdults(e.target.value)} id='adults'>
-            <option value='1'>1 Adult</option>
-            <option value='2'>2 Adults</option>
-            <option value='3'>3 Adults</option>
-            <option value='4'>4 Adults</option>
-          </select>
-        </div>
+        <AdultsDropdown />
+        <KidsDropdown />
 
-        <div className='flex gap-x-4'>
-          <label htmlFor='kids'>Kids</label>
-          <select onChange={(e) => setKids(e.target.value)} id='kids'>
-            <option value='0'>0 Kids</option>
-            <option value='1'>1 Kid</option>
-            <option value='2'>2 Kids</option>
-            <option value='3'>3 Kids</option>
-            <option value='4'>4 Kids</option>
-          </select>
-        </div>
+        <button
+          onClick={(e) => handleClick(e)}
+          className='bg-blue-600 flex-1'
+          type='submit'
+        >
+          Search
+        </button>
       </div>
-      <button onClick={(e) => handleSubmit(e)} type='submit'>
-        Search
-      </button>
     </form>
   );
 };
