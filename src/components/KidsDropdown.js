@@ -36,17 +36,12 @@ const KidsDropdown = () => {
         {lis.map((li, index) => {
           return (
             <Menu.Item
+              onClick={() => setKids(li.name)}
               as='li'
-              className='border-b last-of-type:border-b-0 h-12'
+              className='border-b last-of-type:border-b-0 h-12 hover:bg-accent hover:text-white w-full flex justify-center items-center cursor-pointer'
               key={index}
             >
-              <a
-                onClick={() => setKids(li.name)}
-                className='hover:bg-accent hover:text-white w-full h-full flex justify-center items-center'
-                href='#'
-              >
-                {li.name}
-              </a>
+              {li.name}
             </Menu.Item>
           );
         })}
