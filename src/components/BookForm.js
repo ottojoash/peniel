@@ -28,12 +28,8 @@ const BookForm = () => {
           <KidsDropdown />
         </div>
 
-        <button
-          onClick={(e) => handleClick(e)}
-          className='bg-accent text-white flex-1 hover:bg-accent-hover transition'
-          type='submit'
-        >
-          Search
+        <button onClick={(e) => handleClick(e)} className='btn' type='submit'>
+          Search now
         </button>
       </div>
     </form>

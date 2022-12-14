@@ -9,4 +9,7 @@
   input::placeholder {
     @apply text-black;
   }
+  .btn {
+    @apply text-[15px] tracking-[3px]  font-tertiary uppercase bg-accent text-white flex-1 hover:bg-accent-hover transition;
+  }
 }

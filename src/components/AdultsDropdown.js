@@ -1,6 +1,10 @@
-import { Menu } from '@headlessui/react';
 import { useContext } from 'react';
+// room context
 import { RoomContext } from '../context/RoomContext';
+// headless ui menu component
+import { Menu } from '@headlessui/react';
+
+import { BsChevronDown } from 'react-icons/bs';
 
 const lis = [
   {
@@ -21,7 +25,10 @@ const AdultsDropdown = () => {
   const { adults, setAdults } = useContext(RoomContext);
   return (
     <Menu as='div' className='w-full h-full relative bg-white'>
-      <Menu.Button className='w-full h-full'>{adults}</Menu.Button>
+      <Menu.Button className='w-full h-full flex items-center justify-around'>
+        <div>{adults}</div>
+        <BsChevronDown className='text-base text-accent-hover' />
+      </Menu.Button>
       <Menu.Items as='ul' className='bg-white absolute w-full flex flex-col'>
         {lis.map((li, index) => {
           return (
