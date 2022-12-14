@@ -27,16 +27,17 @@ const KidsDropdown = () => {
       <Menu.Button className='w-full h-full'>
         {kids === '0 Kids' ? 'No Kids' : kids}
       </Menu.Button>
-      <Menu.Items
-        as='ul'
-        className='bg-white shadow-xl absolute w-full flex flex-col p-4 gap-y-4'
-      >
+      <Menu.Items as='ul' className='bg-white absolute w-full flex flex-col'>
         {lis.map((li, index) => {
           return (
-            <Menu.Item as='li' key={index}>
+            <Menu.Item
+              as='li'
+              className='border-b last-of-type:border-b-0 h-12'
+              key={index}
+            >
               <a
                 onClick={() => setKids(li.name)}
-                className='hover:bg-pink-300 hover:text-white w-full'
+                className='hover:bg-accent hover:text-white w-full h-full flex justify-center items-center'
                 href='#'
               >
                 {li.name}
