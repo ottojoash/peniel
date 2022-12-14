@@ -1,0 +1,13 @@
+.react-datepicker {
+  background: red;
+}
+.react-datepicker-wrapper {
+  padding: 0 2rem;
+  height: 100%;
+  display: flex;
+  background: white;
+}
+.react-datepicker__input-container input {
+  outline: none;
+  background: none;
+}
