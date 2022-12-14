@@ -50,3 +50,6 @@
 .react-datepicker__current-month {
   font-weight: 500;
 }
+.react-datepicker__day:hover {
+  border-radius: 0;
+}
