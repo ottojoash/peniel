@@ -10,8 +10,8 @@ import CheckOut from './CheckOut';
 const BookForm = () => {
   const { handleClick } = useContext(RoomContext);
   return (
-    <form className='lg:h-[80px] w-full bg-green-100'>
-      <div className='flex flex-col  w-full h-full lg:flex-row shadow-md'>
+    <form className='lg:h-[70px] w-full bg-green-100'>
+      <div className='flex flex-col w-full h-full lg:flex-row shadow-md'>
         <div className='flex-1 border-r'>
           <CheckIn />
         </div>
@@ -30,7 +30,7 @@ const BookForm = () => {
 
         <button
           onClick={(e) => handleClick(e)}
-          className='bg-blue-600 flex-1'
+          className='bg-accent text-white flex-1 hover:bg-accent-hover transition'
           type='submit'
         >
           Search

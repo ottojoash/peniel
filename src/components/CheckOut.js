@@ -4,14 +4,14 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../datepicker.css';
 // react icons
-import { HiOutlineCalendar } from 'react-icons/hi';
+import { BsCalendar } from 'react-icons/bs';
 
 const CheckOut = () => {
   const [startDate, setStartDate] = useState(new Date());
   return (
     <div className='relative flex items-center justify-end h-full'>
       <div className='absolute z-10 pr-8'>
-        <HiOutlineCalendar />
+        <BsCalendar className='text-accent text-base' />
       </div>
       <DatePicker
         className='w-full h-full'

@@ -1,6 +1,10 @@
 module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}'],
   theme: {
+    fontFamily: {
+      primary: 'Gilda Display',
+      secondary: 'Barlow',
+    },
     container: {
       padding: {
         DEFAULT: '15px',
@@ -12,7 +16,14 @@ module.exports = {
       lg: '960px',
       xl: '1140px',
     },
-    extend: {},
+    extend: {
+      colors: {
+        accent: {
+          DEFAULT: '#aa8453',
+          hover: '#906d40',
+        },
+      },
+    },
   },
   plugins: [],
 };
