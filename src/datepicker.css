@@ -47,6 +47,9 @@
   background: #aa8453;
   border-radius: 0;
 }
+.react-datepicker__day--selected:hover {
+  background: #906d40;
+}
 .react-datepicker__current-month {
   font-weight: 500;
 }
