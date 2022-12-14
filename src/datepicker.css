@@ -6,8 +6,10 @@
   border: 1px solid #aa8453;
   font-size: 0.9rem;
 }
-.react-datepicker-popper {
-  padding-top: 0;
+.react-datepicker__header {
+  border: #aa8453;
+  color: #fff;
+  padding: 0;
 }
 .react-datepicker-wrapper {
   padding: 0 2rem;
@@ -15,11 +17,10 @@
   display: flex;
   background: white;
 }
-.react-datepicker__header {
-  border: #aa8453;
-  color: #fff;
-  padding: 0;
+.react-datepicker-popper {
+  padding-top: 0;
 }
+
 .react-datepicker-popper[data-placement^='bottom'] {
   padding-top: 0;
 }

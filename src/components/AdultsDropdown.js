@@ -22,16 +22,13 @@ const AdultsDropdown = () => {
   return (
     <Menu as='div' className='w-full h-full relative bg-white'>
       <Menu.Button className='w-full h-full'>{adults}</Menu.Button>
-      <Menu.Items
-        as='ul'
-        className='bg-white shadow-xl absolute w-full flex flex-col p-4 gap-y-4'
-      >
+      <Menu.Items as='ul' className='bg-white absolute w-full flex flex-col'>
         {lis.map((li, index) => {
           return (
-            <Menu.Item as='li' key={index}>
+            <Menu.Item as='li' className='border-b h-12' key={index}>
               <a
                 onClick={() => setAdults(li.name)}
-                className='hover:bg-pink-300 hover:text-white w-full'
+                className='hover:bg-pink-300 hover:text-white w-full h-full flex justify-center items-center'
                 href='#'
               >
                 {li.name}
