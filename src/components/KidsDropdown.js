@@ -28,11 +28,14 @@ const KidsDropdown = () => {
   const { kids, setKids } = useContext(RoomContext);
   return (
     <Menu as='div' className='w-full h-full relative bg-white'>
-      <Menu.Button className='w-full h-full flex items-center justify-around'>
+      <Menu.Button className='w-full h-full flex items-center justify-between px-8'>
         {kids === '0 Kids' ? 'No Kids' : kids}
         <BsChevronDown className='text-base text-accent-hover' />
       </Menu.Button>
-      <Menu.Items as='ul' className='bg-white absolute w-full flex flex-col'>
+      <Menu.Items
+        as='ul'
+        className='bg-white absolute w-full flex flex-col z-40'
+      >
         {lis.map((li, index) => {
           return (
             <Menu.Item
