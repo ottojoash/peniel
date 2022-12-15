@@ -1,37 +1,49 @@
 import React, { useEffect, useState } from 'react';
 // logo
-import Logo from '../assets/img/logo.svg';
-
+import LogoWhite from '../assets/img/logo-white.svg';
+import LogoDark from '../assets/img/logo-dark.svg';
 const Header = () => {
   const [header, setHeader] = useState(false);
   useEffect(() => {
     window.addEventListener('scroll', () => {
-      window.scrollY > 50 ? setHeader(true) : setHeader(false);
+      window.scrollY > 100 ? setHeader(true) : setHeader(false);
     });
   });
   return (
-    <header className='fixed z-50 w-full py-10'>
-      <div className='container mx-auto flex justify-between'>
+    <header
+      className={`${
+        header ? 'bg-white py-6 shadow-lg' : 'bg-transparent py-8'
+      }  fixed z-50 w-full transition-all duration-300`}
+    >
+      <div className='container mx-auto flex flex-col items-center gap-y-6 lg:flex-row lg:justify-between lg:gap-y-0'>
         {/* logo */}
         <a href='#'>
-          <img className='w-[160px]' src={Logo} alt='' />
+          {header ? (
+            <img className='w-[160px]' src={LogoDark} alt='' />
+          ) : (
+            <img className='w-[160px]' src={LogoWhite} alt='' />
+          )}
         </a>
         {/* nav */}
-        <nav className='flex gap-x-8 font-tertiary tracking-[3px]  text-white text-[15px] items-center'>
+        <nav
+          className={`${
+            header ? 'text-black' : 'text-white'
+          } flex gap-x-8 font-tertiary tracking-[3px] text-[15px] items-center uppercase`}
+        >
           <a className='hover:text-accent transition' href=''>
-            HOME
+            Home
           </a>
           <a className='hover:text-accent transition' href=''>
-            ROOMS
+            Rooms
           </a>
           <a className='hover:text-accent transition' href=''>
-            RESTAURANT
+            Restaurant
           </a>
           <a className='hover:text-accent transition' href=''>
-            SPA
+            Spa
           </a>
           <a className='hover:text-accent transition' href=''>
-            CONTACT
+            Contact
           </a>
         </nav>
       </div>
