@@ -11,10 +11,10 @@ const App = () => {
     <div>
       <HeroSlider />
       <div className='container mx-auto relative'>
-        <div className='absolute -top-48 z-50 w-full'>
+        <div className='absolute -top-10 left-0 right-0 z-50 w-full shadow-xl'>
           <BookForm />
         </div>
-        <div>
+        <div className='min-h-[1000px]'>
           {rooms.map((room, index) => {
             return (
               <div key={index}>

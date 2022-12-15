@@ -16,7 +16,7 @@ const RoomProvider = ({ children }) => {
   useEffect(() => {
     setTotal(Number(adults[0]) + Number(kids[0]));
   });
-
+  console.log(total);
   const handleClick = (e) => {
     e.preventDefault();
 
@@ -25,7 +25,6 @@ const RoomProvider = ({ children }) => {
     });
     setRooms(newRooms);
   };
-
   return (
     <RoomContext.Provider
       value={{

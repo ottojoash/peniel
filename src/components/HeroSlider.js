@@ -3,9 +3,9 @@ import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 // import swiper styles
 import 'swiper/css';
-import 'swiper/css/pagination';
+import 'swiper/css/effect-fade';
 // import required modules
-import { Pagination } from 'swiper';
+import { EffectFade, Autoplay } from 'swiper';
 // images
 import Img1 from '../assets/img/heroSlider/1.jpg';
 import Img2 from '../assets/img/heroSlider/2.jpg';
@@ -33,19 +33,33 @@ const HeroSlider = () => {
   return (
     <>
       <Swiper
-        pagination={{
-          dynamicBullets: true,
+        modules={[EffectFade, Autoplay]}
+        effect={'fade'}
+        loop={true}
+        autoplay={{
+          delay: 2500,
+          disableOnInteraction: false,
         }}
-        modules={[Pagination]}
-        className='heroSlider h-screen'
+        className='heroSlider h-[600px] lg:h-[860px]'
       >
         {slides.map((slide, index) => {
           return (
             <SwiperSlide
-              className='bg-pink-200 h-full flex justify-center items-center'
+              className='bg-pink-200 h-full flex justify-center items-center relative'
               key={index}
             >
-              {slide.title}
+              <h1 className='z-20 text-white text-[32px] font-primary uppercase tracking-[15px] max-w-[920px] lg:text-[55px]  text-center'>
+                {slide.title}
+              </h1>
+              <div className='absolute top-0 w-full h-full'>
+                <img
+                  className='object-cover h-full w-full'
+                  src={slide.bg}
+                  alt=''
+                />
+              </div>
+              {/* overlay */}
+              <div className='absolute w-full h-full bg-black/70'></div>
             </SwiperSlide>
           );
         })}
