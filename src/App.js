@@ -11,7 +11,7 @@ const App = () => {
     <div>
       <HeroSlider />
       <div className='container mx-auto relative'>
-        <div className='z-30 w-full max-w-md mx-auto shadow-xl lg:max-w-none lg:mx-0 lg:absolute lg:-top-10 lg:left-0 lg:right-0'>
+        <div className='bg-accent/20 mt-4 p-4 shadow-xl lg:absolute lg:-top-10 lg:left-0 lg:right-0 lg:p-0 lg:z-30'>
           <BookForm />
         </div>
         <div className='min-h-[1000px]'>
