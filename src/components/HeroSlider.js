@@ -37,7 +37,7 @@ const HeroSlider = () => {
         effect={'fade'}
         loop={true}
         autoplay={{
-          delay: 2500,
+          delay: 3000,
           disableOnInteraction: false,
         }}
         className='heroSlider h-[600px] lg:h-[860px]'
@@ -48,9 +48,14 @@ const HeroSlider = () => {
               className='bg-pink-200 h-full flex justify-center items-center relative'
               key={index}
             >
-              <h1 className='z-20 text-white text-[32px] font-primary uppercase tracking-[15px] max-w-[920px] lg:text-[55px]  text-center'>
-                {slide.title}
-              </h1>
+              <div className='z-20 text-white text-center'>
+                <div className='uppercase font-tertiary tracking-[6px] mb-5'>
+                  Unique place to relax & enjoy
+                </div>
+                <h1 className=' text-[32px] font-primary uppercase tracking-[15px] max-w-[920px] lg:text-[55px]'>
+                  {slide.title}
+                </h1>
+              </div>
               <div className='absolute top-0 w-full h-full'>
                 <img
                   className='object-cover h-full w-full'
