@@ -27,7 +27,7 @@ const Rooms = () => {
                     alt=''
                   />
                 </div>
-                <div className='bg-white shadow-lg max-w-[300px] mx-auto h-[60px] -translate-y-1/2 flex justify-center items-center uppercase font-tertiary tracking-[3px] font-semibold text-[16px]'>
+                <div className='bg-white shadow-lg max-w-[260px] mx-auto h-[60px] -translate-y-1/2 flex justify-center items-center uppercase font-tertiary tracking-[3px] font-semibold text-[16px]'>
                   <div>
                     Starts from{' '}
                     <span className='text-red-400'>${room.price}</span>/night
