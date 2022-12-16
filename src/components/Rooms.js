@@ -16,10 +16,13 @@ const Rooms = () => {
         <div className='grid grid-cols-3 gap-[30px]'>
           {rooms.map((room) => {
             return (
-              <div className='bg-white shadow-2xl min-h-[480px]' key={room.id}>
+              <div
+                className='bg-white shadow-2xl min-h-[480px] group'
+                key={room.id}
+              >
                 <div className='overflow-hidden'>
                   <img
-                    className='hover:scale-110 transition-all duration-500'
+                    className='group-hover:scale-110 transition-all duration-500'
                     src={room.image}
                     alt=''
                   />
@@ -30,7 +33,12 @@ const Rooms = () => {
                     <span className='text-red-400'>${room.price}</span>/night
                   </div>
                 </div>
-                {room.name}
+                <div className='text-center'>
+                  <div className='text-2xl font-primary font-semibold tracking-[1px] mb-4'>
+                    {room.name}
+                  </div>
+                  <p className='max-w-[300px] mx-auto'>{room.description}</p>
+                </div>
               </div>
             );
           })}
