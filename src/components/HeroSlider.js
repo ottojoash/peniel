@@ -13,17 +13,17 @@ import Img3 from '../assets/img/heroSlider/3.jpg';
 
 const slides = [
   {
-    title: 'The perfect room for you',
+    title: 'Your Luxury Hotel For Vacation',
     bg: Img1,
     btnText: 'Rooms & Suites',
   },
   {
-    title: 'The perfect room for you',
+    title: 'Your Luxury Hotel For Vacation',
     bg: Img2,
     btnText: 'Rooms & Suites',
   },
   {
-    title: 'The perfect room for you',
+    title: 'Your Luxury Hotel For Vacation',
     bg: Img3,
     btnText: 'Rooms & Suites',
   },
@@ -50,11 +50,12 @@ const HeroSlider = () => {
             >
               <div className='z-20 text-white text-center'>
                 <div className='uppercase font-tertiary tracking-[6px] mb-5'>
-                  Unique place to relax & enjoy
+                  Just enjoy and relax
                 </div>
-                <h1 className=' text-[32px] font-primary uppercase tracking-[15px] max-w-[920px] lg:text-[55px]'>
+                <h1 className='text-[32px] font-primary uppercase tracking-[15px] max-w-[920px] lg:text-[55px]'>
                   {slide.title}
                 </h1>
+                <button className='btn '>Hello</button>
               </div>
               <div className='absolute top-0 w-full h-full'>
                 <img
