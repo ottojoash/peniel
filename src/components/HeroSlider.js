@@ -65,7 +65,7 @@ const HeroSlider = () => {
                 />
               </div>
               {/* overlay */}
-              <div className='absolute w-full h-full bg-black/60'></div>
+              <div className='absolute w-full h-full bg-black/70'></div>
             </SwiperSlide>
           );
         })}

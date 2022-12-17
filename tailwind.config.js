@@ -20,8 +20,8 @@ module.exports = {
     extend: {
       colors: {
         accent: {
-          DEFAULT: '#A07D4E',
-          hover: '#886941',
+          DEFAULT: '#aa8453',
+          hover: '#967142',
         },
       },
     },
