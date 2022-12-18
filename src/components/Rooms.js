@@ -1,6 +1,8 @@
 import React, { useContext } from 'react';
 // context
 import { RoomContext } from '../context/RoomContext';
+// components
+import Room from './Room';
 
 const Rooms = () => {
   const { rooms } = useContext(RoomContext);
@@ -15,32 +17,7 @@ const Rooms = () => {
         </div>
         <div className='grid grid-cols-1 max-w-sm mx-auto gap-[30px] lg:grid-cols-3 lg:max-w-none lg:mx-0'>
           {rooms.map((room) => {
-            return (
-              <div
-                className='bg-white shadow-2xl min-h-[480px] group'
-                key={room.id}
-              >
-                <div className='overflow-hidden'>
-                  <img
-                    className='group-hover:scale-110 transition-all duration-500'
-                    src={room.image}
-                    alt=''
-                  />
-                </div>
-                <div className='bg-white shadow-lg max-w-[260px] mx-auto h-[60px] -translate-y-1/2 flex justify-center items-center uppercase font-tertiary tracking-[3px] font-semibold text-[16px]'>
-                  <div>
-                    Starts from{' '}
-                    <span className='text-red-400'>${room.price}</span> / night
-                  </div>
-                </div>
-                <div className='text-center'>
-                  <div className='text-2xl font-primary font-semibold tracking-[1px] mb-4'>
-                    {room.name}
-                  </div>
-                  <p className='max-w-[300px] mx-auto'>{room.description}</p>
-                </div>
-              </div>
-            );
+            return <Room room={room} />;
           })}
         </div>
       </div>

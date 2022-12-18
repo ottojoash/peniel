@@ -45,7 +45,7 @@ const HeroSlider = () => {
         {slides.map((slide, index) => {
           return (
             <SwiperSlide
-              className='bg-pink-200 h-full flex justify-center items-center relative'
+              className='h-full flex justify-center items-center relative'
               key={index}
             >
               <div className='z-20 text-white text-center'>
