@@ -5,12 +5,7 @@ import Header from './components/Header';
 import Home from './pages/Home';
 import RoomDetails from './pages/RoomDetails';
 
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Route,
-  Link,
-} from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 const router = createBrowserRouter([
   {

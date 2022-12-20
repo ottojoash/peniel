@@ -33,7 +33,7 @@ const BookForm = () => {
           className='btn btn-primary'
           type='submit'
         >
-          Search now
+          Check Now
         </button>
       </div>
     </form>

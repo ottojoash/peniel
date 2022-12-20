@@ -28,7 +28,7 @@ const Header = () => {
         <nav
           className={`${
             header ? 'text-black' : 'text-white'
-          } flex gap-x-8 font-tertiary tracking-[3px] text-[15px] items-center uppercase`}
+          } flex gap-x-4 lg:gap-x-8 font-tertiary tracking-[3px] text-[15px] items-center uppercase`}
         >
           <a className='hover:text-accent transition' href=''>
             Home

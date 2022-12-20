@@ -7,7 +7,7 @@ const Room = ({ room }) => {
     <div className='bg-white shadow-2xl min-h-[480px] group' key={room.id}>
       <div className='overflow-hidden'>
         <img
-          className='group-hover:scale-110 transition-all duration-500'
+          className='group-hover:scale-110 transition-all duration-500 w-full'
           src={room.image}
           alt=''
         />
@@ -22,7 +22,7 @@ const Room = ({ room }) => {
         <div className='text-2xl font-primary font-semibold tracking-[1px] mb-4'>
           {room.name}
         </div>
-        <p className='max-w-[300px] mx-auto'>{room.description}</p>
+        <p className='max-w-[300px] mx-auto'>{room.description.slice(0, 56)}</p>
       </div>
       <Link to={`/room/${room.id}`}>
         <button>btn</button>
