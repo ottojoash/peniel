@@ -23,7 +23,7 @@ const Room = ({ room }) => {
         <p className='max-w-[300px] mx-auto'>{room.description.slice(0, 56)}</p>
       </div>
       <Link to={`/room/${room.id}`}>
-        <button className='btn btn-primary'>btn</button>
+        <button className='btn btn-sm btn-secondary'>Book now</button>
       </Link>
     </div>
   );

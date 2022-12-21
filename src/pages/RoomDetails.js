@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { useParams } from 'react-router-dom';
+// components
 import AdultsDropdown from '../components/AdultsDropdown';
 import CheckIn from '../components/CheckIn';
 import CheckOut from '../components/CheckOut';
