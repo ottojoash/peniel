@@ -11,7 +11,7 @@ import Room8Img from './assets/img/rooms/8.png';
 export const roomData = [
   {
     id: 1,
-    name: 'Luxury room 1',
+    name: 'Luxury Room 1',
     description:
       'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea     accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
     facilities: [],
@@ -21,7 +21,7 @@ export const roomData = [
   },
   {
     id: 2,
-    name: 'Deluxe room 2',
+    name: 'Deluxe Room 2',
     description:
       'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea     accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
     facilities: [],
@@ -31,9 +31,9 @@ export const roomData = [
   },
   {
     id: 3,
-    name: 'Luxury room 3',
+    name: 'Luxury Room 3',
     description:
-      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea     accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
+      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
     facilities: [],
     maxPerson: 3,
     price: 265,
@@ -41,7 +41,7 @@ export const roomData = [
   },
   {
     id: 4,
-    name: 'Deluxe room 4',
+    name: 'Deluxe Room 4',
     description:
       'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea     accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
     facilities: [],
@@ -51,7 +51,7 @@ export const roomData = [
   },
   {
     id: 5,
-    name: 'Luxury room 5',
+    name: 'Luxury Room 5',
     description:
       'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea     accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
     facilities: [],
@@ -61,7 +61,7 @@ export const roomData = [
   },
   {
     id: 6,
-    name: 'Deluxe room 6',
+    name: 'Deluxe Room 6',
     description:
       'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea     accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
     facilities: [],
@@ -71,7 +71,7 @@ export const roomData = [
   },
   {
     id: 7,
-    name: 'Luxury room 7',
+    name: 'Luxury Room 7',
     description:
       'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea     accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
     facilities: [],
@@ -81,7 +81,7 @@ export const roomData = [
   },
   {
     id: 8,
-    name: 'Deluxe room 8',
+    name: 'Deluxe Room 8',
     description:
       'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea     accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
     facilities: [],

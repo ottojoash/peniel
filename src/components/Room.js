@@ -19,13 +19,11 @@ const Room = ({ room }) => {
         </div>
       </div>
       <div className='text-center'>
-        <div className='text-2xl font-primary font-semibold tracking-[1px] mb-4'>
-          {room.name}
-        </div>
+        <div className='h3'>{room.name}</div>
         <p className='max-w-[300px] mx-auto'>{room.description.slice(0, 56)}</p>
       </div>
       <Link to={`/room/${room.id}`}>
-        <button>btn</button>
+        <button className='btn btn-primary'>btn</button>
       </Link>
     </div>
   );

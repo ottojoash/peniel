@@ -9,6 +9,12 @@
   input::placeholder {
     @apply text-black;
   }
+  .h2 {
+    @apply font-primary text-[45px] mb-4;
+  }
+  .h3 {
+    @apply text-2xl font-primary font-semibold tracking-[1px] mb-4;
+  }
   .btn {
     @apply text-[15px] tracking-[3px] font-tertiary uppercase text-white flex-1 transition;
   }
