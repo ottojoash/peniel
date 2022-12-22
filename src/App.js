@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import RoomDetails from './pages/RoomDetails';
 
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import Footer from './components/Footer';
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,7 @@ const App = () => {
     <div>
       <Header />
       <RouterProvider router={router} />
+      <Footer />
     </div>
   );
 };

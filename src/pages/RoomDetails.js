@@ -14,29 +14,20 @@ const RoomDetails = () => {
   const room = rooms.find((room) => {
     return room.id === Number(id);
   });
-  console.log(room);
+
   return (
-    <section>
+    <section className='h-screen'>
       <div className='bg-room h-[450px] bg-cover bg-center relative flex justify-center items-center'>
         {/* overlay */}
-        <div className='w-full h-full absolute bg-black/60'></div>
+        <div className='w-full h-full absolute bg-black/70'></div>
         <h1 className='text-5xl text-white z-20 font-primary text-center'>
           {room.name} Details
         </h1>
       </div>
-      <div className='container mx-auto'>
-        <div className='flex flex-col lg:flex-row bg-purple-200'>
-          <div className='lg:w-[70%] bg-pink-200'>
-            <h2 className='h3'>{room.name}</h2>
-            <p>{room.description}</p>
-          </div>
-          <div className='lg:w-[30%] bg-blue-200 h-[300px] p-6 flex flex-col'>
-            <CheckIn />
-            <CheckOut />
-            <AdultsDropdown />
-            <KidsDropdown />
-            <button className='btn btn-primary'>Book Now</button>
-          </div>
+      <div className='container mx-auto py-8'>
+        <div className='flex'>
+          <div className='flex-1'>left</div>
+          <div className='flex-1'>right</div>
         </div>
       </div>
     </section>

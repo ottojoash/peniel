@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const Room = ({ room }) => {
   return (
-    <div className='bg-white shadow-2xl min-h-[480px] group' key={room.id}>
+    <div className='bg-white shadow-2xl min-h-[500px] group' key={room.id}>
       <div className='overflow-hidden'>
         <img
           className='group-hover:scale-110 transition-all duration-500 w-full'
@@ -18,12 +18,15 @@ const Room = ({ room }) => {
           night
         </div>
       </div>
+
       <div className='text-center'>
         <div className='h3'>{room.name}</div>
-        <p className='max-w-[300px] mx-auto'>{room.description.slice(0, 56)}</p>
+        <p className='max-w-[300px] mx-auto mb-3'>
+          {room.description.slice(0, 56)}
+        </p>
       </div>
-      <Link to={`/room/${room.id}`}>
-        <button className='btn btn-sm btn-secondary'>Book now</button>
+      <Link className='btn btn-sm btn-secondary' to={`/room/${room.id}`}>
+        Book now
       </Link>
     </div>
   );

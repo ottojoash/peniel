@@ -8,6 +8,7 @@ import { BsCalendar } from 'react-icons/bs';
 
 const CheckIn = () => {
   const [startDate, setStartDate] = useState(false);
+
   return (
     <div className='relative flex items-center justify-end h-full'>
       <div className='absolute z-10 pr-8'>
