@@ -21,6 +21,9 @@
   .btn-sm {
     @apply h-[48px] mx-auto max-w-[150px];
   }
+  .btn-lg {
+    @apply h-[60px];
+  }
   .btn-primary {
     @apply bg-accent hover:bg-accent-hover;
   }

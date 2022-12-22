@@ -7,7 +7,7 @@ import Room from './Room';
 const Rooms = () => {
   const { rooms } = useContext(RoomContext);
   return (
-    <section className='pt-24'>
+    <section className='py-24'>
       <div className='container mx-auto lg:px-0'>
         <div className='text-center'>
           <div className='font-tertiary uppercase text-[15px] tracking-[6px]'>

@@ -16,7 +16,7 @@ const RoomDetails = () => {
   });
 
   return (
-    <section className='h-screen'>
+    <section>
       <div className='bg-room h-[450px] bg-cover bg-center relative flex justify-center items-center'>
         {/* overlay */}
         <div className='w-full h-full absolute bg-black/70'></div>
@@ -24,10 +24,26 @@ const RoomDetails = () => {
           {room.name} Details
         </h1>
       </div>
-      <div className='container mx-auto py-8'>
-        <div className='flex flex-col lg:flex-row'>
-          <div class='w-full lg:w-[60%] bg-pink-200'>1</div>
-          <div class='w-full lg:w-[40%] bg-blue-200'>2</div>
+      <div className='container mx-auto h-screen'>
+        <div className='flex flex-col lg:flex-row h-full'>
+          <div className='w-full h-full lg:w-[60%] bg-pink-200'>1</div>
+          <div className='w-full h-full lg:w-[40%] pt-12 px-6 bg-accent/20'>
+            <div className='flex flex-col space-y-4 mb-4'>
+              <div className='h-[60px]'>
+                <CheckIn />
+              </div>
+              <div className='h-[60px]'>
+                <CheckOut />
+              </div>
+              <div className='h-[60px]'>
+                <AdultsDropdown />
+              </div>
+              <div className='h-[60px]'>
+                <KidsDropdown />
+              </div>
+            </div>
+            <button className='btn btn-lg btn-primary w-full'>Book now</button>
+          </div>
         </div>
       </div>
     </section>

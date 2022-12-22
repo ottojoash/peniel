@@ -2,6 +2,7 @@ import React from 'react';
 import HeroSlider from '../components/HeroSlider';
 import BookForm from '../components/BookForm';
 import Rooms from '../components/Rooms';
+
 const Home = () => {
   return (
     <>
