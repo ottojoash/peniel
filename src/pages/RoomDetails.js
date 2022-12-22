@@ -25,9 +25,9 @@ const RoomDetails = () => {
         </h1>
       </div>
       <div className='container mx-auto py-8'>
-        <div className='flex'>
-          <div className='flex-1'>left</div>
-          <div className='flex-1'>right</div>
+        <div className='flex flex-col lg:flex-row'>
+          <div class='w-full lg:w-[60%] bg-pink-200'>1</div>
+          <div class='w-full lg:w-[40%] bg-blue-200'>2</div>
         </div>
       </div>
     </section>

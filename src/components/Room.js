@@ -18,7 +18,6 @@ const Room = ({ room }) => {
           night
         </div>
       </div>
-
       <div className='text-center'>
         <div className='h3'>{room.name}</div>
         <p className='max-w-[300px] mx-auto mb-3'>
