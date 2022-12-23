@@ -30,15 +30,15 @@ const RoomDetails = () => {
         <div className='flex flex-col lg:flex-row h-full py-12 gap-x-12'>
           <div className='w-full h-full lg:w-[60%] px-6'>
             <h3 className='h2'>{name}</h3>
-            <p>{description}</p>
-            <img src={image} alt='' />
-            <div className='flex flex-wrap gap-12'>
+            <p className='mb-8'>{description}</p>
+            <img className='mb-8' src={image} alt='' />
+            <div className='grid grid-cols-3 gap-6'>
               {facilities.map((item) => {
                 const { name, icon } = item;
                 return (
-                  <div className='flex items-center gap-x-6 bg-pink-100 w-full max-w-[150px]'>
-                    <div>{name}</div>
-                    <div className='text-4xl text-accent'>{icon}</div>
+                  <div className='flex items-center gap-x-2 flex-1 bg-pink-200'>
+                    <div className='text-3xl text-accent'>{icon}</div>
+                    <div className='text-base'>{name}</div>
                   </div>
                 );
               })}
