@@ -16,7 +16,7 @@
     @apply text-2xl font-primary font-semibold tracking-[1px] mb-4;
   }
   .btn {
-    @apply text-[15px] tracking-[3px] font-tertiary uppercase text-white flex-1 transition px-8 flex justify-center items-center;
+    @apply text-[15px] tracking-[3px] font-tertiary uppercase text-white flex-1 transition-all px-8 flex justify-center items-center;
   }
   .btn-sm {
     @apply h-[48px] mx-auto max-w-[150px];
@@ -28,6 +28,9 @@
     @apply bg-accent hover:bg-accent-hover;
   }
   .btn-secondary {
-    @apply bg-black hover:bg-black/70;
+    @apply bg-[#0a0a0a] hover:bg-accent;
+  }
+  .btn-white {
+    @apply bg-white text-[#0a0a0a];
   }
 }

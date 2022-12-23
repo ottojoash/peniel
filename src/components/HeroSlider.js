@@ -52,10 +52,12 @@ const HeroSlider = () => {
                 <div className='uppercase font-tertiary tracking-[6px] mb-5'>
                   Just enjoy and relax
                 </div>
-                <h1 className='text-[32px] font-primary uppercase tracking-[15px] max-w-[920px] lg:text-[55px]'>
+                <h1 className='text-[32px] font-primary uppercase tracking-[2px] max-w-[920px] lg:text-[68px] leading-tight mb-6'>
                   {slide.title}
                 </h1>
-                <button className='btn '>Hello</button>
+                <button className='btn btn-lg btn-primary mx-auto'>
+                  See our rooms
+                </button>
               </div>
               <div className='absolute top-0 w-full h-full'>
                 <img
