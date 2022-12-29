@@ -14,9 +14,13 @@ const RoomDetails = () => {
   const room = rooms.find((room) => {
     return room.id === Number(id);
   });
-  console.log(room);
+  if (!room) {
+    return <div>loading</div>;
+  }
   // destructure room
-  const { name, description, facilities, maxPerson, image, price } = room;
+  const { name, description, facilities, maxPerson, image, price } =
+    room.attributes;
+  console.log(facilities.data);
   return (
     <section>
       <div className='bg-room h-[450px] bg-cover bg-center relative flex justify-center items-center'>
@@ -33,10 +37,10 @@ const RoomDetails = () => {
             <p className='mb-8'>{description}</p>
             <img className='mb-8' src={image} alt='' />
             <div className='grid grid-cols-3 gap-6'>
-              {facilities.map((item) => {
-                const { name, icon } = item;
+              {facilities.data.map((item, index) => {
+                const { name, icon } = item.attributes;
                 return (
-                  <div className='flex items-center gap-x-2 flex-1 bg-pink-200'>
+                  <div className='flex items-center gap-x-2 flex-1' key={index}>
                     <div className='text-3xl text-accent'>{icon}</div>
                     <div className='text-base'>{name}</div>
                   </div>
