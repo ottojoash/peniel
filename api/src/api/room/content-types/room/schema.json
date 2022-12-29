@@ -39,7 +39,7 @@
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::facility.facility",
-      "inversedBy": "rooms"
+      "mappedBy": "rooms"
     }
   }
 }

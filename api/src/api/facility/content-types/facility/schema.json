@@ -4,7 +4,8 @@
   "info": {
     "singularName": "facility",
     "pluralName": "facilities",
-    "displayName": "facility"
+    "displayName": "facility",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -12,23 +13,14 @@
   "pluginOptions": {},
   "attributes": {
     "name": {
-      "type": "string"
-    },
-    "image": {
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ],
-      "type": "media",
-      "multiple": false
+      "type": "string",
+      "required": true
     },
     "rooms": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::room.room",
-      "mappedBy": "facilities"
+      "inversedBy": "facilities"
     }
   }
 }
