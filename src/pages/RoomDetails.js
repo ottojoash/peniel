@@ -73,7 +73,9 @@ const RoomDetails = () => {
                 <KidsDropdown />
               </div>
             </div>
-            <button className='btn btn-lg btn-primary w-full'>Book now</button>
+            <button className='btn btn-lg btn-primary w-full'>
+              Book now for ${price}
+            </button>
           </div>
         </div>
       </div>

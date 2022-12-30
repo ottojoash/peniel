@@ -3,11 +3,20 @@ import React, { useContext } from 'react';
 import { RoomContext } from '../context/RoomContext';
 // components
 import Room from './Room';
+// spinner
+import { SpinnerDotted } from 'spinners-react';
 
 const Rooms = () => {
-  const { rooms } = useContext(RoomContext);
+  const { rooms, loading } = useContext(RoomContext);
   return (
     <section className='py-24'>
+      {/* spinner & overlay */}
+      {loading && (
+        <div className='h-screen fixed bottom-0 top-0 bg-black/90 w-full z-50 flex justify-center items-center'>
+          <SpinnerDotted color='white' />
+        </div>
+      )}
+
       <div className='container mx-auto lg:px-0'>
         <div className='text-center'>
           <div className='font-tertiary uppercase text-[15px] tracking-[6px]'>
