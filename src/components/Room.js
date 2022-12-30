@@ -5,12 +5,14 @@ import { Link } from 'react-router-dom';
 import { BsArrowsFullscreen, BsPeople } from 'react-icons/bs';
 
 const Room = ({ room }) => {
+  // destructure room
+  const { id, name, image, size, maxPerson, description, price } = room;
   return (
-    <div className='bg-white shadow-2xl min-h-[500px] group' key={room.id}>
+    <div className='bg-white shadow-2xl min-h-[500px] group' key={id}>
       <div className='overflow-hidden'>
         <img
           className='group-hover:scale-110 transition-all duration-500 w-full'
-          src={room.image}
+          src={image}
           alt=''
         />
       </div>
@@ -22,7 +24,7 @@ const Room = ({ room }) => {
             </div>
             <div className='flex gap-x-1'>
               <div>Size</div>
-              <div>{room.size}m2</div>
+              <div>{size}m2</div>
             </div>
           </div>
           <div className='flex items-center gap-x-2'>
@@ -31,24 +33,24 @@ const Room = ({ room }) => {
             </div>
             <div className='flex gap-x-1'>
               <div>Max People</div>
-              <div>{room.maxPerson}</div>
+              <div>{maxPerson}</div>
             </div>
           </div>
         </div>
       </div>
       <div className='text-center'>
-        <Link to={`/room/${room.id}`}>
-          <div className='h3'>{room.name}</div>
+        <Link to={`/room/${id}`}>
+          <div className='h3'>{name}</div>
         </Link>
         <p className='max-w-[300px] mx-auto mb-3 lg:mb-6'>
-          {room.description.slice(0, 56)}
+          {description.slice(0, 56)}
         </p>
       </div>
       <Link
         className='btn btn-sm btn-secondary max-w-[240px] mx-auto'
-        to={`/room/${room.id}`}
+        to={`/room/${id}`}
       >
-        Book now from ${room.price}
+        Book now from ${price}
       </Link>
     </div>
   );
