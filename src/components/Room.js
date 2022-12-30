@@ -1,7 +1,8 @@
 import React from 'react';
 // link
 import { Link } from 'react-router-dom';
-
+// icons
+import { FaUsers, FaExpand } from 'react-icons/fa';
 const Room = ({ room }) => {
   return (
     <div className='bg-white shadow-2xl min-h-[500px] group' key={room.id}>
@@ -13,9 +14,14 @@ const Room = ({ room }) => {
         />
       </div>
       <div className='bg-white shadow-lg max-w-[300px] mx-auto h-[60px] -translate-y-1/2 flex justify-center items-center uppercase font-tertiary tracking-[3px] font-semibold text-[16px]'>
-        <div>
-          Starts from <span className='text-red-400'>${room.price}</span> /
-          night
+        <div className='flex justify-between w-[80%]'>
+          <div>
+            Size <span className='text-accent'>{room.size}m2</span>
+          </div>
+          <div>
+            People
+            <span className='text-accent'> {room.maxPerson}</span>
+          </div>
         </div>
       </div>
       <div className='text-center'>
@@ -26,8 +32,11 @@ const Room = ({ room }) => {
           {room.description.slice(0, 56)}
         </p>
       </div>
-      <Link className='btn btn-sm btn-secondary' to={`/room/${room.id}`}>
-        Book now
+      <Link
+        className='btn btn-sm btn-secondary max-w-[240px] mx-auto'
+        to={`/room/${room.id}`}
+      >
+        Book now from ${room.price}
       </Link>
     </div>
   );

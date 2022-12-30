@@ -19,7 +19,7 @@
     @apply text-[15px] tracking-[3px] font-tertiary uppercase text-white flex-1 transition-all px-8 flex justify-center items-center;
   }
   .btn-sm {
-    @apply h-[48px] mx-auto max-w-[150px];
+    @apply h-[48px];
   }
   .btn-lg {
     @apply h-[60px];
