@@ -16,32 +16,33 @@ const RoomDetails = () => {
     return room.id === Number(id);
   });
 
-  if (!room) {
-    return <div>loading</div>;
-  }
   // destructure room
-  const { name, description, facilities, maxPerson, image, imageLg, price } =
-    room;
+  const { name, description, facilities, imageLg, price } = room;
 
   return (
     <section>
-      <div className='bg-room h-[450px] bg-cover bg-center relative flex justify-center items-center'>
+      <div className='bg-room h-[560px] bg-cover bg-center relative flex justify-center items-center'>
         {/* overlay */}
-        <div className='w-full h-full absolute bg-black/70'></div>
+        <div className='w-full h-full absolute bg-black/60'></div>
         <h1 className='text-6xl text-white z-20 font-primary text-center'>
           {name} Details
         </h1>
       </div>
       <div className='container mx-auto'>
-        <div className='flex flex-col lg:flex-row h-full py-12 gap-x-12'>
+        <div className='flex flex-col lg:flex-row h-full py-24 gap-x-12'>
           <div className='w-full h-full lg:w-[60%] px-6'>
             <h3 className='h2'>{name}</h3>
             <p className='mb-8'>{description}</p>
             <img className='mb-8' src={imageLg} alt='' />
             {/* grid */}
             <div className='mt-12'>
-              <h3 className='h3 mb-10'>Facilities</h3>
-              <div className='grid grid-cols-3 gap-8'>
+              <h3 className='h3 mb-3'>Room Facilities</h3>
+              <p className='mb-12'>
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi
+                sunt, dicta ratione vel facilis excepturi accusantium eum
+                provident explicabo adipisci?
+              </p>
+              <div className='grid grid-cols-3 gap-6'>
                 {facilities.map((item, index) => {
                   const { name, icon } = item;
                   return (

@@ -17,7 +17,7 @@ const Room = ({ room }) => {
         />
       </div>
       <div className='bg-white shadow-lg max-w-[300px] mx-auto h-[60px] -translate-y-1/2 flex justify-center items-center uppercase font-tertiary tracking-[1px] font-semibold text-[16px]'>
-        <div className='flex justify-between w-[88%]'>
+        <div className='flex justify-between w-[80%]'>
           <div className='flex items-center gap-x-2'>
             <div className='text-accent'>
               <BsArrowsFullscreen className='text-[15px]' />
