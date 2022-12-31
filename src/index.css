@@ -4,10 +4,10 @@
 
 @layer base {
   body {
-    @apply font-secondary;
+    @apply font-secondary text-primary;
   }
   input::placeholder {
-    @apply text-black;
+    @apply text-primary;
   }
   .h2 {
     @apply font-primary text-[45px] mb-4;
@@ -28,7 +28,7 @@
     @apply bg-accent hover:bg-accent-hover;
   }
   .btn-secondary {
-    @apply bg-[#0a0a0a] hover:bg-accent;
+    @apply bg-primary hover:bg-accent;
   }
   .btn-white {
     @apply bg-white text-[#0a0a0a];

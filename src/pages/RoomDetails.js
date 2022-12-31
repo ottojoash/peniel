@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 // components
 import AdultsDropdown from '../components/AdultsDropdown';
 import CheckIn from '../components/CheckIn';
@@ -9,6 +9,7 @@ import KidsDropdown from '../components/KidsDropdown';
 import { RoomContext } from '../context/RoomContext';
 // icons
 import { FaCheck } from 'react-icons/fa';
+import ScrollToTop from '../components/ScrollToTop';
 
 const RoomDetails = () => {
   const { id } = useParams();
@@ -23,6 +24,7 @@ const RoomDetails = () => {
 
   return (
     <section>
+      <ScrollToTop />
       <div className='bg-room h-[560px] bg-cover bg-center relative flex justify-center items-center'>
         {/* overlay */}
         <div className='w-full h-full absolute bg-black/60'></div>
@@ -44,7 +46,7 @@ const RoomDetails = () => {
                 sunt, dicta ratione vel facilis excepturi accusantium eum
                 provident explicabo adipisci?
               </p>
-              <div className='grid grid-cols-3 gap-6'>
+              <div className='grid grid-cols-3 gap-6 mb-12'>
                 {facilities.map((item, index) => {
                   const { name, icon } = item;
                   return (
@@ -62,7 +64,7 @@ const RoomDetails = () => {
           </div>
           <div className='w-full h-full lg:w-[40%]'>
             {/* reservation */}
-            <div className=' py-8 px-6 bg-accent/20 mb-8'>
+            <div className=' py-8 px-6 bg-accent/20 mb-12'>
               <div className='flex flex-col space-y-4 mb-4'>
                 <h3 className='h3'>Your Reservation</h3>
                 <div className='h-[60px]'>

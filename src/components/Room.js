@@ -40,7 +40,7 @@ const Room = ({ room }) => {
       </div>
       <div className='text-center'>
         <Link to={`/room/${id}`}>
-          <div className='h3'>{name}</div>
+          <h3 className='h3'>{name}</h3>
         </Link>
         <p className='max-w-[300px] mx-auto mb-3 lg:mb-6'>
           {description.slice(0, 56)}

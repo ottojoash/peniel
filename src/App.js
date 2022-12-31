@@ -1,6 +1,7 @@
 import React from 'react';
 // components
 import Header from './components/Header';
+import ScrollToTop from './components/ScrollToTop';
 // pages
 import Home from './pages/Home';
 import RoomDetails from './pages/RoomDetails';
