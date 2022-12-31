@@ -27,7 +27,7 @@ const RoomDetails = () => {
       <ScrollToTop />
       <div className='bg-room h-[560px] bg-cover bg-center relative flex justify-center items-center'>
         {/* overlay */}
-        <div className='w-full h-full absolute bg-black/60'></div>
+        <div className='w-full h-full absolute bg-black/70'></div>
         <h1 className='text-6xl text-white z-20 font-primary text-center'>
           {name} Details
         </h1>

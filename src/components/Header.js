@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-// logo
+// logos
 import LogoWhite from '../assets/img/logo-white.svg';
 import LogoDark from '../assets/img/logo-dark.svg';
+// link
+import { Link } from 'react-router-dom';
 const Header = () => {
   const [header, setHeader] = useState(false);
   useEffect(() => {
@@ -17,7 +19,7 @@ const Header = () => {
     >
       <div className='container mx-auto flex flex-col items-center gap-y-6 lg:flex-row lg:justify-between lg:gap-y-0'>
         {/* logo */}
-        <a href='#'>
+        <a href='/'>
           {header ? (
             <img className='w-[160px]' src={LogoDark} alt='' />
           ) : (
