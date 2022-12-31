@@ -32,7 +32,7 @@ export const roomData = [
     id: 1,
     name: 'Superior Room',
     description:
-      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
+      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis.',
     facilities: [
       { name: 'Wifi', icon: <FaWifi /> },
       { name: 'Coffee', icon: <FaCoffee /> },
@@ -53,7 +53,7 @@ export const roomData = [
     id: 2,
     name: 'Signature Room',
     description:
-      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
+      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis.',
     facilities: [
       { name: 'Wifi', icon: <FaWifi /> },
       { name: 'Coffee', icon: <FaCoffee /> },
@@ -74,7 +74,7 @@ export const roomData = [
     id: 3,
     name: 'Deluxe Room',
     description:
-      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
+      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis.',
     facilities: [
       { name: 'Wifi', icon: <FaWifi /> },
       { name: 'Coffee', icon: <FaCoffee /> },
@@ -95,7 +95,7 @@ export const roomData = [
     id: 4,
     name: 'Luxury Room',
     description:
-      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
+      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis.',
     facilities: [
       { name: 'Wifi', icon: <FaWifi /> },
       { name: 'Coffee', icon: <FaCoffee /> },
@@ -116,7 +116,7 @@ export const roomData = [
     id: 5,
     name: 'Luxury Suite Room',
     description:
-      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
+      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis.',
     facilities: [
       { name: 'Wifi', icon: <FaWifi /> },
       { name: 'Coffee', icon: <FaCoffee /> },
@@ -137,7 +137,7 @@ export const roomData = [
     id: 6,
     name: 'Deluxe Room',
     description:
-      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
+      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis.',
     facilities: [
       { name: 'Wifi', icon: <FaWifi /> },
       { name: 'Coffee', icon: <FaCoffee /> },
@@ -158,7 +158,7 @@ export const roomData = [
     id: 7,
     name: 'Luxury Room',
     description:
-      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea ccusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
+      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea ccusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis.',
     facilities: [
       { name: 'Wifi', icon: <FaWifi /> },
       { name: 'Coffee', icon: <FaCoffee /> },
@@ -179,7 +179,7 @@ export const roomData = [
     id: 8,
     name: 'Deluxe Room',
     description:
-      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis. Nostrum sint ab enim quos minus quas iste totam repellat? Culpa illum sunt reiciendis ducimus. Quisquam laborum facilis fugiat tenetur esse ex repellendus corporis sequi voluptates illo iure quibusdam, incidunt praesentium repudiandae, quo provident delectus nihil amet nostrum.',
+      'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea accusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis.',
     facilities: [
       { name: 'Wifi', icon: <FaWifi /> },
       { name: 'Coffee', icon: <FaCoffee /> },

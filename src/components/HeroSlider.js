@@ -31,48 +31,46 @@ const slides = [
 
 const HeroSlider = () => {
   return (
-    <>
-      <Swiper
-        modules={[EffectFade, Autoplay]}
-        effect={'fade'}
-        loop={true}
-        autoplay={{
-          delay: 3000,
-          disableOnInteraction: false,
-        }}
-        className='heroSlider h-[600px] lg:h-[860px]'
-      >
-        {slides.map((slide, index) => {
-          return (
-            <SwiperSlide
-              className='h-full flex justify-center items-center relative'
-              key={index}
-            >
-              <div className='z-20 text-white text-center'>
-                <div className='uppercase font-tertiary tracking-[6px] mb-5'>
-                  Just enjoy and relax
-                </div>
-                <h1 className='text-[32px] font-primary uppercase tracking-[2px] max-w-[920px] lg:text-[68px] leading-tight mb-6'>
-                  {slide.title}
-                </h1>
-                <button className='btn btn-lg btn-primary mx-auto'>
-                  See our rooms
-                </button>
+    <Swiper
+      modules={[EffectFade, Autoplay]}
+      effect={'fade'}
+      loop={true}
+      autoplay={{
+        delay: 3000,
+        disableOnInteraction: false,
+      }}
+      className='heroSlider h-[600px] lg:h-[860px]'
+    >
+      {slides.map((slide, index) => {
+        return (
+          <SwiperSlide
+            className='h-full flex justify-center items-center relative'
+            key={index}
+          >
+            <div className='z-20 text-white text-center'>
+              <div className='uppercase font-tertiary tracking-[6px] mb-5'>
+                Just enjoy and relax
               </div>
-              <div className='absolute top-0 w-full h-full'>
-                <img
-                  className='object-cover h-full w-full'
-                  src={slide.bg}
-                  alt=''
-                />
-              </div>
-              {/* overlay */}
-              <div className='absolute w-full h-full bg-black/60'></div>
-            </SwiperSlide>
-          );
-        })}
-      </Swiper>
-    </>
+              <h1 className='text-[32px] font-primary uppercase tracking-[2px] max-w-[920px] lg:text-[68px] leading-tight mb-6'>
+                {slide.title}
+              </h1>
+              <button className='btn btn-lg btn-primary mx-auto'>
+                See our rooms
+              </button>
+            </div>
+            <div className='absolute top-0 w-full h-full'>
+              <img
+                className='object-cover h-full w-full'
+                src={slide.bg}
+                alt=''
+              />
+            </div>
+            {/* overlay */}
+            <div className='absolute w-full h-full bg-black/60'></div>
+          </SwiperSlide>
+        );
+      })}
+    </Swiper>
   );
 };
 

@@ -7,6 +7,8 @@ import CheckOut from '../components/CheckOut';
 import KidsDropdown from '../components/KidsDropdown';
 // context
 import { RoomContext } from '../context/RoomContext';
+// icons
+import { FaCheck } from 'react-icons/fa';
 
 const RoomDetails = () => {
   const { id } = useParams();
@@ -58,25 +60,53 @@ const RoomDetails = () => {
               </div>
             </div>
           </div>
-          <div className='w-full h-full lg:w-[40%] py-12 px-6 bg-accent/20'>
-            <div className='flex flex-col space-y-4 mb-4'>
-              <h3 className='h3'>Your Reservation</h3>
-              <div className='h-[60px]'>
-                <CheckIn />
+          <div className='w-full h-full lg:w-[40%]'>
+            {/* reservation */}
+            <div className=' py-8 px-6 bg-accent/20 mb-8'>
+              <div className='flex flex-col space-y-4 mb-4'>
+                <h3 className='h3'>Your Reservation</h3>
+                <div className='h-[60px]'>
+                  <CheckIn />
+                </div>
+                <div className='h-[60px]'>
+                  <CheckOut />
+                </div>
+                <div className='h-[60px]'>
+                  <AdultsDropdown />
+                </div>
+                <div className='h-[60px]'>
+                  <KidsDropdown />
+                </div>
               </div>
-              <div className='h-[60px]'>
-                <CheckOut />
-              </div>
-              <div className='h-[60px]'>
-                <AdultsDropdown />
-              </div>
-              <div className='h-[60px]'>
-                <KidsDropdown />
-              </div>
+              <button className='btn btn-lg btn-primary w-full'>
+                Book now for ${price}
+              </button>
             </div>
-            <button className='btn btn-lg btn-primary w-full'>
-              Book now for ${price}
-            </button>
+            <div>
+              <h3 className='h3'>Hotel Rules</h3>
+              <p className='mb-6'>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                Adipiscing integer ultrices suspendisse varius etiam est.
+              </p>
+              <ul className='flex flex-col gap-y-4'>
+                <li className='flex items-center gap-x-4'>
+                  <FaCheck className='text-accent' />
+                  Check-in: 3:00 PM - 9:00 PM
+                </li>
+                <li className='flex items-center gap-x-4'>
+                  <FaCheck className='text-accent' />
+                  Check-out: 10:30 AM
+                </li>
+                <li className='flex items-center gap-x-4'>
+                  <FaCheck className='text-accent' />
+                  No Pets
+                </li>
+                <li className='flex items-center gap-x-4'>
+                  <FaCheck className='text-accent' />
+                  No Smoking
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
