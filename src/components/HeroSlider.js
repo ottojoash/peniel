@@ -15,17 +15,17 @@ const slides = [
   {
     title: 'Your Luxury Hotel For Vacation',
     bg: Img1,
-    btnText: 'Rooms & Suites',
+    btnText: 'See our rooms',
   },
   {
     title: 'Your Luxury Hotel For Vacation',
     bg: Img2,
-    btnText: 'Rooms & Suites',
+    btnText: 'See our rooms',
   },
   {
     title: 'Your Luxury Hotel For Vacation',
     bg: Img3,
-    btnText: 'Rooms & Suites',
+    btnText: 'See our rooms',
   },
 ];
 
@@ -42,28 +42,26 @@ const HeroSlider = () => {
       className='heroSlider h-[600px] lg:h-[860px]'
     >
       {slides.map((slide, index) => {
+        // destructure slide
+        const { title, bg, btnText } = slide;
         return (
           <SwiperSlide
-            className='h-full flex justify-center items-center relative'
+            className='h-full relative flex justify-center items-center'
             key={index}
           >
             <div className='z-20 text-white text-center'>
               <div className='uppercase font-tertiary tracking-[6px] mb-5'>
-                Just enjoy and relax
+                Just Enjoy and relax
               </div>
               <h1 className='text-[32px] font-primary uppercase tracking-[2px] max-w-[920px] lg:text-[68px] leading-tight mb-6'>
-                {slide.title}
+                {title}
               </h1>
               <button className='btn btn-lg btn-primary mx-auto'>
-                See our rooms
+                {btnText}
               </button>
             </div>
             <div className='absolute top-0 w-full h-full'>
-              <img
-                className='object-cover h-full w-full'
-                src={slide.bg}
-                alt=''
-              />
+              <img className='object-cover h-full w-full' src={bg} alt='' />
             </div>
             {/* overlay */}
             <div className='absolute w-full h-full bg-black/70'></div>

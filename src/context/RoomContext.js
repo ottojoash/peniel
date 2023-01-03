@@ -1,6 +1,6 @@
 import React, { createContext, useEffect, useState } from 'react';
-// rooms data
-import { roomData } from '../data.js';
+// data
+import { roomData } from '../data';
 // create context
 export const RoomContext = createContext();
 
@@ -9,10 +9,6 @@ const RoomProvider = ({ children }) => {
   const [adults, setAdults] = useState('1 Adult');
   const [kids, setKids] = useState('0 Kids');
   const [total, setTotal] = useState(0);
-
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -22,6 +18,7 @@ const RoomProvider = ({ children }) => {
   const handleClick = (e) => {
     e.preventDefault();
     setLoading(true);
+    // filter rooms based on total (person)
     const newRooms = roomData.filter((room) => {
       return total <= room.maxPerson;
     });
@@ -33,20 +30,7 @@ const RoomProvider = ({ children }) => {
 
   return (
     <RoomContext.Provider
-      value={{
-        rooms,
-        adults,
-        setAdults,
-        kids,
-        setKids,
-        total,
-        setStartDate,
-        setEndDate,
-        startDate,
-        endDate,
-        handleClick,
-        loading,
-      }}
+      value={{ rooms, adults, setAdults, kids, setKids, handleClick, loading }}
     >
       {children}
     </RoomContext.Provider>

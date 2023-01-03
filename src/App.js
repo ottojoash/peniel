@@ -1,13 +1,13 @@
 import React from 'react';
 // components
 import Header from './components/Header';
-import ScrollToTop from './components/ScrollToTop';
+import Footer from './components/Footer';
 // pages
 import Home from './pages/Home';
 import RoomDetails from './pages/RoomDetails';
 
+// react router
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Footer from './components/Footer';
 
 const router = createBrowserRouter([
   {

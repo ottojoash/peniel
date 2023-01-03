@@ -2,18 +2,19 @@ import React, { useContext } from 'react';
 import { useParams } from 'react-router-dom';
 // components
 import AdultsDropdown from '../components/AdultsDropdown';
+import KidsDropdown from '../components/KidsDropdown';
 import CheckIn from '../components/CheckIn';
 import CheckOut from '../components/CheckOut';
-import KidsDropdown from '../components/KidsDropdown';
+// scroll top component
+import ScrollToTop from '../components/ScrollToTop';
 // context
 import { RoomContext } from '../context/RoomContext';
 // icons
 import { FaCheck } from 'react-icons/fa';
-import ScrollToTop from '../components/ScrollToTop';
 
 const RoomDetails = () => {
-  const { id } = useParams();
   const { rooms } = useContext(RoomContext);
+  const { id } = useParams();
   // get room
   const room = rooms.find((room) => {
     return room.id === Number(id);
@@ -25,29 +26,35 @@ const RoomDetails = () => {
   return (
     <section>
       <ScrollToTop />
-      <div className='bg-room h-[560px] bg-cover bg-center relative flex justify-center items-center'>
+      {/* banner */}
+      <div className='bg-room bg-cover bg-center h-[560px] relative flex justify-center items-center'>
         {/* overlay */}
-        <div className='w-full h-full absolute bg-black/70'></div>
+        <div className='absolute w-full h-full bg-black/70'></div>
+        {/* title */}
         <h1 className='text-6xl text-white z-20 font-primary text-center'>
           {name} Details
         </h1>
       </div>
       <div className='container mx-auto'>
-        <div className='flex flex-col lg:flex-row h-full py-24 gap-x-12'>
+        <div className='flex flex-col lg:flex-row h-full py-24'>
+          {/* left */}
           <div className='w-full h-full lg:w-[60%] px-6'>
-            <h3 className='h2'>{name}</h3>
+            <h2 className='h2'>{name}</h2>
             <p className='mb-8'>{description}</p>
             <img className='mb-8' src={imageLg} alt='' />
-            {/* grid */}
+            {/* facilities */}
             <div className='mt-12'>
               <h3 className='h3 mb-3'>Room Facilities</h3>
               <p className='mb-12'>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi
-                sunt, dicta ratione vel facilis excepturi accusantium eum
-                provident explicabo adipisci?
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Porro
+                officiis voluptas mollitia repellendus sed iure a ea vero atque
+                repudiandae! Necessitatibus facere laborum nam error blanditiis
+                culpa reprehenderit quibusdam quis?
               </p>
+              {/* grid */}
               <div className='grid grid-cols-3 gap-6 mb-12'>
                 {facilities.map((item, index) => {
+                  // destructure item
                   const { name, icon } = item;
                   return (
                     <div
@@ -62,11 +69,12 @@ const RoomDetails = () => {
               </div>
             </div>
           </div>
+          {/* right */}
           <div className='w-full h-full lg:w-[40%]'>
             {/* reservation */}
-            <div className=' py-8 px-6 bg-accent/20 mb-12'>
+            <div className='py-8 px-6 bg-accent/20 mb-12'>
               <div className='flex flex-col space-y-4 mb-4'>
-                <h3 className='h3'>Your Reservation</h3>
+                <h3>Your Reservation</h3>
                 <div className='h-[60px]'>
                   <CheckIn />
                 </div>
@@ -81,14 +89,15 @@ const RoomDetails = () => {
                 </div>
               </div>
               <button className='btn btn-lg btn-primary w-full'>
-                Book now for ${price}
+                book now for ${price}
               </button>
             </div>
+            {/* rules */}
             <div>
               <h3 className='h3'>Hotel Rules</h3>
               <p className='mb-6'>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                Adipiscing integer ultrices suspendisse varius etiam est.
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Nihil
+                nulla itaque laboriosam.
               </p>
               <ul className='flex flex-col gap-y-4'>
                 <li className='flex items-center gap-x-4'>
