@@ -11,6 +11,7 @@ import ScrollToTop from '../components/ScrollToTop';
 import { RoomContext } from '../context/RoomContext';
 // icons
 import { FaCheck } from 'react-icons/fa';
+import EmailInput from '../components/Email';
 
 const RoomDetails = () => {
   const { rooms } = useContext(RoomContext);
@@ -108,6 +109,9 @@ const RoomDetails = () => {
             <div className='py-8 px-6 bg-accent/20 mb-12'>
               <div className='flex flex-col space-y-4 mb-4'>
                 <h3>Your Reservation</h3>
+                <div className='h-[60px]'>
+                  <EmailInput onChange={(value) => handleInputChange('email', value)}/>
+                </div>
                 <div className='h-[60px]'>
                   <CheckIn onChange={(value) => handleInputChange('checkIn', value)} />
                 </div>
