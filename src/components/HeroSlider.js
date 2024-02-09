@@ -13,17 +13,17 @@ import Img3 from '../assets/img/heroSlider/3.webp';
 
 const slides = [
   {
-    title: 'Your Luxury Hotel For Vacation',
+    title: 'Your  Hotel For Vacation',
     bg: Img1,
     btnText: 'See our rooms',
   },
   {
-    title: 'Your Luxury Hotel For Vacation',
+    title: 'Your  Hotel For Vacation',
     bg: Img2,
     btnText: 'See our rooms',
   },
   {
-    title: 'Your Luxury Hotel For Vacation',
+    title: 'Your  Hotel For Vacation',
     bg: Img3,
     btnText: 'See our rooms',
   },
@@ -51,13 +51,13 @@ const HeroSlider = () => {
           >
             <div className='z-20 text-white text-center'>
               <div className='uppercase font-tertiary tracking-[6px] mb-5'>
-                Just Enjoy and relax
+                Peniel Beach Hotel
               </div>
               <h1 className='text-[32px] font-primary uppercase tracking-[2px] max-w-[920px] lg:text-[68px] leading-tight mb-6'>
                 {title}
               </h1>
               <button className='btn btn-lg btn-primary mx-auto'>
-                {btnText}
+                <a href='/rooms'>{btnText}</a>
               </button>
             </div>
             <div className='absolute top-0 w-full h-full'>

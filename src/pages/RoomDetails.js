@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { useParams } from 'react-router-dom';
 // components
 import AdultsDropdown from '../components/AdultsDropdown';
@@ -22,6 +22,39 @@ const RoomDetails = () => {
 
   // destructure room
   const { name, description, facilities, imageLg, price } = room;
+  const [formData, setFormData] = useState({
+    checkIn: '',
+    checkOut: '',
+    adults: 0,
+    kids: 0,
+  });
+
+  const handleInputChange = (field, value) => {
+    setFormData({ ...formData, [field]: value });
+  };
+
+  const handleFormSubmit = async () => {
+    console.log('Form Data:', formData); 
+    try {
+      const response = await fetch('/api/bookRoom', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to book room');
+      }
+      alert('Room booked successfully!');
+    } catch (error) {
+      console.error('Error booking room:', error);
+      alert('Failed to book room. Please try again later.');
+    }
+  };
+
+  
+  
 
   return (
     <section>
@@ -76,20 +109,20 @@ const RoomDetails = () => {
               <div className='flex flex-col space-y-4 mb-4'>
                 <h3>Your Reservation</h3>
                 <div className='h-[60px]'>
-                  <CheckIn />
+                  <CheckIn onChange={(value) => handleInputChange('checkIn', value)} />
                 </div>
                 <div className='h-[60px]'>
-                  <CheckOut />
+                  <CheckOut onChange={(value) => handleInputChange('checkOut', value)} />
                 </div>
                 <div className='h-[60px]'>
-                  <AdultsDropdown />
+                  <AdultsDropdown onChange={(value) => handleInputChange('adults', value)} />
                 </div>
                 <div className='h-[60px]'>
-                  <KidsDropdown />
+                  <KidsDropdown onChange={(value) => handleInputChange('kids', value)} />
                 </div>
               </div>
-              <button className='btn btn-lg btn-primary w-full'>
-                book now for ${price}
+              <button className='btn btn-lg btn-primary w-full' onClick={handleFormSubmit}>
+                Book now for ${price}
               </button>
             </div>
             {/* rules */}
