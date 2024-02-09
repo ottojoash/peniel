@@ -9,7 +9,7 @@ const attractions = [
   },
   {
     id: 2,
-    title: 'Children\'s Play Centre',
+    title: "Children's Play Centre",
     imageUrl: 'https://via.placeholder.com/300x200.png?text=Play+Centre',
   },
   {
@@ -28,9 +28,9 @@ const Attract = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h2 className="text-3xl font-semibold text-center mb-8">Attractions</h2>
-      <div className="flex justify-between items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {attractions.map(attraction => (
-          <div key={attraction.id} className="flex-none w-1/4 p-1">
+          <div key={attraction.id} className="p-1">
             <div className="bg-white shadow-lg border rounded-lg overflow-hidden">
               <img src={attraction.imageUrl} alt={attraction.title} className="w-full h-auto" />
               <div className="p-2">

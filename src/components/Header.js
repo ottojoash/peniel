@@ -40,10 +40,10 @@ const Header = () => {
           <a href='/resturant' className='hover:text-accent transition'>
             Restaurant
           </a>
-          <a href='' className='hover:text-accent transition'>
-            Spa
+          <a href='/kids' className='hover:text-accent transition'>
+            Kids Park
           </a>
-          <a href='' className='hover:text-accent transition'>
+          <a href='/Contact' className='hover:text-accent transition'>
             Contact
           </a>
         </nav>

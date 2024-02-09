@@ -7,9 +7,11 @@ import Home from './pages/Home';
 import RoomPages from './pages/RoomPage';
 import RoomDetails from './pages/RoomDetails';
 import Resturant from './pages/Resturant';
+import KidsPark from './pages/Kids';
 
 // react router
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import ContactForm from './pages/Contact';
 
 const router = createBrowserRouter([
   {
@@ -23,6 +25,14 @@ const router = createBrowserRouter([
   {
     path: '/resturant', // Add this route for the Rooms page
     element: <Resturant/>,
+  },
+  {
+    path: '/kids', // Add this route for the Rooms page
+    element: <KidsPark/>,
+  },
+  {
+    path: '/Contact', // Add this route for the Rooms page
+    element: <ContactForm/>,
   },
   {
     path: '/room/:id',
