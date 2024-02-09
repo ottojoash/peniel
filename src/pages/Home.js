@@ -3,6 +3,7 @@ import React from 'react';
 import Rooms from '../components/Rooms';
 import BookForm from '../components/BookForm';
 import HeroSlider from '../components/HeroSlider';
+import Attract from '../components/Attraction';
 
 const Home = () => {
   return (
@@ -14,6 +15,7 @@ const Home = () => {
         </div>
       </div>
       <Rooms />
+      <Attract/>
     </>
   );
 };

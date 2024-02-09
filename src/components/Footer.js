@@ -8,7 +8,7 @@ const Footer = () => {
       <div className='container mx-auto text-white flex justify-between'>
         {/* logo */}
         <a href='/'>
-          <img src={LogoWhite} alt='' />
+          {/* <img src={LogoWhite} alt='' /> */}
         </a>
         Copyright &copy; 2022. All rights reserved.
       </div>
