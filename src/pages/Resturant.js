@@ -22,7 +22,7 @@ const Resturant = () => {
       id: 2,
       name: 'BreakFast',
       description: 'Classic spaghetti with homemade meat sauce',
-      price: '$12',
+      price: 'UGX 35000',
       imageUrl: BreakFast,
     },
     {
