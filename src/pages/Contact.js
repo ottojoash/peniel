@@ -22,7 +22,7 @@ const Contact = () => {
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent default form submission behavior
   
-    const apiEndpoint = 'http://localhost:5000/api/sendMessage'; // Replace with your actual API endpoint
+    const apiEndpoint = 'https://peniel-api.onrender.com/api/sendMessage'; // Replace with your actual API endpoint
   
     fetch(apiEndpoint, {
       method: 'POST',

@@ -40,7 +40,7 @@ const RoomDetails = () => {
   const handleFormSubmit = async () => {
     console.log('Form Data:', formData); 
     try {
-      const response = await fetch('http://localhost:5000/api/sendEmail', {
+      const response = await fetch('https://peniel-api.onrender.com/api/sendEmail', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
