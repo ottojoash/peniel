@@ -21,37 +21,62 @@ const Contact = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent default form submission behavior
-
-    const apiEndpoint = 'YOUR_API_ENDPOINT_URL'; // Replace with your API endpoint
-
-    try {
-      const response = await fetch(apiEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Submission successful', data);
-        // Optionally reset form or provide further user feedback
-      } else {
-        console.error('Submission failed', await response.text());
-        // Provide user feedback for failure
+  
+    const apiEndpoint = 'http://localhost:5000/api/sendMessage'; // Replace with your actual API endpoint
+  
+    fetch(apiEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    })
+    .then(response => {
+      if (!response.ok) {
+        // Handle non-OK responses from the server
+        return response.text().then(text => {
+          throw new Error(text || 'Server responded with an error');
+        });
       }
-    } catch (error) {
-      console.error('Error submitting form', error);
-      // Handle network errors or other exceptions
-    }
+      // Attempt to parse JSON for OK responses, but handle non-JSON responses gracefully
+      return response.text().then(text => {
+        try {
+          return JSON.parse(text); // Attempt to parse text as JSON
+        } catch {
+          // If the response is not JSON, check if it's a success message
+          if (text.startsWith('Message sent successfully')) {
+            return { message: text }; // Construct an object to handle it as a success
+          }
+          throw new Error(text || 'Received unexpected response format');
+        }
+      });
+    })
+    .then(data => {
+      // Handle the successful submission
+      console.log('Submission successful:', data.message || data);
+      alert('Submission successful: ' + (data.message || 'Your message has been sent.'));
+      // Clear the form fields by resetting formData state
+      setFormData({
+        email: '',
+        subject: '',
+        message: '',
+      });
+    })
+    .catch(error => {
+      // Properly handle and log errors
+      console.error('Error submitting form:', error.message || error);
+      alert('Error submitting form: ' + (error.message || error));
+    });
   };
+  
+  
+  
 
   return (
     <section>
       <ScrollToTop />
       <Helmet>
-        <title>Contact Us | Your Site Name</title>
+        <title>Contact Us | Peniel Beach Hotel</title>
         <meta name="description" content="Reach out to us for inquiries, feedback, or reservations." />
       </Helmet>
       <Swiper
@@ -65,12 +90,12 @@ const Contact = () => {
         className="heroSlider h-[600px] lg:h-[860px]"
       >
         <SwiperSlide className="relative">
-          <img src={ContactImage} alt="Contact" className="object-cover w-full h-full" style={{ filter: 'brightness(0.1)' }} />
-          <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center">
-            <div className="container mx-auto p-6 text-white flex">
-              <div className="w-1/2 pr-8">
+        <img src={ContactImage} alt="Contact" className="object-cover w-full h-full" style={{ filter: 'brightness(0.1)' }} />
+          <div className="absolute inset-0 flex justify-center items-center">
+            <div className="container mx-auto p-6 text-white flex flex-wrap justify-between">
+              <div className="w-full lg:w-1/2 pr-8 mb-8 lg:mb-0">
                 <h2 className="text-2xl font-semibold mb-4">Contact Us</h2>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="mb-4 relative">
                   <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">Email</label>
                   <div className="relative flex items-center">
@@ -80,9 +105,8 @@ const Contact = () => {
                       id="email"
                       name="email"
                       onChange={handleChange}
-                      className="pl-10 w-full bg-gray-800 bg-opacity-50 text-white rounded border border-gray-700 py-2"
+                      className="pl-10 w-full bg-black bg-opacity-50 text-white rounded border border-gray-700 py-2"
                       placeholder="Your Email"
-                      style={{ backdropFilter: 'blur(5px)' }} // Optional: for a frosted glass effect
                     />
                   </div>
                 </div>
@@ -93,9 +117,8 @@ const Contact = () => {
                     id="subject"
                     name="subject"
                     onChange={handleChange}
-                    className="w-full bg-gray-800 bg-opacity-50 text-white rounded border border-gray-700 py-2"
+                    className="w-full bg-black bg-opacity-50 text-white rounded border border-gray-700 py-2"
                     placeholder="Subject"
-                    style={{ backdropFilter: 'blur(5px)' }} // Optional: for a frosted glass effect
                   />
                 </div>
                 <div className="mb-4">
@@ -105,9 +128,8 @@ const Contact = () => {
                     name="message"
                     rows="4"
                     onChange={handleChange}
-                    className="w-full bg-gray-800 bg-opacity-50 text-white rounded border border-gray-700 py-2"
+                    className="w-full bg-black bg-opacity-50 text-white rounded border border-gray-700 py-2"
                     placeholder="Your Message"
-                    style={{ backdropFilter: 'blur(2px)' }} // Optional: for a frosted glass effect
                   ></textarea>
                 </div>
                 <button
@@ -116,9 +138,10 @@ const Contact = () => {
                 >
                   Send Message
                 </button>
+
                </form>
               </div>
-              <div className='w-1/2'>
+              <div className='w-full lg:w-1/2'>
                 <h2 className='text-2xl font-semibold mb-4'>Our Address</h2>
                 <p className='text-gray-300'>
                   Plot 110-120 Circular Road Bugonga<br />
