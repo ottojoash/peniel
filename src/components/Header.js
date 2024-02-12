@@ -33,7 +33,7 @@ const Header = () => {
             {/* Navigation links */}
             <a href='/' className='hover:text-accent transition' title='Home Page'>Home</a>
             <a href='/rooms' className='hover:text-accent transition' title='View Our Rooms'>Rooms</a>
-            <a href='/restaurant' className='hover:text-accent transition' title='Visit Our Restaurant'>Restaurant</a>
+            <a href='/resturant' className='hover:text-accent transition' title='Visit Our Restaurant'>Restaurant</a>
             <a href='/kids' className='hover:text-accent transition' title='Kids Park Information'>Kids Park</a>
             <a href='/contact' className='hover:text-accent transition' title='Contact Us'>Contact</a>
           </nav>
