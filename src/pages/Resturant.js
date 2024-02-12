@@ -6,15 +6,17 @@ import { EffectFade, Autoplay } from 'swiper';
 import { Helmet } from 'react-helmet';
 import ScrollToTop from '../components/ScrollToTop';
 import RestaurantImage from '../assets/img/banner/rest-back.jpeg';
+import Fish from '../assets/img/food/fish.jpg'
+import BreakFast from '../assets/img/food/'
 
 const Resturant = () => {
   const menuItems = [
     {
       id: 1,
-      name: 'Spaghetti Bolognese',
-      description: 'Classic spaghetti with homemade meat sauce',
+      name: 'Fish',
+      description: 'Comes with fries and salads',
       price: '$12',
-      imageUrl: 'https://via.placeholder.com/150.png?text=Spaghetti+Bolognese',
+      imageUrl: Fish,
     },
     {
       id: 2,
