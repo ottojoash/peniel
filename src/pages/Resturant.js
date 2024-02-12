@@ -7,7 +7,7 @@ import { Helmet } from 'react-helmet';
 import ScrollToTop from '../components/ScrollToTop';
 import RestaurantImage from '../assets/img/banner/rest-back.jpeg';
 import Fish from '../assets/img/food/fish.jpg'
-import BreakFast from '../assets/img/food/'
+import BreakFast from '../assets/img/food/breakfast-1.jpg'
 
 const Resturant = () => {
   const menuItems = [
@@ -15,15 +15,15 @@ const Resturant = () => {
       id: 1,
       name: 'Fish',
       description: 'Comes with fries and salads',
-      price: '$12',
+      price: 'UGX 30000',
       imageUrl: Fish,
     },
     {
       id: 2,
-      name: 'Spaghetti Bolognese',
+      name: 'BreakFast',
       description: 'Classic spaghetti with homemade meat sauce',
       price: '$12',
-      imageUrl: 'https://via.placeholder.com/150.png?text=Spaghetti+Bolognese',
+      imageUrl: BreakFast,
     },
     {
       id: 3,
