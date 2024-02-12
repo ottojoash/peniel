@@ -135,11 +135,11 @@ const RoomDetails = () => {
               <ul className='flex flex-col gap-y-4'>
                 <li className='flex items-center gap-x-4'>
                   <FaCheck className='text-accent' />
-                  Check-in: 3:00 PM - 9:00 PM
+                  Check-in: Any Time
                 </li>
                 <li className='flex items-center gap-x-4'>
                   <FaCheck className='text-accent' />
-                  Check-out: 10:30 AM
+                  Check-out: Duration given
                 </li>
                 <li className='flex items-center gap-x-4'>
                   <FaCheck className='text-accent' />
