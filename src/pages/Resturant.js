@@ -8,6 +8,8 @@ import ScrollToTop from '../components/ScrollToTop';
 import RestaurantImage from '../assets/img/banner/rest-back.jpeg';
 import Fish from '../assets/img/food/fish.jpg'
 import BreakFast from '../assets/img/food/breakfast-1.jpg'
+import Lunch from '../assets/img/food/break.jpg'
+import Fruits from '../assets/img/food/fruits.jpg'
 
 const Resturant = () => {
   const menuItems = [
@@ -21,23 +23,23 @@ const Resturant = () => {
     {
       id: 2,
       name: 'BreakFast',
-      description: 'Classic spaghetti with homemade meat sauce',
+      description: 'This is a breakfast buffet',
       price: 'UGX 35000',
       imageUrl: BreakFast,
     },
     {
       id: 3,
-      name: 'Spaghetti Bolognese',
-      description: 'Classic spaghetti with homemade meat sauce',
-      price: '$12',
-      imageUrl: 'https://via.placeholder.com/150.png?text=Spaghetti+Bolognese',
+      name: 'Lunch',
+      description: 'This is a Lunch meal which is a buffet and has a varity of foods',
+      price: '40000',
+      imageUrl: Lunch,
     },
     {
       id: 4,
-      name: 'Spaghetti Bolognese',
-      description: 'Classic spaghetti with homemade meat sauce',
-      price: '$12',
-      imageUrl: 'https://via.placeholder.com/150.png?text=Spaghetti+Bolognese',
+      name: 'Fruits',
+      description: 'These a a varity of fruits from a wide range ',
+      price: '25000',
+      imageUrl: Fruits,
     },
     // Add more items as needed
   ];
