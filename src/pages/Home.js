@@ -4,6 +4,8 @@ import Rooms from '../components/Rooms';
 import BookForm from '../components/BookForm';
 import HeroSlider from '../components/HeroSlider';
 import Attract from '../components/Attraction';
+import Sfooter from '../components/Sfooter';
+import Adverts from '../components/Adverts';
 
 const Home = () => {
   return (
@@ -16,6 +18,8 @@ const Home = () => {
       </div>
       <Rooms />
       <Attract/>
+      <Adverts/>
+      <Sfooter/>
     </>
   );
 };

@@ -1,0 +1,29 @@
+/* Adverts.css */
+@keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  
+  .scrolling-wrapper {
+    display: flex;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  .scrolling-wrapper img {
+    width: 1116px; /* Fixed width */
+    height: 300px; /* Fixed height */
+    flex-shrink: 0;
+    object-fit: cover; /* Ensure aspect ratio is maintained without distortion */
+  }
+  
+  .animate-scroll {
+    animation: scroll 10s linear infinite;
+  }
+  
+  /* Adjust the animation speed as needed */
+  

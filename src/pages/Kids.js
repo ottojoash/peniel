@@ -1,51 +1,92 @@
 import React from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/effect-fade';
+import { EffectFade, Autoplay } from 'swiper';
+import { Helmet } from 'react-helmet';
+import ScrollToTop from '../components/ScrollToTop';
+// Import the image containing the restaurant menu
+import RestaurantImage from '../assets/img/banner/kidpark.jpg';
+import slides from '../assets/img/kids/slides.jpg'
+import bouncing from '../assets/img/kids/bouncing.jpg'
+import Swimming from '../assets/img/imgss/29.jpg'
+import Train from '../assets/img/imgss/30.jpg'
 
-const KidsPark = () => {
-  // Placeholder images for the banner
-  const bannerImages = [
-    'https://via.placeholder.com/1024x300.png?text=Kids+Park',
-    'https://via.placeholder.com/1024x300.png?text=Fun+Activities',
-    'https://via.placeholder.com/1024x300.png?text=Exciting+Events',
-  ];
-
-  // Placeholder data for events at the kids' park
-  const events = [
-    { id: 1, title: 'Face Painting', imageUrl: 'https://via.placeholder.com/150.png?text=Face+Painting' },
-    { id: 2, title: 'Magic Show', imageUrl: 'https://via.placeholder.com/150.png?text=Magic+Show' },
-    { id: 3, title: 'Treasure Hunt', imageUrl: 'https://via.placeholder.com/150.png?text=Treasure+Hunt' },
-    { id: 4, title: 'Balloon Animals', imageUrl: 'https://via.placeholder.com/150.png?text=Balloon+Animals' },
-    { id: 5, title: 'Puppet Show', imageUrl: 'https://via.placeholder.com/150.png?text=Puppet+Show' },
-    { id: 6, title: 'Storytelling', imageUrl: 'https://via.placeholder.com/150.png?text=Storytelling' },
+const Kidspark = () => {
+  const menuItems = [
+    {
+      id: 1,
+      name: 'Caterpillar Train',
+      description: '',
+      price: 'UGX',
+      imageUrl: Train,
+    },
+    {
+      id: 2,
+      name: 'Bouncing Castles',
+      description: '',
+      price: 'UGX',
+      imageUrl: bouncing,
+    },
+    {
+      id: 3,
+      name: 'Swimming pool',
+      description: '',
+      price: 'UGX',
+      imageUrl: Swimming,
+    },
+    {
+      id: 4,
+      name: 'Slides',
+      description: '',
+      price: 'UGX',
+      imageUrl: slides,
+    },
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Banner placeholder */}
-      <div className="overflow-hidden relative w-full mb-8">
-        {/* Add your JavaScript library or custom CSS for the moving effect */}
-        <div className="flex">
-          {bannerImages.map((image, index) => (
-            <img key={index} src={image} alt={`Banner ${index + 1}`} className="block w-full h-auto" />
-          ))}
-        </div>
-      </div>
-
-      {/* Events at the kids' park */}
-      <div>
-        <h2 className="text-xl md:text-3xl font-semibold text-center mb-6">Events at the Kids' Park</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {events.map((event) => (
-            <div key={event.id} className="border bg-white shadow-lg rounded-lg overflow-hidden">
-              <img src={event.imageUrl} alt={event.title} className="w-full h-40 object-cover" />
-              <div className="p-4">
-                <h3 className="text-lg font-bold mb-2">{event.title}</h3>
+    <section>
+      <ScrollToTop />
+      <Helmet>
+        <title>Activities | Peniel Beach Hotel</title>
+        <meta name="description" content="Explore our fun and engaging kids' activities. Visit us now and enjoy a memorable experience." />
+      </Helmet>
+      <Swiper
+        modules={[EffectFade, Autoplay]}
+        effect={'fade'}
+        loop={true}
+        autoplay={{
+          delay: 3000,
+          disableOnInteraction: false,
+        }}
+        className='restaurantSlider'
+      >
+        <SwiperSlide className='relative'>
+          <img src={RestaurantImage} alt='Restaurant' className='object-cover w-full h-screen' style={{ filter: 'brightness(0.3)' }} />
+          <div className='absolute top-0 left-0 w-full h-full flex justify-center items-center'>
+            <div className='container mx-auto p-6 text-white'>
+              <h2 className="text-3xl font-semibold mb-6 text-center">Our Activities</h2>
+              <div className="menu-container overflow-y-auto max-h-[80vh]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {menuItems.map((item) => (
+                    <div key={item.id} className="menu-item relative bg-black bg-opacity-50 rounded-lg overflow-hidden">
+                      <div className="absolute inset-0 bg-black opacity-50"></div> {/* Semi-transparent background */}
+                      <img src={item.imageUrl} alt={item.name} className="w-full h-40 object-cover opacity-100" />
+                      <div className="p-4 z-10 relative">
+                        <h3 className="text-lg font-bold mb-2 text-white">{item.name}</h3>
+                        <p className="text-sm mb-2 text-gray-300">{item.description}</p>
+                        <span className="text-md font-semibold text-white">{item.price}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-    </div>
+          </div>
+        </SwiperSlide>
+      </Swiper>
+    </section>
   );
-}
+};
 
-export default KidsPark;
+export default Kidspark;

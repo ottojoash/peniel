@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
+
 // logo
-import LogoWhite from '../assets/img/logo-white.svg';
-import LogoDark from '../assets/img/logo-dark.svg';
+import LogoWhite from '../assets/img/logo.png';
+import LogoDark from '../assets/img/logo_transparent.png';
 
 const Header = () => {
   const [header, setHeader] = useState(false);
+
   useEffect(() => {
-    window.addEventListener('scroll', () => {
-      window.scrollY > 50 ? setHeader(true) : setHeader(false);
-    });
-  });
+    const handleScroll = () => {
+      setHeader(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <header
       className={`${
@@ -18,12 +24,12 @@ const Header = () => {
     >
       <div className='container mx-auto flex flex-col items-center gap-y-6 lg:flex-row lg:justify-between lg:gap-y-0'>
         {/* logo */}
-        <a href='/'>
-          {/* {header ? (
-            <img className='w-[160px]' src={LogoDark} />
-          ) : (
-            <img className='w-[160px]' src={LogoWhite} />
-          )} */}
+        <a href='/' title='Peniel Beach Hotel - Home'>
+          <img
+            className='w-[60px] lg:w-[80px]'
+            src={header ? LogoWhite : LogoDark}
+            alt='Peniel Beach Hotel Logo'
+          />
         </a>
         {/* nav */}
         <nav
@@ -31,19 +37,19 @@ const Header = () => {
             header ? 'text-primary' : 'text-white'
           } flex gap-x-4 font-tertiary tracking-[3px] text-[15px] items-center uppercase lg:gap-x-8`}
         >
-          <a href='/' className='hover:text-accent transition'>
+          <a href='/' className='hover:text-accent transition' title='Home Page'>
             Home
           </a>
-          <a href='/rooms' className='hover:text-accent transition'>
+          <a href='/rooms' className='hover:text-accent transition' title='View Our Rooms'>
             Rooms
           </a>
-          <a href='/resturant' className='hover:text-accent transition'>
+          <a href='/resturant' className='hover:text-accent transition' title='Visit Our Restaurant'>
             Restaurant
           </a>
-          <a href='/kids' className='hover:text-accent transition'>
+          <a href='/kids' className='hover:text-accent transition' title='Kids Park Information'>
             Kids Park
           </a>
-          <a href='/Contact' className='hover:text-accent transition'>
+          <a href='/contact' className='hover:text-accent transition' title='Contact Us'>
             Contact
           </a>
         </nav>

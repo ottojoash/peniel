@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/img-redundant-alt */
 import React, { useContext, useState } from 'react';
 import { useParams } from 'react-router-dom';
 // components
@@ -28,6 +29,8 @@ const RoomDetails = () => {
     checkOut: '',
     adults: 0,
     kids: 0,
+    email: '',
+    type: name, // Add type field with the name of the room
   });
 
   const handleInputChange = (field, value) => {
@@ -37,7 +40,7 @@ const RoomDetails = () => {
   const handleFormSubmit = async () => {
     console.log('Form Data:', formData); 
     try {
-      const response = await fetch('/api/bookRoom', {
+      const response = await fetch('http://localhost:5000/api/sendEmail', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -54,18 +57,15 @@ const RoomDetails = () => {
     }
   };
 
-  
-  
-
   return (
-    <section>
+    <section aria-labelledby="room-name" itemScope itemType="http://pbh.com/room">
       <ScrollToTop />
       {/* banner */}
       <div className='bg-room bg-cover bg-center h-[560px] relative flex justify-center items-center'>
         {/* overlay */}
         <div className='absolute w-full h-full bg-black/70'></div>
         {/* title */}
-        <h1 className='text-6xl text-white z-20 font-primary text-center'>
+        <h1 className='text-6xl text-white z-20 font-primary text-center' id="room-name" itemProp="name">
           {name} Details
         </h1>
       </div>
@@ -74,16 +74,13 @@ const RoomDetails = () => {
           {/* left */}
           <div className='w-full h-full lg:w-[60%] px-6'>
             <h2 className='h2'>{name}</h2>
-            <p className='mb-8'>{description}</p>
-            <img className='mb-8' src={imageLg} alt='' />
+             <p className='mb-8' itemProp="description">{description}</p>
+            <img className='mb-8' src={imageLg} alt={`Image of ${name}`} itemProp="image" />
             {/* facilities */}
             <div className='mt-12'>
               <h3 className='h3 mb-3'>Room Facilities</h3>
               <p className='mb-12'>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Porro
-                officiis voluptas mollitia repellendus sed iure a ea vero atque
-                repudiandae! Necessitatibus facere laborum nam error blanditiis
-                culpa reprehenderit quibusdam quis?
+                
               </p>
               {/* grid */}
               <div className='grid grid-cols-3 gap-6 mb-12'>
@@ -133,8 +130,7 @@ const RoomDetails = () => {
             <div>
               <h3 className='h3'>Hotel Rules</h3>
               <p className='mb-6'>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Nihil
-                nulla itaque laboriosam.
+                
               </p>
               <ul className='flex flex-col gap-y-4'>
                 <li className='flex items-center gap-x-4'>
