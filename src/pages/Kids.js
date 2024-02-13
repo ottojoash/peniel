@@ -5,12 +5,12 @@ import 'swiper/css/effect-fade';
 import { EffectFade, Autoplay } from 'swiper';
 import { Helmet } from 'react-helmet';
 import ScrollToTop from '../components/ScrollToTop';
-// Import the image containing the restaurant menu
+// Import the image containing the kids activities
 import RestaurantImage from '../assets/img/banner/kidpark.jpg';
-import slides from '../assets/img/kids/slides.jpg'
-import bouncing from '../assets/img/kids/bouncing.jpg'
-import Swimming from '../assets/img/imgss/29.jpg'
-import Train from '../assets/img/imgss/30.jpg'
+import slides from '../assets/img/kids/slides.jpg';
+import bouncing from '../assets/img/kids/bouncing.jpg';
+import Swimming from '../assets/img/imgss/29.jpg';
+import Train from '../assets/img/imgss/30.jpg';
 
 const Kidspark = () => {
   const menuItems = [
@@ -49,7 +49,7 @@ const Kidspark = () => {
       <ScrollToTop />
       <Helmet>
         <title>Activities | Peniel Beach Hotel</title>
-        <meta name="description" content="Explore our fun and engaging kids' activities. Visit us now and enjoy a memorable experience." />
+        <meta name="description" content="Explore our fun and engaging kids' activities at Peniel Beach Hotel. Caterpillar Train, Bouncing Castles, Swimming pool, and Slides await your little ones. Visit us now and enjoy a memorable experience." />
       </Helmet>
       <Swiper
         modules={[EffectFade, Autoplay]}

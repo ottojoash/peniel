@@ -6,10 +6,10 @@ import { EffectFade, Autoplay } from 'swiper';
 import { Helmet } from 'react-helmet';
 import ScrollToTop from '../components/ScrollToTop';
 import RestaurantImage from '../assets/img/banner/rest-back.jpeg';
-import Fish from '../assets/img/food/fish.jpg'
-import BreakFast from '../assets/img/food/breakfast-1.jpg'
-import Lunch from '../assets/img/food/break.jpg'
-import Fruits from '../assets/img/food/fruits.jpg'
+import Fish from '../assets/img/food/fish.jpg';
+import BreakFast from '../assets/img/food/breakfast-1.jpg';
+import Lunch from '../assets/img/food/break.jpg';
+import Fruits from '../assets/img/food/fruits.jpg';
 
 const Resturant = () => {
   const menuItems = [
@@ -30,15 +30,15 @@ const Resturant = () => {
     {
       id: 3,
       name: 'Lunch',
-      description: 'This is a Lunch meal which is a buffet and has a varity of foods',
-      price: '40000',
+      description: 'This is a Lunch meal which is a buffet and has a variety of foods',
+      price: 'UGX 40000',
       imageUrl: Lunch,
     },
     {
       id: 4,
       name: 'Fruits',
-      description: 'These a a varity of fruits from a wide range ',
-      price: '25000',
+      description: 'These are a variety of fruits from a wide range',
+      price: 'UGX 25000',
       imageUrl: Fruits,
     },
     // Add more items as needed
@@ -49,7 +49,7 @@ const Resturant = () => {
       <ScrollToTop />
       <Helmet>
         <title>Restaurant | Peniel Beach Hotel</title>
-        <meta name="description" content="Explore our delicious restaurant menu with a variety of dishes. Visit us now and enjoy a great dining experience." />
+        <meta name="description" content="Explore our delicious restaurant menu with a variety of dishes. Visit us now and enjoy a great dining experience at Peniel Beach Hotel." />
       </Helmet>
       <Swiper
         modules={[EffectFade, Autoplay]}
