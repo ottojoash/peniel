@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet';
 import ScrollToTop from '../components/ScrollToTop';
 import ContactImage from '../assets/img/heroSlider/2.webp';
 import { BsEnvelope } from 'react-icons/bs';
+import { BsArrowRepeat } from 'react-icons/bs';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -18,9 +19,16 @@ const Contact = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  const [isLoading, setIsLoading] = useState(false); 
 
   const handleSubmit = async (e) => {
+    setIsLoading(true);
     e.preventDefault(); // Prevent default form submission behavior
+    if (!formData.email.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)) {
+      alert('Please provide a valid email address.');
+      setIsLoading(false);
+      return;
+    }
   
     const apiEndpoint = 'https://peniel-api.onrender.com/api/sendMessage'; // Replace with your actual API endpoint
   
@@ -92,7 +100,7 @@ const Contact = () => {
         <SwiperSlide className="relative">
         <img src={ContactImage} alt="Contact" className="object-cover w-full h-full" style={{ filter: 'brightness(0.1)' }} />
           <div className="absolute inset-0 flex justify-center items-center">
-            <div className="container mx-auto p-6 text-white flex flex-wrap justify-between">
+            <div className="container mx-auto p-6 text-white flex flex-wrap justify-between mt-[150px]">
               <div className="w-full lg:w-1/2 pr-8 mb-8 lg:mb-0">
                 <h2 className="text-2xl font-semibold mb-4">Contact Us</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -142,11 +150,13 @@ const Contact = () => {
                     required
                   ></textarea>
                 </div>
-                <button
-                  type="submit"
-                  className="inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                >
-                  Send Message
+                <button className='btn btn-lg btn-primary w-full flex justify-center items-center' onClick={handleSubmit} disabled={isLoading}>
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <BsArrowRepeat className="animate-spin mr-2" />
+                    <span>sending...</span>
+                  </div>
+                ) : `Send Message`}
                 </button>
 
                </form>
