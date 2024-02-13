@@ -62,7 +62,6 @@ const RoomDetails = () => {
         adults: 0,
         kids: 0,
         email: '',
-        type: room,
       });
       // if (!response.ok) {
       //   throw new Error('Failed to book room');
