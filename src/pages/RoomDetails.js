@@ -1,6 +1,8 @@
 /* eslint-disable jsx-a11y/img-redundant-alt */
 import React, { useContext, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { BsArrowRepeat } from 'react-icons/bs';
+
 // components
 import AdultsDropdown from '../components/AdultsDropdown';
 import KidsDropdown from '../components/KidsDropdown';
@@ -32,12 +34,14 @@ const RoomDetails = () => {
     email: '',
     type: name, // Add type field with the name of the room
   });
+  const [isLoading, setIsLoading] = useState(false); 
 
   const handleInputChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
   };
 
   const handleFormSubmit = async () => {
+    setIsLoading(true);
     console.log('Form Data:', formData); 
     try {
       const response = await fetch('https://peniel-api.onrender.com/api/sendEmail', {
@@ -51,10 +55,29 @@ const RoomDetails = () => {
         throw new Error('Failed to book room');
       }
       alert('Room booked successfully!');
-    } catch (error) {
-      console.error('Error booking room:', error);
-      alert('Failed to book room. Please try again later.');
-    }
+      // Reset the form here if needed
+      setFormData({
+        checkIn: '',
+        checkOut: '',
+        adults: 0,
+        kids: 0,
+        email: '',
+        type: room,
+      });
+      // if (!response.ok) {
+      //   throw new Error('Failed to book room');
+      // }
+      // alert('Room booked successfully!');
+    // } catch (error) {
+    //   console.error('Error booking room:', error);
+    //   alert('Failed to book room. Please try again later.');
+    // }
+  } catch (error) {
+    console.error('Error booking room:', error);
+    alert('Failed to book room. Please try again later.');
+  } finally {
+    setIsLoading(false); // Stop loading irrespective of the outcome
+  }
   };
 
   return (
@@ -122,8 +145,13 @@ const RoomDetails = () => {
                   <KidsDropdown onChange={(value) => handleInputChange('kids', value)} />
                 </div>
               </div>
-              <button className='btn btn-lg btn-primary w-full' onClick={handleFormSubmit}>
-                Book now for ${price}
+              <button className='btn btn-lg btn-primary w-full flex justify-center items-center' onClick={handleFormSubmit} disabled={isLoading}>
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <BsArrowRepeat className="animate-spin mr-2" />
+                    <span>Booking...</span>
+                  </div>
+                ) : `Book now for $${price}`}
               </button>
             </div>
             {/* rules */}
