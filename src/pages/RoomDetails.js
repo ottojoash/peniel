@@ -43,6 +43,13 @@ const RoomDetails = () => {
   const handleFormSubmit = async () => {
     setIsLoading(true);
     console.log('Form Data:', formData); 
+
+    // Check if email is provided and valid
+    if (!formData.email.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)) {
+      alert('Please provide a valid email address.');
+      setIsLoading(false);
+      return;
+    }
     try {
       const response = await fetch('https://peniel-api.onrender.com/api/sendEmail', {
         method: 'POST',
@@ -129,7 +136,10 @@ const RoomDetails = () => {
               <div className='flex flex-col space-y-4 mb-4'>
                 <h3>Your Reservation</h3>
                 <div className='h-[60px]'>
-                  <EmailInput onChange={(value) => handleInputChange('email', value)}/>
+                  <EmailInput onChange={(value) => handleInputChange('email', value)}
+                  required // Field is required
+                  pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" 
+                  />
                 </div>
                 <div className='h-[60px]'>
                   <CheckIn onChange={(value) => handleInputChange('checkIn', value)} />
