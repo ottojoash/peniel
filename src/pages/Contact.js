@@ -107,19 +107,27 @@ const Contact = () => {
                       onChange={handleChange}
                       className="pl-10 w-full bg-black bg-opacity-50 text-white rounded border border-gray-700 py-2"
                       placeholder="Your Email"
+                      style={{ backgroundColor: 'white', color: 'black' }}
+                      required
+                      pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" 
                     />
                   </div>
                 </div>
                 <div className="mb-4">
                   <label htmlFor="subject" className="block text-sm font-medium text-gray-300 mb-1">Subject</label>
+                  <div className="relative flex items-center">
+                  <BsEnvelope className="absolute left-3 text-lg text-gray-300" />
                   <input
                     type="text"
                     id="subject"
                     name="subject"
                     onChange={handleChange}
-                    className="w-full bg-black bg-opacity-50 text-white rounded border border-gray-700 py-2"
+                    className="pl-10 w-full bg-black bg-opacity-50 text-white rounded border border-gray-700 py-2"
                     placeholder="Subject"
+                    style={{ backgroundColor: 'white', color: 'black' }}
+                    required
                   />
+                  </div>
                 </div>
                 <div className="mb-4">
                   <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-1">Message</label>
@@ -130,6 +138,8 @@ const Contact = () => {
                     onChange={handleChange}
                     className="w-full bg-black bg-opacity-50 text-white rounded border border-gray-700 py-2"
                     placeholder="Your Message"
+                    style={{ backgroundColor: 'white', color: 'black' }}
+                    required
                   ></textarea>
                 </div>
                 <button
@@ -147,7 +157,7 @@ const Contact = () => {
                   Plot 110-120 Circular Road Bugonga<br />
                   Opposite the old Airport, Entebbe<br />
                   Tel: +256772485887, +256752703147<br />
-                  Mail: <a href="mailto:info@penielbeachhotelentebbe.com" className="text-blue-500 hover:text-blue-700">info@penielbeachhotelentebbe.com</a>
+                  Mail: <a href="mailto:info@penielbeachotel.com" className="text-blue-500 hover:text-blue-700">info@penielbeachotel.com</a>
                 </p>
               </div>
             </div>
