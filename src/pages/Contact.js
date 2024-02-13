@@ -54,8 +54,11 @@ const Contact = () => {
           // If the response is not JSON, check if it's a success message
           if (text.startsWith('Message sent successfully')) {
             return { message: text }; // Construct an object to handle it as a success
-          }
+          }          
           throw new Error(text || 'Received unexpected response format');
+        }
+        finally {
+          setIsLoading(false); // Stop loading irrespective of the outcome
         }
       });
     })
