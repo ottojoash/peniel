@@ -41,7 +41,7 @@ const Header = () => {
 
         {/* Logo */}
         <a href='/' className='flex-grow text-center lg:flex-grow-0' title='Peniel Beach Hotel - Home'>
-          <img className='inline-block w-[60px] lg:w-[80px]' src={header ? LogoWhite : LogoDark} alt='Peniel Beach Hotel Logo' />
+          <img className='inline-block w-[60px] lg:w-[80px]' src={header ? LogoWhite : LogoDark} alt='Peniel Beach Hotel Logo' itemprop="logo"/>
         </a>
 
         {/* Desktop navigation */}

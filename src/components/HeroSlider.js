@@ -1,36 +1,45 @@
+/* eslint-disable react/jsx-no-undef */
+/* eslint-disable no-unused-vars */
 import React from 'react';
 // import swiper react components
 import { Swiper, SwiperSlide } from 'swiper/react';
+import { Helmet } from 'react-helmet';
 // import swiper styles
 import 'swiper/css';
 import 'swiper/css/effect-fade';
 // import required modules
 import { EffectFade, Autoplay } from 'swiper';
 // images
-import Img1 from '../assets/img/banner/rest-side.jpg';
-import Img2 from '../assets/img/banner/room-exc.jpg'
-import Img3 from '../assets/img/banner/front-view.jpg'
+import hotelview from '../assets/img/banner/rest-side.jpg';
+import room from '../assets/img/banner/room-exc.jpg'
+import hotelfront from '../assets/img/banner/front-view.jpg'
 
 const slides = [
   {
     title: 'Your  Hotel For Vacation',
-    bg: Img1,
+    bg: hotelview,
     btnText: 'See our rooms',
   },
   {
     title: 'Your  Hotel For Vacation',
-    bg: Img2,
+    bg: room,
     btnText: 'See our rooms',
   },
   {
     title: 'Your  Hotel For Vacation',
-    bg: Img3,
+    bg: hotelfront,
     btnText: 'See our rooms',
   },
 ];
 
 const HeroSlider = () => {
   return (
+    <>
+    <Helmet>
+        <title>Peniel beach hotel Banner </title>
+        <meta name="description" content="Shows pictures of the different parts of the hotel" />
+        {/* Add more SEO meta tags as needed */}
+    </Helmet>
     <Swiper
       modules={[EffectFade, Autoplay]}
       effect={'fade'}
@@ -71,6 +80,7 @@ const HeroSlider = () => {
         );
       })}
     </Swiper>
+    </>
   );
 };
 export default HeroSlider;
