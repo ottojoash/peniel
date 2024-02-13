@@ -2,6 +2,8 @@
 import React, { useContext, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { BsArrowRepeat } from 'react-icons/bs';
+import { useNavigate } from 'react-router-dom';
+
 
 // components
 import AdultsDropdown from '../components/AdultsDropdown';
@@ -19,6 +21,7 @@ import EmailInput from '../components/Email';
 const RoomDetails = () => {
   const { rooms } = useContext(RoomContext);
   const { id } = useParams();
+  const navigate = useNavigate();
   // get room
   const room = rooms.find((room) => {
     return room.id === Number(id);
@@ -62,6 +65,7 @@ const RoomDetails = () => {
         throw new Error('Failed to book room');
       }
       alert('Room booked successfully!');
+      navigate('/rooms');
       // Reset the form here if needed
       setFormData({
         checkIn: '',
