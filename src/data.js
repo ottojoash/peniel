@@ -11,10 +11,10 @@ import Room5Img from './assets/img/room/twin.jpg';
 import Room5ImgLg from './assets/img/room/twin.jpg';
 import Room6Img from './assets/img/room/exc-single.jpg';
 import Room6ImgLg from './assets/img/room/exc-single.jpg';
-import Room7Img from './assets/img/rooms/7.png';
-import Room7ImgLg from './assets/img/rooms/7-lg.png';
-import Room8Img from './assets/img/rooms/8.png';
-import Room8ImgLg from './assets/img/rooms/8-lg.png';
+// import Room7Img from './assets/img/rooms/7.png';
+// import Room7ImgLg from './assets/img/rooms/7-lg.png';
+// import Room8Img from './assets/img/rooms/8.png';
+// import Room8ImgLg from './assets/img/rooms/8-lg.png';
 // import icons
 import {
   FaWifi,
