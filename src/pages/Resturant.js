@@ -10,6 +10,7 @@ import Fish from '../assets/img/food/fish.jpg';
 import BreakFast from '../assets/img/food/breakfast-1.jpg';
 import Lunch from '../assets/img/food/break.jpg';
 import Fruits from '../assets/img/food/fruits.jpg';
+// import Adverts from '../components/Adverts';
 
 const Resturant = () => {
   const menuItems = [

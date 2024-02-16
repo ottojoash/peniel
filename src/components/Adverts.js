@@ -9,6 +9,7 @@ import { EffectFade, Autoplay } from 'swiper';
 import Events from '../assets/img/imgss/21.jpg';
 import View from '../assets/img/banner/view-back.jpg'
 import Room from '../assets/img/banner/wide-angle-bed.jpg'
+import conference from '../assets/img/banner/conference.jpg'
 
 const Adverts = () => {
   const bannerImages = [
@@ -23,6 +24,10 @@ const Adverts = () => {
     {
       image: Room,
       alt: 'Room',
+    },
+    {
+      image: conference,
+      alt: 'Conference',
     },
   ];
 

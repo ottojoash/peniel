@@ -1,6 +1,6 @@
 import React from 'react';
 import Children from '../assets/img/kids/bouncing.jpg';
-import Event from '../assets/img/imgss/24.jpg';
+import Event from '../assets/img/banner/conference.jpg';
 import Beach from '../assets/img/banner/beach.jpg';
 import View from '../assets/img/imgss/14.jpg';
 
@@ -23,7 +23,7 @@ const attractions = [
   },
   {
     id: 4,
-    title: 'Events Space',
+    title: 'Conference',
     imageUrl: Event,
   },
 ];
