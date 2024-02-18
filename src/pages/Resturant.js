@@ -18,7 +18,7 @@ const Resturant = () => {
       id: 1,
       name: 'Fish',
       description: 'Comes with fries and salads',
-      price: 'UGX 30000',
+      price: 'UGX 45000',
       imageUrl: Fish,
     },
     {
