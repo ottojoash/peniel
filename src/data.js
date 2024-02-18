@@ -5,7 +5,7 @@ import Room2Img from './assets/img/room/room-exc.jpg';
 import Room2ImgLg from './assets/img/room/room-exc.jpg';
 import Room3Img from './assets/img/room/family-room.jpg';
 import Room3ImgLg from './assets/img/room/family-room.jpg';
-import Room4Img from './assets/img/rooms/4.png';
+import Room4Img from './assets/img/room/budget-family.jpg';
 import Room4ImgLg from './assets/img/rooms/4-lg.png';
 import Room5Img from './assets/img/room/twin.jpg';
 import Room5ImgLg from './assets/img/room/twin.jpg';
