@@ -5,7 +5,7 @@ const HotelInfoComponent = () => {
   return (
     <div className="container mx-auto p-4">
       <Helmet>
-        <title>Peniel Beach Hotel - Welcome To Peniel Beach Hotel | Home</title>
+        <title>Peniel Beach Hotel - Welcome To Peniel Beach Hotel |  Official site</title>
         <meta name="description" content="Discover Peniel Beach Hotel, a premier hospitality facility located on the shores of Lake Victoria opposite Entebbe International airport. Enjoy proximity to the airport, lake views, children’s play centre, and more." />
         <meta name="keywords" content="Peniel Beach Hotel, Lake Victoria Hotel, Entebbe Hotel, Uganda Hotels, Airport Hotels" />
       </Helmet>
