@@ -43,7 +43,7 @@ const HotelInfoComponent = () => {
           <h2 className="text-2xl font-semibold mb-4">Address</h2>
           <p>Plot 110-120 circular Road Bugonga</p>
           <p>Opposite the old Airport, Entebbe</p>
-          <p>Tel: +256772485887, +256752703147</p>
+          <p>Tel: +256772485887, +256752703147, +256743572033</p>
           <p>Mail: info@penielbeachotel.com</p>
         </div>
       </div>
