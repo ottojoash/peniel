@@ -10,9 +10,9 @@ const Room = ({ room }) => {
   return (
     <div className='bg-white shadow-2xl min-h-[500px] group'>
       {/* img */}
-      <div className='overflow-hidden'>
+      <div className='overflow-hidden h-[200px] w-full relative'>
         <img
-          className='group-hover:scale-110 transition-all duration-300 w-full'
+          className='absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-all duration-300'
           src={image}
           alt=''
         />
