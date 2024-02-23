@@ -17,6 +17,7 @@ import { RoomContext } from '../context/RoomContext';
 // icons
 import { FaCheck } from 'react-icons/fa';
 import EmailInput from '../components/Email';
+import NotesInput from '../components/Message';
 
 const RoomDetails = () => {
   const { rooms } = useContext(RoomContext);
@@ -73,6 +74,8 @@ const RoomDetails = () => {
         adults: 0,
         kids: 0,
         email: '',
+        notes: '',
+        
       });
       // if (!response.ok) {
       //   throw new Error('Failed to book room');
@@ -156,6 +159,9 @@ const RoomDetails = () => {
                 </div>
                 <div className='h-[60px]'>
                   <KidsDropdown onChange={(value) => handleInputChange('kids', value)} />
+                </div>
+                < div className='h-[60px]'>
+                  <NotesInput onChange={(value) => handleInputChange('notes', value)}/>
                 </div>
               </div>
               <button className='btn btn-lg btn-primary w-full flex justify-center items-center' onClick={handleFormSubmit} disabled={isLoading}>
