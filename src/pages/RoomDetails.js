@@ -18,6 +18,7 @@ import { RoomContext } from '../context/RoomContext';
 import { FaCheck } from 'react-icons/fa';
 import EmailInput from '../components/Email';
 import NotesInput from '../components/Message';
+import NameInput from '../components/Name';
 
 const RoomDetails = () => {
   const { rooms } = useContext(RoomContext);
@@ -31,12 +32,15 @@ const RoomDetails = () => {
   // destructure room
   const { name, description, facilities, imageLg, price } = room;
   const [formData, setFormData] = useState({
+    names: '',
     checkIn: '',
     checkOut: '',
     adults: 0,
     kids: 0,
+    price: price, // Ensure this is updated based on room selection or input
     email: '',
-    type: name, // Add type field with the name of the room
+    type: name, // Room name
+    notes: '', 
   });
   const [isLoading, setIsLoading] = useState(false); 
 
@@ -56,6 +60,7 @@ const RoomDetails = () => {
     }
     try {
       const response = await fetch('https://peniel-api.onrender.com/api/sendEmail', {
+      // const response = await fetch('http://localhost:5000/api/sendEmail', {  
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -69,6 +74,7 @@ const RoomDetails = () => {
       navigate('/rooms');
       // Reset the form here if needed
       setFormData({
+        names:'',
         checkIn: '',
         checkOut: '',
         adults: 0,
@@ -142,6 +148,11 @@ const RoomDetails = () => {
             <div className='py-8 px-6 bg-accent/20 mb-12'>
               <div className='flex flex-col space-y-4 mb-4'>
                 <h3>Your Reservation</h3>
+                <div className='h-[60px]'>
+                <NameInput onChange={(value) => handleInputChange('names', value)}
+                  required // Field is required
+                />
+                </div>
                 <div className='h-[60px]'>
                   <EmailInput onChange={(value) => handleInputChange('email', value)}
                   required // Field is required

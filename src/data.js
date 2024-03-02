@@ -6,7 +6,7 @@ import Room2ImgLg from './assets/img/room/room-exc.jpg';
 import Room3Img from './assets/img/room/family-room.jpg';
 import Room3ImgLg from './assets/img/room/family-room.jpg';
 import Room4Img from './assets/img/room/budget-family.jpg';
-import Room4ImgLg from './assets/img/rooms/4-lg.png';
+// import Room4ImgLg from './assets/img/rooms/4-lg.png';
 import Room5Img from './assets/img/room/twin.jpg';
 import Room5ImgLg from './assets/img/room/twin.jpg';
 import Room6Img from './assets/img/room/exc-single.jpg';
@@ -64,7 +64,7 @@ export const roomData = [
     ],
     size: 70,
     maxPerson: 2,
-    price: 60,
+    price: 65,
     image: Room2Img,
     imageLg: Room2ImgLg,
   },
@@ -106,13 +106,13 @@ export const roomData = [
     maxPerson: 1,
     price: 45,
     image: Room4Img,
-    imageLg: Room4ImgLg,
+    imageLg: Room4Img,
   },
   {
     id: 5,
     name: 'Deluxe Twin Room',
     description:
-      'Occupied by one person .',
+      'Occupied by  two persons .',
     facilities: [
       { name: 'Wifi', icon: <FaWifi /> },
       { name: 'Coffee', icon: <FaCoffee /> },
@@ -124,7 +124,7 @@ export const roomData = [
     ],
     size: 32,
     maxPerson: 2,
-    price: 60,
+    price: 120,
     image: Room5Img,
     imageLg: Room5ImgLg,
   },
