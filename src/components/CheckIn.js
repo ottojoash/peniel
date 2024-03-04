@@ -13,15 +13,14 @@ const CheckIn = ({ onChange }) => {
   };
 
   return (
-    <div className='relative flex items-center justify-end h-full'>
-      <div className='absolute z-10 pr-8'>
-        <BsCalendar className='text-accent text-base' />
-      </div>
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', height: '50px', width: '100%', backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '4px', padding: '0 12px' }}>
+      <BsCalendar style={{ position: 'absolute', left: '10px', color: '#6c757d', zIndex: 10 }} />
       <DatePicker
         className='w-full h-full'
         selected={startDate}
         placeholderText='Check in'
         onChange={handleDateChange}
+        
       />
     </div>
   );
