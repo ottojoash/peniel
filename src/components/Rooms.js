@@ -5,11 +5,17 @@ import { RoomContext } from '../context/RoomContext';
 import Room from '../components/Room';
 // loader
 import { SpinnerDotted } from 'spinners-react';
+import { Helmet } from 'react-helmet'; // Import Helmet for managing document head
 
 const Rooms = () => {
   const { rooms, loading } = useContext(RoomContext);
 
   return (
+    <>
+    <Helmet>
+                <title>Rooms | Peniel Beach Hotel</title>
+                <meta name="description" content="Explore our comfortable and luxurious rooms at Peniel Beach Hotel. Book now for a relaxing stay!" />
+    </Helmet>
     <section className='py-24'>
       {/* overlay & spinner */}
       {loading && (
@@ -32,6 +38,7 @@ const Rooms = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 
