@@ -7,7 +7,6 @@ import Lunch from '../assets/img/food/break.jpg';
 import Fruits from '../assets/img/food/fruits.jpg';
 import BackgroundImage from '../assets/img/banner/rest-back.jpeg';
 
-
 const Restaurant = () => {
   const menuItems = [
     {
@@ -49,13 +48,18 @@ const Restaurant = () => {
         <meta name="description" content="Explore our delicious restaurant menu with a variety of dishes." />
       </Helmet>
 
-      {/* Main content */}
-      <main className="flex-grow" style={{ backgroundImage: `url(${BackgroundImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-        <div className="container mx-auto px-4 lg:px-20 pt-20"> {/* Padding to avoid overlapping the header */}
+      {/* Main content with background image */}
+      <main className="flex-grow relative">
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black opacity-50"></div>
+        {/* Background image */}
+        <div className="absolute inset-0" style={{ backgroundImage: `url(${BackgroundImage})`, backgroundSize: 'cover', backgroundPosition: 'center',filter: 'brightness(0.3)' }}></div>
+        {/* Content container */}
+        <div className="container mx-auto px-4 lg:px-20 pt-20 relative z-10"> {/* Padding to avoid overlapping the header */}
           <h2 className="text-3xl font-semibold mb-6 text-center">Our Menu</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {menuItems.map((item) => (
-              <div key={item.id} className="menu-item bg-gray-800 p-4 rounded-lg mb-4 shadow-lg">
+              <div key={item.id} className="menu-item bg-black bg-opacity-60 p-4 rounded-lg mb-3 shadow-lg">
                 <img src={item.imageUrl} alt={item.name} className="w-full h-40 object-cover rounded-t-lg" /> {/* Image displayed here */}
                 <div className="p-4">
                   <h3 className="text-lg font-bold">{item.name}</h3>
@@ -69,7 +73,6 @@ const Restaurant = () => {
           </div>
         </div>
       </main>
-
      
     </div>
   );
