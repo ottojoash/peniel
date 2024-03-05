@@ -37,6 +37,7 @@ const Restaurant = () => {
       price: 'UGX 25000',
       imageUrl: Fruits,
     },
+    
     // ... your menu items
   ];
 
