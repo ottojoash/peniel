@@ -170,7 +170,7 @@ const Contact = () => {
                   Plot 110-120 Circular Road Bugonga<br />
                   Opposite the old Airport, Entebbe<br />
                   Tel: +256772485887, +256752703147,  +256743572033<br />
-                  Mail: <a href="mailto:info@penielbeachotel.com" className="text-blue-500 hover:text-blue-700">info@penielbeachotel.com</a>
+                  Mail: <a href="penielbeachhotel@gmail.com" className="text-blue-500 hover:text-blue-700">penielbeachhotel@gmail.com</a>
                 </p>
               </div>
             </div>
