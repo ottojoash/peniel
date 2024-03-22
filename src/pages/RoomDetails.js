@@ -175,6 +175,7 @@ const RoomDetails = () => {
                   <NotesInput onChange={(value) => handleInputChange('notes', value)}/>
                 </div>
               </div>
+              <div className='h-[60px]'>
               <button className='btn btn-lg btn-primary w-full flex justify-center items-center' onClick={handleFormSubmit} disabled={isLoading}>
                 {isLoading ? (
                   <div className="flex items-center justify-center">
@@ -183,6 +184,17 @@ const RoomDetails = () => {
                   </div>
                 ) : `Book now for $${price}`}
               </button>
+              </div>
+              <div className='h-[60px]'>
+              <button className='btn btn-lg btn-primary w-full flex justify-center items-center' onClick={handleFormSubmit} disabled={isLoading}>
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <BsArrowRepeat className="animate-spin mr-2" />
+                    <span>Booking...</span>
+                  </div>
+                ) : `Reserve Room`}
+              </button>
+              </div>
             </div>
             {/* rules */}
             <div>
