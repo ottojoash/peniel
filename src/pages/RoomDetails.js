@@ -19,6 +19,7 @@ import { FaCheck } from 'react-icons/fa';
 import EmailInput from '../components/Email';
 import NotesInput from '../components/Message';
 import NameInput from '../components/Name';
+import PaymentModal from '../components/Modalpop';
 
 const RoomDetails = () => {
   const { rooms } = useContext(RoomContext);
@@ -43,46 +44,50 @@ const RoomDetails = () => {
     notes: '', 
   });
   const [isLoading, setIsLoading] = useState(false); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleInputChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
   };
+  const openPaymentModal = () => {
+    setIsModalOpen(true); // Open the modal
+  };
 
-  const handleFormSubmit = async () => {
-    setIsLoading(true);
-    console.log('Form Data:', formData); 
+  // const handleFormSubmit = async () => {
+  //   setIsLoading(true);
+  //   console.log('Form Data:', formData); 
 
-    // Check if email is provided and valid
-    if (!formData.email.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)) {
-      alert('Please provide a valid email address.');
-      setIsLoading(false);
-      return;
-    }
-    try {
-      const response = await fetch('https://peniel-api.onrender.com/api/sendEmail', {
-      // const response = await fetch('http://localhost:5000/api/sendEmail', {  
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to book room');
-      }
-      alert('Room booked successfully!');
-      navigate('/rooms');
-      // Reset the form here if needed
-      setFormData({
-        names:'',
-        checkIn: '',
-        checkOut: '',
-        adults: 0,
-        kids: 0,
-        email: '',
-        notes: '',
+  //   // Check if email is provided and valid
+  //   if (!formData.email.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)) {
+  //     alert('Please provide a valid email address.');
+  //     setIsLoading(false);
+  //     return;
+  //   }
+  //   try {
+  //     // const response = await fetch('https://peniel-api.onrender.com/api/sendEmail', {
+  //     const response = await fetch('http://localhost:5000/api/sendEmail', {  
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(formData),
+  //     });
+  //     if (!response.ok) {
+  //       throw new Error('Failed to book room');
+  //     }
+  //     alert('Room booked successfully!');
+  //     navigate('/rooms');
+  //     // Reset the form here if needed
+  //     setFormData({
+  //       names:'',
+  //       checkIn: '',
+  //       checkOut: '',
+  //       adults: 0,
+  //       kids: 0,
+  //       email: '',
+  //       notes: '',
         
-      });
+  //     });
       // if (!response.ok) {
       //   throw new Error('Failed to book room');
       // }
@@ -91,13 +96,13 @@ const RoomDetails = () => {
     //   console.error('Error booking room:', error);
     //   alert('Failed to book room. Please try again later.');
     // }
-  } catch (error) {
-    console.error('Error booking room:', error);
-    alert('Failed to book room. Please try again later.');
-  } finally {
-    setIsLoading(false); // Stop loading irrespective of the outcome
-  }
-  };
+  // } catch (error) {
+  //   console.error('Error booking room:', error);
+  //   alert('Failed to book room. Please try again later.');
+  // } finally {
+  //   setIsLoading(false); // Stop loading irrespective of the outcome
+  // }
+  // };
 
   return (
     <section aria-labelledby="room-name" itemScope itemType="http://pbh.com/room">
@@ -175,8 +180,8 @@ const RoomDetails = () => {
                   <NotesInput onChange={(value) => handleInputChange('notes', value)}/>
                 </div>
               </div>
-              <div className='h-[60px]'>
-              <button className='btn btn-lg btn-primary w-full flex justify-center items-center' onClick={handleFormSubmit} disabled={isLoading}>
+              <button className='btn btn-lg btn-primary w-full flex justify-center items-center'  onClick={openPaymentModal} // Updated this line
+                disabled={isLoading}>
                 {isLoading ? (
                   <div className="flex items-center justify-center">
                     <BsArrowRepeat className="animate-spin mr-2" />
@@ -184,17 +189,7 @@ const RoomDetails = () => {
                   </div>
                 ) : `Book now for $${price}`}
               </button>
-              </div>
-              <div className='h-[60px]'>
-              <button className='btn btn-lg btn-primary w-full flex justify-center items-center' onClick={handleFormSubmit} disabled={isLoading}>
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <BsArrowRepeat className="animate-spin mr-2" />
-                    <span>Booking...</span>
-                  </div>
-                ) : `Reserve Room`}
-              </button>
-              </div>
+              <PaymentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
             </div>
             {/* rules */}
             <div>
