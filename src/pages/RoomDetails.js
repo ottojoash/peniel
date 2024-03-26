@@ -58,6 +58,14 @@ const RoomDetails = () => {
   // RoomDetails.js
   const handlePaymentConfirmation = async (paymentResponse) => {
     setIsLoading(true);
+    if (!paymentResponse || !paymentResponse.transaction_id) {
+      console.error('Invalid payment response:', paymentResponse);
+      // Handle the error appropriately, perhaps show an error message to the user
+      setIsLoading(false);
+      setIsModalOpen(false);
+      return;
+    }
+    
     console.log(JSON.stringify({
       transactionId: paymentResponse.transaction_id,
       bookingDetails: formData,
@@ -84,21 +92,21 @@ const RoomDetails = () => {
       });
     
       if (!response.ok) {
-        const text = await response.text(); // Get the response text regardless of content type
+        const text = await response.text();
         console.error(`HTTP Error Response: status ${response.status}, ${text}`);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
     
-      const data = await response.json();
-      navigate('/booking-success');
+      // If the response is ok, show a success alert
+      alert('Booking successful!');
+      navigate('/rooms');
     } catch (error) {
       console.error('Error processing booking:', error);
-      // Handle error (show message to user, etc.)
+      alert('Failed to process booking. Please try again.');
     } finally {
       setIsLoading(false);
       setIsModalOpen(false);
     }
-    
   }
 
   
@@ -193,6 +201,7 @@ const RoomDetails = () => {
                 price={formData.price} // Assuming price is part of formData
                 formData={formData}
                 onPaymentSuccess={handlePaymentConfirmation}
+                onSendMessage={handlePaymentConfirmation}
               />
             </div>
             {/* rules */}

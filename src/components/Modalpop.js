@@ -5,7 +5,7 @@ import StripePayment from '../components/Stripe';
 import ReservationMessage from '../components/Reserve';
 // Import logos if needed
 
-function PaymentModal({ isOpen, onClose, price, formData, onPaymentSuccess }) {
+function PaymentModal({ isOpen, onClose, price, formData, onPaymentSuccess, onSendMessage }) {
   if (!isOpen) return null;
 
   return (
@@ -16,7 +16,7 @@ function PaymentModal({ isOpen, onClose, price, formData, onPaymentSuccess }) {
           <PayPalPayment onPaymentSuccess={onPaymentSuccess} formData={formData} />
           <FlutterwavePayment onPaymentSuccess={onPaymentSuccess} formData={formData} />
           <StripePayment onPaymentSuccess={onPaymentSuccess} formData={formData} />
-          <ReservationMessage onClose={onPaymentSuccess} formData={formData} />
+          <ReservationMessage onClose={onSendMessage} formData={formData} />
         </div>
         <button onClick={onClose} className="absolute top-0 right-0 m-4 p-1 rounded-full bg-white hover:bg-gray-100 transition-all duration-150 ease-in-out" aria-label="Close">
           {/* Close SVG */}
