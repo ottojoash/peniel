@@ -16,7 +16,7 @@ const PaymentButton = ({ logo, children, onClick }) => (
 );
 
 // PaymentModal Component
-function PaymentModal({ isOpen, onClose, price }) {
+function PaymentModal({  isOpen, onClose, price, formData, onSubmit }) {
   if (!isOpen) return null; // Render nothing if the modal is not open
 
   return (
@@ -25,7 +25,7 @@ function PaymentModal({ isOpen, onClose, price }) {
         <h2 className="text-center text-lg font-bold mb-4">Choose Your Payment Method for ${price}</h2>
         <div className="flex flex-col items-center gap-4">
           {/* Payment buttons */}
-          <PaymentButton logo={paypalLogo} onClick={() => console.log('Pay with PayPal')}>
+          <PaymentButton logo={paypalLogo} onClick={() => onSubmit('PayPal')}>
             Pay with PayPal
           </PaymentButton>
           <PaymentButton logo={flutterLogo} onClick={() => console.log('Pay with Flutter')}>

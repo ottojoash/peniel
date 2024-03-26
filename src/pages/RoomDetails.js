@@ -53,56 +53,23 @@ const RoomDetails = () => {
     setIsModalOpen(true); // Open the modal
   };
 
-  // const handleFormSubmit = async () => {
-  //   setIsLoading(true);
-  //   console.log('Form Data:', formData); 
-
-  //   // Check if email is provided and valid
-  //   if (!formData.email.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)) {
-  //     alert('Please provide a valid email address.');
-  //     setIsLoading(false);
-  //     return;
-  //   }
-  //   try {
-  //     // const response = await fetch('https://peniel-api.onrender.com/api/sendEmail', {
-  //     const response = await fetch('http://localhost:5000/api/sendEmail', {  
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(formData),
-  //     });
-  //     if (!response.ok) {
-  //       throw new Error('Failed to book room');
-  //     }
-  //     alert('Room booked successfully!');
-  //     navigate('/rooms');
-  //     // Reset the form here if needed
-  //     setFormData({
-  //       names:'',
-  //       checkIn: '',
-  //       checkOut: '',
-  //       adults: 0,
-  //       kids: 0,
-  //       email: '',
-  //       notes: '',
-        
-  //     });
-      // if (!response.ok) {
-      //   throw new Error('Failed to book room');
-      // }
-      // alert('Room booked successfully!');
-    // } catch (error) {
-    //   console.error('Error booking room:', error);
-    //   alert('Failed to book room. Please try again later.');
-    // }
-  // } catch (error) {
-  //   console.error('Error booking room:', error);
-  //   alert('Failed to book room. Please try again later.');
-  // } finally {
-  //   setIsLoading(false); // Stop loading irrespective of the outcome
-  // }
-  // };
+  const handlePaymentSubmit = async (paymentMethod) => {
+    setIsLoading(true);
+    // Example payload, adjust according to your backend API
+    const bookingData = {
+      ...formData,
+      paymentMethod,
+    };
+    console.log('Submitting booking with data:', bookingData);
+  
+    // Here, replace console.log with your booking submission logic
+    // For example, a fetch request to your backend
+  
+    setIsLoading(false);
+    setIsModalOpen(false); // Close the modal
+    navigate('/success'); // Navigate to a success page, adjust the route as necessary
+  };
+  
 
   return (
     <section aria-labelledby="room-name" itemScope itemType="http://pbh.com/room">
@@ -189,7 +156,12 @@ const RoomDetails = () => {
                   </div>
                 ) : `Book now for $${price}`}
               </button>
-              <PaymentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+              <PaymentModal isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)} 
+                price={formData.price} // Assuming price is part of formData
+                formData={formData}
+                onSubmit={handlePaymentSubmit}
+              />
             </div>
             {/* rules */}
             <div>
