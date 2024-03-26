@@ -53,22 +53,40 @@ const RoomDetails = () => {
     setIsModalOpen(true); // Open the modal
   };
 
-  const handlePaymentSubmit = async (paymentMethod) => {
-    setIsLoading(true);
-    // Example payload, adjust according to your backend API
-    const bookingData = {
-      ...formData,
-      paymentMethod,
-    };
-    console.log('Submitting booking with data:', bookingData);
-  
-    // Here, replace console.log with your booking submission logic
-    // For example, a fetch request to your backend
-  
+  // RoomDetails.js
+const handlePaymentConfirmation = async (paymentResponse) => {
+  setIsLoading(true);
+
+  // Example API call to verify payment and update booking on your backend
+  try {
+    const verifyResponse = await fetch('http://localhost:5000', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        transactionId: paymentResponse.transaction_id,
+        amount: formData.price,
+        
+        // Include other relevant data for verification
+      }),
+    });
+
+    const data = await verifyResponse.json();
+
+    if (!verifyResponse.ok) throw new Error(data.message || 'Payment verification failed');
+
+    // Assuming verification is successful
+    navigate('/booking-success'); // Adjust as needed
+  } catch (error) {
+    console.error('Payment verification error:', error);
+    // Handle error (show message to user, etc.)
+  } finally {
     setIsLoading(false);
-    setIsModalOpen(false); // Close the modal
-    navigate('/success'); // Navigate to a success page, adjust the route as necessary
-  };
+    setIsModalOpen(false);
+  }
+};
+
   
 
   return (
@@ -160,7 +178,7 @@ const RoomDetails = () => {
                 onClose={() => setIsModalOpen(false)} 
                 price={formData.price} // Assuming price is part of formData
                 formData={formData}
-                onSubmit={handlePaymentSubmit}
+                onSubmit={handlePaymentConfirmation}
               />
             </div>
             {/* rules */}
