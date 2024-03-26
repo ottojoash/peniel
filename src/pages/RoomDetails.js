@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable jsx-a11y/img-redundant-alt */
 import React, { useContext, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -48,44 +49,57 @@ const RoomDetails = () => {
 
   const handleInputChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
+    console.log('Form Data:', formData); 
   };
   const openPaymentModal = () => {
     setIsModalOpen(true); // Open the modal
   };
 
   // RoomDetails.js
-const handlePaymentConfirmation = async (paymentResponse) => {
-  setIsLoading(true);
-
-  // Example API call to verify payment and update booking on your backend
-  try {
-    const verifyResponse = await fetch('http://localhost:5000', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        transactionId: paymentResponse.transaction_id,
-        amount: formData.price,
-        
-        // Include other relevant data for verification
-      }),
-    });
-
-    const data = await verifyResponse.json();
-
-    if (!verifyResponse.ok) throw new Error(data.message || 'Payment verification failed');
-
-    // Assuming verification is successful
-    navigate('/booking-success'); // Adjust as needed
-  } catch (error) {
-    console.error('Payment verification error:', error);
-    // Handle error (show message to user, etc.)
-  } finally {
-    setIsLoading(false);
-    setIsModalOpen(false);
+  const handlePaymentConfirmation = async (paymentResponse) => {
+    setIsLoading(true);
+    console.log(JSON.stringify({
+      transactionId: paymentResponse.transaction_id,
+      bookingDetails: formData,
+    }));
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/sendEmail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transactionId: paymentResponse.transaction_id,
+          names: formData.names,
+          checkIn: formData.checkIn,
+          checkOut: formData.checkOut,
+          adults: formData.adults,
+          kids: formData.kids,
+          price: formData.price,
+          email: formData.email,
+          type: formData.type,
+          notes: formData.notes
+        }),
+      });
+    
+      if (!response.ok) {
+        const text = await response.text(); // Get the response text regardless of content type
+        console.error(`HTTP Error Response: status ${response.status}, ${text}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    
+      const data = await response.json();
+      navigate('/booking-success');
+    } catch (error) {
+      console.error('Error processing booking:', error);
+      // Handle error (show message to user, etc.)
+    } finally {
+      setIsLoading(false);
+      setIsModalOpen(false);
+    }
+    
   }
-};
 
   
 
@@ -178,7 +192,7 @@ const handlePaymentConfirmation = async (paymentResponse) => {
                 onClose={() => setIsModalOpen(false)} 
                 price={formData.price} // Assuming price is part of formData
                 formData={formData}
-                onSubmit={handlePaymentConfirmation}
+                onPaymentSuccess={handlePaymentConfirmation}
               />
             </div>
             {/* rules */}
