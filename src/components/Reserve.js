@@ -18,10 +18,10 @@ const ReservationMessage = ({ onClose, formData }) => {
         throw new Error('Failed to book room');
       }
 
-      alert('Room booked successfully!');
+      alert('Message sent successfully!');
     } catch (error) {
-      console.error('Error booking room:', error);
-      alert('Failed to book room. Please try again later.');
+      console.error('Error sending message:', error);
+      alert('Failed to Send Reserve Message. Please try again later.');
     } finally {
       setIsSubmitting(false);
       onClose();
