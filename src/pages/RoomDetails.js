@@ -98,11 +98,11 @@ const RoomDetails = () => {
       }
     
       // If the response is ok, show a success alert
-      alert('Booking successful!');
+      alert('Payment successful!..Booking reserved');
       navigate('/rooms');
     } catch (error) {
-      console.error('Error processing booking:', error);
-      alert('Failed to process booking. Please try again.');
+      console.error('Error processing your Payment:', error);
+      alert('Failed to process your payment. Please try again.');
     } finally {
       setIsLoading(false);
       setIsModalOpen(false);

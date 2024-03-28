@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const ReservationMessage = ({ onClose, formData }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const sendMessage = async () => {
     if (isSubmitting) return;
@@ -19,6 +21,7 @@ const ReservationMessage = ({ onClose, formData }) => {
       }
 
       alert('Message sent successfully!');
+      navigate('/rooms');
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Failed to Send Reserve Message. Please try again later.');
