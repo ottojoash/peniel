@@ -58,6 +58,12 @@ const RoomDetails = () => {
       setIsLoading(false);
       return;
     }
+    if (!formData.checkIn || !formData.checkOut) {
+      alert('Please provide both check-in and check-out dates.');
+      setIsLoading(false);
+      return;
+    }
+   
     try {
       const response = await fetch('https://peniel-api.onrender.com/api/sendEmail', {
       // const response = await fetch('http://localhost:5000/api/sendEmail', {  
