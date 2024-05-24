@@ -15,7 +15,7 @@ const Footer = () => {
 
         {/* Social media icons */}
         <div className='flex justify-center items-center gap-4 mb-4 sm:mb-0'>
-          <a href='https://www.instagram.com/penielbeachhotel?igsh=MTNwN2xudjFiaDc5dg==' target='_blank' rel='noopener noreferrer' aria-label='Instagram'>
+          <a href='https://www.instagram.com/peniel_beach_hotel_ebb/' target='_blank' rel='noopener noreferrer' aria-label='Instagram'>
             <FaInstagram size='24' />
           </a>
           <a href='https://x.com/PenielHotelEbbs?t=kAp1nuKmrGzVNdGR48_Q8w&s=09' target='_blank' rel='noopener noreferrer' aria-label='Twitter'>
