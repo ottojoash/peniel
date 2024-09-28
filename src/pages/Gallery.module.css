@@ -1,0 +1,123 @@
+/* styles/Gallery.module.css */
+.galleryPage {
+    padding: 20px;
+  }
+  
+  .banner {
+    background-color: #f5f5f5;
+    padding: 50px;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .banner h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+  }
+  
+  .banner p {
+    font-size: 1.5rem;
+    color: #666;
+  }
+  
+  .galleryGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
+  .card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fff;
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .cardImage {
+    width: 100%;
+    height: auto;
+  }
+  
+  .cardContent {
+    padding: 15px;
+  }
+  
+  .cardContent h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+  
+  .cardContent p {
+    color: #777;
+  }
+  
+  .date {
+    color: #999;
+    font-size: 0.9rem;
+  }
+  
+  .viewDetails {
+    color: #0070f3;
+    text-decoration: none;
+    margin-top: 15px;
+    display: block;
+    font-weight: bold;
+  }
+  
+  .viewDetails:hover {
+    text-decoration: underline;
+  }
+  .galleryPage {
+    padding: 20px;
+  }
+  
+  .banner {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .galleryGrid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* Five columns */
+    gap: 20px;
+    justify-items: center; /* Center items in each grid cell */
+  }
+  
+  .galleryCategory {
+    margin-bottom: 40px;
+  }
+  
+  .card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fff;
+    transition: transform 0.2s;
+    display: flex; /* Use flexbox for centering */
+    flex-direction: column; /* Align items vertically */
+    align-items: center; /* Center horizontally */
+  }
+  
+  .card:hover {
+    transform: scale(1.05);
+  }
+  
+  .cardImage {
+    width: 100%;
+    height: auto;
+  }
+  
+  .cardContent {
+    padding: 10px;
+    text-align: center;
+  }
+  
+  .cardContent p {
+    margin: 0;
+  }
+  

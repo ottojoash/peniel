@@ -8,6 +8,7 @@ import RoomPages from './pages/RoomPage';
 import RoomDetails from './pages/RoomDetails';
 import Resturant from './pages/Resturant';
 import KidsPark from './pages/Kids';
+import Gallery from './pages/Gallery';
 
 // react router
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
   {
     path: '/room/:id',
     element: <RoomDetails />,
+  },
+  {
+    path: '/Gallery',
+    element: <Gallery />,
   },
 ]);
 
