@@ -11,8 +11,8 @@ import Room5Img from './assets/img/room/twin.jpg';
 import Room5ImgLg from './assets/img/room/twin.jpg';
 import Room6Img from './assets/img/room/exc-single.jpg';
 import Room6ImgLg from './assets/img/room/exc-single.jpg';
-// import Room7Img from './assets/img/rooms/7.png';
-// import Room7ImgLg from './assets/img/rooms/7-lg.png';
+import Room7Img from './assets/img/room/keresi.jpg';
+import Room7ImgLg from './assets/img/room/keresi.jpg';
 // import Room8Img from './assets/img/rooms/8.png';
 // import Room8ImgLg from './assets/img/rooms/8-lg.png';
 // import icons
@@ -149,27 +149,27 @@ export const roomData = [
     image: Room6Img,
     imageLg: Room6ImgLg,
   },
-  // {
-  //   id: 7,
-  //   name: 'Luxury Room',
-  //   description:
-  //     'Lorem ipsum dolor sit amet consectetur adipisicing elit.Ea placeat eos sed voluptas unde veniam eligendi a. Quaerat molestiae hic omnis temporibus quos consequuntur nam voluptatum ea ccusamus, corrupti nostrum eum placeat quibusdam quis beatae quae labore earum architecto aliquid debitis.',
-  //   facilities: [
-  //     { name: 'Wifi', icon: <FaWifi /> },
-  //     { name: 'Coffee', icon: <FaCoffee /> },
-  //     { name: 'Bath', icon: <FaBath /> },
-  //     { name: 'Parking Space', icon: <FaParking /> },
-  //     { name: 'Swimming Pool', icon: <FaSwimmingPool /> },
-  //     { name: 'Breakfast', icon: <FaHotdog /> },
-  //     { name: 'GYM', icon: <FaStopwatch /> },
-  //     { name: 'Drinks', icon: <FaCocktail /> },
-  //   ],
-  //   size: 84,
-  //   maxPerson: 7,
-  //   price: 389,
-  //   image: Room7Img,
-  //   imageLg: Room7ImgLg,
-  // },
+  {
+    id: 7,
+    name: 'Budget rooms',
+    description:
+      'Budget room for one persons',
+    facilities: [
+      { name: 'Wifi', icon: <FaWifi /> },
+      // { name: 'Coffee', icon: <FaCoffee /> },
+      { name: 'Bath', icon: <FaBath /> },
+      { name: 'Parking Space', icon: <FaParking /> },
+      // { name: 'Swimming Pool', icon: <FaSwimmingPool /> },
+      { name: 'Breakfast', icon: <FaHotdog /> },
+      // { name: 'GYM', icon: <FaStopwatch /> },
+      // { name: 'Drinks', icon: <FaCocktail /> },
+    ],
+    size: 12,
+    maxPerson: 1,
+    price: 20,
+    image: Room7Img,
+    imageLg: Room7ImgLg,
+  },
   // {
   //   id: 8,
   //   name: 'Deluxe Room',
