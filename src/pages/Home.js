@@ -18,6 +18,8 @@ const Home = () => {
       {/* SEO Meta Tags */}
       <Helmet>
         <title>Peniel Beach Hotel | Welcome to Peniel Beach Hotel</title>
+        <h1>Peniel Beach Hotel | Welcome to Peniel Beach Hotel</h1>
+        <p>Welcome to Peniel Beach Hotel, your perfect getaway destination.</p>
         <meta
           name="description"
           content="Welcome to Peniel Beach Hotel - Enjoy a luxurious stay with our comfortable rooms, exciting attractions, and more. Book now!"
