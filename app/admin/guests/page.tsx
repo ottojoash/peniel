@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -16,152 +16,88 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
-import { Search, Filter, MoreHorizontal, Eye, Edit, Trash2, Download, Plus, Mail, Phone } from "lucide-react"
+import {
+  Search,
+  Filter,
+  MoreHorizontal,
+  Eye,
+  Edit,
+  Trash2,
+  Download,
+  Plus,
+  Mail,
+  Phone,
+  Loader2,
+  RefreshCw,
+} from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import GuestDetailsDialog from "@/components/admin/guest-details-dialog"
-
-// Mock data for guests
-const guests = [
-  {
-    id: "G-1001",
-    name: "John Smith",
-    email: "john.smith@example.com",
-    phone: "+256 772 123 456",
-    nationality: "United States",
-    address: "123 Main St, New York, NY 10001",
-    passportNumber: "A12345678",
-    totalStays: 3,
-    totalSpent: 720,
-    lastStay: "2025-03-10",
-    status: "active",
-    notes: "Prefers rooms with ocean view. Allergic to nuts.",
-    createdAt: "2024-12-15T14:30:00Z",
-  },
-  {
-    id: "G-1002",
-    name: "Sarah Johnson",
-    email: "sarah.j@example.com",
-    phone: "+256 752 987 654",
-    nationality: "United Kingdom",
-    address: "45 Park Lane, London, SW1X 7QA",
-    passportNumber: "B87654321",
-    totalStays: 1,
-    totalSpent: 400,
-    lastStay: "2025-03-26",
-    status: "active",
-    notes: "First time guest. Celebrating anniversary.",
-    createdAt: "2025-01-11T09:15:00Z",
-  },
-  {
-    id: "G-1003",
-    name: "Michael Wong",
-    email: "michael.w@example.com",
-    phone: "+256 772 456 789",
-    nationality: "Singapore",
-    address: "78 Orchard Road, Singapore, 238839",
-    passportNumber: "S9876543C",
-    totalStays: 5,
-    totalSpent: 1250,
-    lastStay: "2025-02-15",
-    status: "active",
-    notes: "Frequent business traveler. Member of loyalty program.",
-    createdAt: "2024-10-09T16:45:00Z",
-  },
-  {
-    id: "G-1004",
-    name: "Emily Davis",
-    email: "emily.d@example.com",
-    phone: "+256 752 345 678",
-    nationality: "Canada",
-    address: "567 Yonge St, Toronto, ON M4Y 1Z4",
-    passportNumber: "C5432198",
-    totalStays: 2,
-    totalSpent: 298,
-    lastStay: "2025-01-27",
-    status: "inactive",
-    notes: "Prefers quiet rooms away from elevator.",
-    createdAt: "2024-11-12T11:20:00Z",
-  },
-  {
-    id: "G-1005",
-    name: "Robert Chen",
-    email: "robert.c@example.com",
-    phone: "+256 772 234 567",
-    nationality: "China",
-    address: "890 Nanjing Road, Shanghai, 200000",
-    passportNumber: "E12345678",
-    totalStays: 1,
-    totalSpent: 150,
-    lastStay: "2024-12-25",
-    status: "blacklisted",
-    notes: "Blacklisted due to property damage during last stay.",
-    createdAt: "2024-09-08T13:10:00Z",
-  },
-  {
-    id: "G-1006",
-    name: "Lisa Kim",
-    email: "lisa.k@example.com",
-    phone: "+256 752 876 543",
-    nationality: "South Korea",
-    address: "123 Gangnam-daero, Seoul, 06000",
-    passportNumber: "M9876543",
-    totalStays: 4,
-    totalSpent: 980,
-    lastStay: "2025-03-05",
-    status: "active",
-    notes: "Prefers high floor rooms. Speaks limited English.",
-    createdAt: "2024-08-13T10:05:00Z",
-  },
-  {
-    id: "G-1007",
-    name: "David Wilson",
-    email: "david.w@example.com",
-    phone: "+256 772 765 432",
-    nationality: "Australia",
-    address: "45 George St, Sydney, NSW 2000",
-    passportNumber: "PA12345",
-    totalStays: 2,
-    totalSpent: 650,
-    lastStay: "2025-02-14",
-    status: "active",
-    notes: "Traveling with family. Requires extra beds.",
-    createdAt: "2024-11-14T15:30:00Z",
-  },
-  {
-    id: "G-1008",
-    name: "Jennifer Lee",
-    email: "jennifer.l@example.com",
-    phone: "+256 752 654 321",
-    nationality: "United States",
-    address: "789 Oak St, San Francisco, CA 94102",
-    passportNumber: "A98765432",
-    totalStays: 1,
-    totalSpent: 120,
-    lastStay: "2025-01-26",
-    status: "active",
-    notes: "Vegetarian diet. Interested in local tours.",
-    createdAt: "2025-01-12T09:45:00Z",
-  },
-]
+import { getGuests } from "@/app/actions/guest-actions"
+import { toast } from "@/hooks/use-toast"
+import GuestForm from "@/components/admin/guest-form"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export default function GuestsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [selectedGuest, setSelectedGuest] = useState<any>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+  const [isAddGuestOpen, setIsAddGuestOpen] = useState(false)
+  const [guests, setGuests] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+  const [isEditing, setIsEditing] = useState(false)
+
+  const fetchGuests = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const result = await getGuests()
+      if (result.error) {
+        setError(result.error)
+        toast({
+          title: "Error",
+          description: `Failed to fetch guests: ${result.error}`,
+          variant: "destructive",
+        })
+      } else {
+        setGuests(result.data || [])
+      }
+    } catch (err: any) {
+      setError(err.message || "An error occurred while fetching guests")
+      toast({
+        title: "Error",
+        description: err.message || "An error occurred while fetching guests",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchGuests()
+  }, [])
 
   // Filter guests based on search term and status filter
   const filteredGuests = guests.filter((guest) => {
+    const fullName = `${guest.first_name} ${guest.last_name}`.toLowerCase()
     const matchesSearch =
-      guest.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      guest.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      guest.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      guest.phone.toLowerCase().includes(searchTerm.toLowerCase())
+      fullName.includes(searchTerm.toLowerCase()) ||
+      (guest.id?.toString() || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (guest.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (guest.phone || "").toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesStatus = statusFilter === "all" || guest.status === statusFilter
 
     return matchesSearch && matchesStatus
   })
+
+  // Pagination
+  const totalPages = Math.ceil(filteredGuests.length / itemsPerPage)
+  const paginatedGuests = filteredGuests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
   const openGuestDetails = (guest: any) => {
     setSelectedGuest(guest)
@@ -183,7 +119,7 @@ export default function GuestsPage() {
       case "blacklisted":
         return <Badge className="bg-red-500">Blacklisted</Badge>
       default:
-        return <Badge>{status}</Badge>
+        return <Badge>Active</Badge>
     }
   }
 
@@ -199,7 +135,7 @@ export default function GuestsPage() {
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
-          <Button>
+          <Button onClick={() => setIsAddGuestOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Add Guest
           </Button>
@@ -244,53 +180,80 @@ export default function GuestsPage() {
                 <TableRow>
                   <TableHead>Guest</TableHead>
                   <TableHead>Contact</TableHead>
-                  <TableHead>Nationality</TableHead>
+                  <TableHead>Country</TableHead>
                   <TableHead>Total Stays</TableHead>
-                  <TableHead>Last Stay</TableHead>
-                  <TableHead>Total Spent</TableHead>
+                  <TableHead>Created</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredGuests.length === 0 ? (
+                {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-10">
+                      <div className="flex flex-col items-center justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-2" />
+                        <p className="text-muted-foreground">Loading guests...</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : error ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-10">
+                      <div className="flex flex-col items-center justify-center">
+                        <p className="text-red-500 mb-2">{error}</p>
+                        <Button variant="outline" size="sm" onClick={fetchGuests}>
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Try Again
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : paginatedGuests.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
                       No guests found matching your search criteria
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredGuests.map((guest) => (
+                  paginatedGuests.map((guest) => (
                     <TableRow key={guest.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar>
-                            <AvatarImage src={`/placeholder.svg?height=40&width=40&text=${guest.name.charAt(0)}`} />
-                            <AvatarFallback>{guest.name.charAt(0)}</AvatarFallback>
+                            <AvatarImage
+                              src={`/placeholder.svg?height=40&width=40&text=${guest.first_name?.charAt(0) || "G"}`}
+                            />
+                            <AvatarFallback>{guest.first_name?.charAt(0) || "G"}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <div className="font-medium">{guest.name}</div>
-                            <div className="text-xs text-muted-foreground">{guest.id}</div>
+                            <div className="font-medium">
+                              {guest.first_name} {guest.last_name}
+                            </div>
+                            <div className="text-xs text-muted-foreground">ID: {guest.id}</div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">
-                          <div className="flex items-center gap-1">
-                            <Mail className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-sm">{guest.email}</span>
-                          </div>
-                          <div className="flex items-center gap-1 mt-1">
-                            <Phone className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-sm">{guest.phone}</span>
-                          </div>
+                          {guest.email && (
+                            <div className="flex items-center gap-1">
+                              <Mail className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-sm">{guest.email}</span>
+                            </div>
+                          )}
+                          {guest.phone && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <Phone className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-sm">{guest.phone}</span>
+                            </div>
+                          )}
                         </div>
                       </TableCell>
-                      <TableCell>{guest.nationality}</TableCell>
-                      <TableCell>{guest.totalStays}</TableCell>
-                      <TableCell>{new Date(guest.lastStay).toLocaleDateString()}</TableCell>
-                      <TableCell>${guest.totalSpent}</TableCell>
-                      <TableCell>{getStatusBadge(guest.status)}</TableCell>
+                      <TableCell>{guest.country || "—"}</TableCell>
+                      <TableCell>{guest.bookings?.length || 0}</TableCell>
+                      <TableCell>{guest.created_at ? new Date(guest.created_at).toLocaleDateString() : "—"}</TableCell>
+                      <TableCell>{getStatusBadge(guest.status || "active")}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -304,7 +267,13 @@ export default function GuestsPage() {
                               <Eye className="mr-2 h-4 w-4" />
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedGuest(guest)
+                                setIsDetailsOpen(true)
+                                setTimeout(() => setIsEditing(true), 100)
+                              }}
+                            >
                               <Edit className="mr-2 h-4 w-4" />
                               Edit Guest
                             </DropdownMenuItem>
@@ -329,36 +298,79 @@ export default function GuestsPage() {
             </Table>
           </div>
 
-          <div className="mt-4">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious href="#" />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#" isActive>
-                    1
-                  </PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#">2</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#">3</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext href="#" />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
+          {totalPages > 1 && (
+            <div className="mt-4">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                    />
+                  </PaginationItem>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setCurrentPage(page)
+                        }}
+                        isActive={currentPage === page}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
         </CardContent>
       </Card>
 
       {selectedGuest && (
-        <GuestDetailsDialog guest={selectedGuest} open={isDetailsOpen} onOpenChange={setIsDetailsOpen} />
+        <GuestDetailsDialog
+          guest={selectedGuest}
+          open={isDetailsOpen}
+          onOpenChange={setIsDetailsOpen}
+          onGuestUpdated={fetchGuests}
+        />
       )}
+
+      <Dialog open={isAddGuestOpen} onOpenChange={setIsAddGuestOpen}>
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
+            <DialogTitle>Add New Guest</DialogTitle>
+            <DialogDescription>Enter the guest's information to create a new profile.</DialogDescription>
+          </DialogHeader>
+          <GuestForm
+            onSuccess={() => {
+              setIsAddGuestOpen(false)
+              fetchGuests()
+              toast({
+                title: "Guest created",
+                description: "The guest has been created successfully.",
+              })
+            }}
+            onCancel={() => setIsAddGuestOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
-

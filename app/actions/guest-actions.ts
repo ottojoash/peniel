@@ -17,10 +17,10 @@ export async function getGuests() {
 
   if (error) {
     console.error("Error fetching guests:", error)
-    return []
+    return { error: error.message, data: [] }
   }
 
-  return data
+  return { data, error: null }
 }
 
 // Get guest by ID
@@ -48,10 +48,10 @@ export async function getGuestById(id: number) {
 
   if (error) {
     console.error(`Error fetching guest ${id}:`, error)
-    return null
+    return { error: error.message, data: null }
   }
 
-  return data
+  return { data, error: null }
 }
 
 // Create a new guest
@@ -69,6 +69,10 @@ export async function createGuest(formData: FormData) {
     const postalCode = formData.get("postalCode") as string
     const country = formData.get("country") as string
     const notes = formData.get("notes") as string
+
+    if (!firstName || !lastName) {
+      return { success: false, error: "First name and last name are required" }
+    }
 
     const { data, error } = await supabase
       .from("guests")
@@ -90,10 +94,10 @@ export async function createGuest(formData: FormData) {
 
     revalidatePath("/admin/guests")
 
-    return { success: true, guestId: data[0].id }
-  } catch (error) {
+    return { success: true, guestId: data[0].id, error: null }
+  } catch (error: any) {
     console.error("Error creating guest:", error)
-    return { success: false, error: "Failed to create guest" }
+    return { success: false, error: error.message || "Failed to create guest" }
   }
 }
 
@@ -112,6 +116,10 @@ export async function updateGuest(id: number, formData: FormData) {
     const postalCode = formData.get("postalCode") as string
     const country = formData.get("country") as string
     const notes = formData.get("notes") as string
+
+    if (!firstName || !lastName) {
+      return { success: false, error: "First name and last name are required" }
+    }
 
     const { error } = await supabase
       .from("guests")
@@ -135,10 +143,10 @@ export async function updateGuest(id: number, formData: FormData) {
     revalidatePath("/admin/guests")
     revalidatePath(`/admin/guests/${id}`)
 
-    return { success: true }
-  } catch (error) {
+    return { success: true, error: null }
+  } catch (error: any) {
     console.error(`Error updating guest ${id}:`, error)
-    return { success: false, error: "Failed to update guest" }
+    return { success: false, error: error.message || "Failed to update guest" }
   }
 }
 
@@ -169,10 +177,10 @@ export async function deleteGuest(id: number) {
 
     revalidatePath("/admin/guests")
 
-    return { success: true }
-  } catch (error) {
+    return { success: true, error: null }
+  } catch (error: any) {
     console.error(`Error deleting guest ${id}:`, error)
-    return { success: false, error: "Failed to delete guest" }
+    return { success: false, error: error.message || "Failed to delete guest" }
   }
 }
 
@@ -189,11 +197,73 @@ export async function searchGuests(query: string) {
 
   if (error) {
     console.error(`Error searching guests with query "${query}":`, error)
-    return []
+    return { error: error.message, data: [] }
   }
 
-  return data
+  return { data, error: null }
 }
-\
-Let's now create a comprehensive room availability management system:
 
+// Get guest statistics
+export async function getGuestStatistics() {
+  const supabase = createServerSupabaseClient()
+
+  try {
+    // Total guests
+    const { count: totalGuests, error: countError } = await supabase
+      .from("guests")
+      .select("*", { count: "exact", head: true })
+
+    if (countError) throw countError
+
+    // New guests this month
+    const startOfMonth = new Date()
+    startOfMonth.setDate(1)
+    startOfMonth.setHours(0, 0, 0, 0)
+
+    const { count: newGuestsThisMonth, error: newGuestsError } = await supabase
+      .from("guests")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", startOfMonth.toISOString())
+
+    if (newGuestsError) throw newGuestsError
+
+    // Returning guests (guests with more than one booking)
+    const { data: returningGuestsData, error: returningGuestsError } = await supabase.rpc(
+      "count_guests_with_multiple_bookings",
+    )
+
+    let returningGuests = 0
+    if (returningGuestsError) {
+      console.error("Error counting returning guests:", returningGuestsError)
+      // Fallback if the RPC function doesn't exist
+      const { data: bookingsPerGuest, error: fallbackError } = await supabase
+        .from("bookings")
+        .select("guest_id, count")
+        .select("guest_id")
+        .select("count(*)")
+        .group("guest_id")
+        .having("count(*) > 1")
+
+      if (!fallbackError && bookingsPerGuest) {
+        returningGuests = bookingsPerGuest.length
+      }
+    } else {
+      returningGuests = returningGuestsData || 0
+    }
+
+    return {
+      totalGuests: totalGuests || 0,
+      newGuestsThisMonth: newGuestsThisMonth || 0,
+      returningGuests,
+      error: null,
+    }
+  } catch (error: any) {
+    console.error("Error fetching guest statistics:", error)
+    return {
+      totalGuests: 0,
+      newGuestsThisMonth: 0,
+      returningGuests: 0,
+      error: error.message,
+    }
+  }
+}
