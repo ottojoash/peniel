@@ -222,13 +222,6 @@ export async function deleteGalleryImage(id: number) {
   }
 }
 
-//
-error: error instanceof Error ? error.message : "Failed to delete image"
-\
-    }
-  }
-}
-
 // Upload room image
 export async function uploadRoomImage(file: File) {
   const supabase = createServerSupabaseClient()
@@ -288,4 +281,3 @@ export async function deleteRoomImage(path: string) {
     }
   }
 }
-
