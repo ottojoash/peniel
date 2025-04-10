@@ -462,3 +462,22 @@ export async function deleteRoomImage(storagePath: string) {
     }
   }
 }
+
+// Get all gallery images
+export async function getGalleryImages() {
+  const supabase = createServerSupabaseClient()
+
+  try {
+    const { data, error } = await supabase.from("gallery_images").select("*").order("created_at", { ascending: false })
+
+    if (error) {
+      console.error("Error fetching gallery images:", error)
+      throw error
+    }
+
+    return data || []
+  } catch (error) {
+    console.error("Error in getGalleryImages:", error)
+    return []
+  }
+}
