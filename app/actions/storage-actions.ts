@@ -1,76 +1,360 @@
+// "use server"
+
+// import { createServerSupabaseClient } from "@/lib/supabase"
+// import { revalidatePath } from "next/cache"
+
+// // Get all gallery images
+// export async function getGalleryImages() {
+//   const supabase = createServerSupabaseClient()
+
+//   try {
+//     const { data, error } = await supabase.from("gallery_images").select("*").order("created_at", { ascending: false })
+
+//     if (error) throw error
+
+//     return data || []
+//   } catch (error) {
+//     console.error("Error fetching gallery images:", error)
+//     return []
+//   }
+// }
+
+// // Upload gallery image
+// export async function uploadGalleryImage(formData: FormData) {
+//   const supabase = createServerSupabaseClient()
+
+//   try {
+//     const title = formData.get("title") as string
+//     const description = formData.get("description") as string
+//     const category = formData.get("category") as string
+//     const file = formData.get("file") as File
+
+//     if (!file) {
+//       return { success: false, error: "No file provided" }
+//     }
+
+//     if (!title) {
+//       return { success: false, error: "Title is required" }
+//     }
+
+//     // Generate a unique filename
+//     const fileExt = file.name.split(".").pop()
+//     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`
+//     const filePath = `gallery/${fileName}`
+
+//     // Upload file to storage
+//     const { error: uploadError } = await supabase.storage.from("hotel-assets").upload(filePath, file)
+
+//     if (uploadError) throw uploadError
+
+//     // Get public URL
+//     const { data: urlData } = supabase.storage.from("hotel-assets").getPublicUrl(filePath)
+
+//     if (!urlData || !urlData.publicUrl) {
+//       throw new Error("Failed to get public URL for uploaded file")
+//     }
+
+//     // Save to database
+//     const { error: dbError } = await supabase.from("gallery_images").insert({
+//       title,
+//       description,
+//       category,
+//       image_url: urlData.publicUrl,
+//       storage_path: filePath,
+//     })
+
+//     if (dbError) throw dbError
+
+//     revalidatePath("/admin/gallery")
+//     revalidatePath("/gallery")
+
+//     return { success: true }
+//   } catch (error) {
+//     console.error("Error uploading gallery image:", error)
+//     return {
+//       success: false,
+//       error: error instanceof Error ? error.message : "Failed to upload image",
+//     }
+//   }
+// }
+
+// // Update gallery image
+// export async function updateGalleryImage(id: number, formData: FormData) {
+//   const supabase = createServerSupabaseClient()
+
+//   try {
+//     if (!id) {
+//       return { success: false, error: "Image ID is required" }
+//     }
+
+//     const title = formData.get("title") as string
+//     const description = formData.get("description") as string
+//     const category = formData.get("category") as string
+//     const file = formData.get("file") as File
+
+//     if (!title) {
+//       return { success: false, error: "Title is required" }
+//     }
+
+//     // Get current image data
+//     const { data: currentImage, error: fetchError } = await supabase
+//       .from("gallery_images")
+//       .select("storage_path, image_url")
+//       .eq("id", id)
+//       .single()
+
+//     if (fetchError) throw fetchError
+
+//     if (!currentImage) {
+//       return { success: false, error: "Image not found" }
+//     }
+
+//     let imageUrl = currentImage.image_url
+//     let storagePath = currentImage.storage_path
+
+//     // If new file is provided, upload it
+//     if (file && file.size > 0) {
+//       // Delete old file if it exists
+//       if (currentImage.storage_path) {
+//         try {
+//           await supabase.storage.from("hotel-assets").remove([currentImage.storage_path])
+//         } catch (deleteError) {
+//           console.error("Error deleting old file:", deleteError)
+//           // Continue even if delete fails
+//         }
+//       }
+
+//       // Generate a unique filename
+//       const fileExt = file.name.split(".").pop()
+//       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`
+//       storagePath = `gallery/${fileName}`
+
+//       // Upload new file
+//       const { error: uploadError } = await supabase.storage.from("hotel-assets").upload(storagePath, file)
+
+//       if (uploadError) throw uploadError
+
+//       // Get public URL
+//       const { data: urlData } = supabase.storage.from("hotel-assets").getPublicUrl(storagePath)
+
+//       if (!urlData || !urlData.publicUrl) {
+//         throw new Error("Failed to get public URL for uploaded file")
+//       }
+
+//       imageUrl = urlData.publicUrl
+//     }
+
+//     // Update database
+//     const { error: updateError } = await supabase
+//       .from("gallery_images")
+//       .update({
+//         title,
+//         description,
+//         category,
+//         image_url: imageUrl,
+//         storage_path: storagePath,
+//         updated_at: new Date().toISOString(),
+//       })
+//       .eq("id", id)
+
+//     if (updateError) throw updateError
+
+//     revalidatePath("/admin/gallery")
+//     revalidatePath("/gallery")
+
+//     return { success: true }
+//   } catch (error) {
+//     console.error(`Error updating gallery image ${id}:`, error)
+//     return {
+//       success: false,
+//       error: error instanceof Error ? error.message : "Failed to update image",
+//     }
+//   }
+// }
+
+// // Delete gallery image
+// export async function deleteGalleryImage(id: number) {
+//   const supabase = createServerSupabaseClient()
+
+//   try {
+//     if (!id) {
+//       return { success: false, error: "Image ID is required" }
+//     }
+
+//     // Get storage path
+//     const { data: image, error: fetchError } = await supabase
+//       .from("gallery_images")
+//       .select("storage_path")
+//       .eq("id", id)
+//       .single()
+
+//     if (fetchError) throw fetchError
+
+//     if (!image) {
+//       return { success: false, error: "Image not found" }
+//     }
+
+//     // Delete from storage if path exists
+//     if (image.storage_path) {
+//       try {
+//         await supabase.storage.from("hotel-assets").remove([image.storage_path])
+//       } catch (deleteError) {
+//         console.error("Error deleting file:", deleteError)
+//         // Continue even if storage delete fails
+//       }
+//     }
+
+//     // Delete from database
+//     const { error: dbError } = await supabase.from("gallery_images").delete().eq("id", id)
+
+//     if (dbError) throw dbError
+
+//     revalidatePath("/admin/gallery")
+//     revalidatePath("/gallery")
+
+//     return { success: true }
+//   } catch (error) {
+//     console.error(`Error deleting gallery image ${id}:`, error)
+//     return {
+//       success: false,
+//       error: error instanceof Error ? error.message : "Failed to delete image",
+//     }
+//   }
+// }
+
+// // Upload room image
+// export async function uploadRoomImage(file: File) {
+//   const supabase = createServerSupabaseClient()
+
+//   try {
+//     if (!file) {
+//       return { success: false, error: "No file provided" }
+//     }
+
+//     // Generate a unique filename
+//     const fileExt = file.name.split(".").pop()
+//     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`
+//     const filePath = `rooms/${fileName}`
+
+//     // Upload file to storage
+//     const { error: uploadError } = await supabase.storage.from("hotel-assets").upload(filePath, file)
+
+//     if (uploadError) throw uploadError
+
+//     // Get public URL
+//     const { data: urlData } = supabase.storage.from("hotel-assets").getPublicUrl(filePath)
+
+//     if (!urlData || !urlData.publicUrl) {
+//       throw new Error("Failed to get public URL for uploaded file")
+//     }
+
+//     return { success: true, url: urlData.publicUrl, path: filePath }
+//   } catch (error) {
+//     console.error("Error uploading room image:", error)
+//     return {
+//       success: false,
+//       error: error instanceof Error ? error.message : "Failed to upload image",
+//     }
+//   }
+// }
+
+// // Delete room image
+// export async function deleteRoomImage(path: string) {
+//   const supabase = createServerSupabaseClient()
+
+//   try {
+//     if (!path) {
+//       return { success: false, error: "No storage path provided" }
+//     }
+
+//     // Delete from storage
+//     const { error: deleteError } = await supabase.storage.from("hotel-assets").remove([path])
+
+//     if (deleteError) throw deleteError
+
+//     return { success: true }
+//   } catch (error) {
+//     console.error(`Error deleting room image at ${path}:`, error)
+//     return {
+//       success: false,
+//       error: error instanceof Error ? error.message : "Failed to delete image",
+//     }
+//   }
+// }
+
 "use server"
 
 import { createServerSupabaseClient } from "@/lib/supabase"
 import { revalidatePath } from "next/cache"
 
-// Get all gallery images
-export async function getGalleryImages() {
-  const supabase = createServerSupabaseClient()
-
+// Check if bucket exists and create it if it doesn't
+async function ensureBucketExists(supabase: any, bucketName: string) {
   try {
-    const { data, error } = await supabase.from("gallery_images").select("*").order("created_at", { ascending: false })
+    // Check if bucket exists
+    const { data: buckets } = await supabase.storage.listBuckets()
+    const bucketExists = buckets.some((bucket: any) => bucket.name === bucketName)
 
-    if (error) throw error
+    if (!bucketExists) {
+      // Create bucket if it doesn't exist
+      const { error } = await supabase.storage.createBucket(bucketName, {
+        public: true,
+        fileSizeLimit: 10485760, // 10MB
+      })
 
-    return data || []
+      if (error) {
+        console.error("Error creating bucket:", error)
+        return false
+      }
+      console.log(`Bucket ${bucketName} created successfully`)
+    }
+
+    return true
   } catch (error) {
-    console.error("Error fetching gallery images:", error)
-    return []
+    console.error("Error checking/creating bucket:", error)
+    return false
   }
 }
 
-// Upload gallery image
-export async function uploadGalleryImage(formData: FormData) {
+// Upload image to gallery
+export async function uploadGalleryImage(file: File, category: string) {
   const supabase = createServerSupabaseClient()
 
   try {
-    const title = formData.get("title") as string
-    const description = formData.get("description") as string
-    const category = formData.get("category") as string
-    const file = formData.get("file") as File
-
-    if (!file) {
-      return { success: false, error: "No file provided" }
+    // Ensure bucket exists
+    const bucketExists = await ensureBucketExists(supabase, "images")
+    if (!bucketExists) {
+      throw new Error("Failed to ensure storage bucket exists")
     }
 
-    if (!title) {
-      return { success: false, error: "Title is required" }
-    }
-
-    // Generate a unique filename
+    // Generate a unique file name
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`
     const fileExt = file.name.split(".").pop()
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`
-    const filePath = `gallery/${fileName}`
+    const storagePath = `gallery/${category}/${fileName}.${fileExt}`
 
     // Upload file to storage
-    const { error: uploadError } = await supabase.storage.from("hotel-assets").upload(filePath, file)
-
-    if (uploadError) throw uploadError
-
-    // Get public URL
-    const { data: urlData } = supabase.storage.from("hotel-assets").getPublicUrl(filePath)
-
-    if (!urlData || !urlData.publicUrl) {
-      throw new Error("Failed to get public URL for uploaded file")
-    }
-
-    // Save to database
-    const { error: dbError } = await supabase.from("gallery_images").insert({
-      title,
-      description,
-      category,
-      image_url: urlData.publicUrl,
-      storage_path: filePath,
+    const { data: storageData, error: storageError } = await supabase.storage.from("images").upload(storagePath, file, {
+      cacheControl: "3600",
+      upsert: false,
     })
 
-    if (dbError) throw dbError
+    if (storageError) {
+      console.error("Error uploading image to storage:", storageError)
+      throw storageError
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage.from("images").getPublicUrl(storagePath)
 
     revalidatePath("/admin/gallery")
     revalidatePath("/gallery")
 
-    return { success: true }
+    return {
+      success: true,
+      url: urlData.publicUrl,
+      path: storagePath,
+    }
   } catch (error) {
-    console.error("Error uploading gallery image:", error)
+    console.error("Error in uploadGalleryImage:", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to upload image",
@@ -78,143 +362,33 @@ export async function uploadGalleryImage(formData: FormData) {
   }
 }
 
-// Update gallery image
-export async function updateGalleryImage(id: number, formData: FormData) {
+// Delete image from gallery
+export async function deleteGalleryImage(id: number, storagePath: string) {
   const supabase = createServerSupabaseClient()
 
   try {
-    if (!id) {
-      return { success: false, error: "Image ID is required" }
-    }
+    // Delete from storage
+    const { error: storageError } = await supabase.storage.from("images").remove([storagePath])
 
-    const title = formData.get("title") as string
-    const description = formData.get("description") as string
-    const category = formData.get("category") as string
-    const file = formData.get("file") as File
-
-    if (!title) {
-      return { success: false, error: "Title is required" }
-    }
-
-    // Get current image data
-    const { data: currentImage, error: fetchError } = await supabase
-      .from("gallery_images")
-      .select("storage_path, image_url")
-      .eq("id", id)
-      .single()
-
-    if (fetchError) throw fetchError
-
-    if (!currentImage) {
-      return { success: false, error: "Image not found" }
-    }
-
-    let imageUrl = currentImage.image_url
-    let storagePath = currentImage.storage_path
-
-    // If new file is provided, upload it
-    if (file && file.size > 0) {
-      // Delete old file if it exists
-      if (currentImage.storage_path) {
-        try {
-          await supabase.storage.from("hotel-assets").remove([currentImage.storage_path])
-        } catch (deleteError) {
-          console.error("Error deleting old file:", deleteError)
-          // Continue even if delete fails
-        }
-      }
-
-      // Generate a unique filename
-      const fileExt = file.name.split(".").pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`
-      storagePath = `gallery/${fileName}`
-
-      // Upload new file
-      const { error: uploadError } = await supabase.storage.from("hotel-assets").upload(storagePath, file)
-
-      if (uploadError) throw uploadError
-
-      // Get public URL
-      const { data: urlData } = supabase.storage.from("hotel-assets").getPublicUrl(storagePath)
-
-      if (!urlData || !urlData.publicUrl) {
-        throw new Error("Failed to get public URL for uploaded file")
-      }
-
-      imageUrl = urlData.publicUrl
-    }
-
-    // Update database
-    const { error: updateError } = await supabase
-      .from("gallery_images")
-      .update({
-        title,
-        description,
-        category,
-        image_url: imageUrl,
-        storage_path: storagePath,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id)
-
-    if (updateError) throw updateError
-
-    revalidatePath("/admin/gallery")
-    revalidatePath("/gallery")
-
-    return { success: true }
-  } catch (error) {
-    console.error(`Error updating gallery image ${id}:`, error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to update image",
-    }
-  }
-}
-
-// Delete gallery image
-export async function deleteGalleryImage(id: number) {
-  const supabase = createServerSupabaseClient()
-
-  try {
-    if (!id) {
-      return { success: false, error: "Image ID is required" }
-    }
-
-    // Get storage path
-    const { data: image, error: fetchError } = await supabase
-      .from("gallery_images")
-      .select("storage_path")
-      .eq("id", id)
-      .single()
-
-    if (fetchError) throw fetchError
-
-    if (!image) {
-      return { success: false, error: "Image not found" }
-    }
-
-    // Delete from storage if path exists
-    if (image.storage_path) {
-      try {
-        await supabase.storage.from("hotel-assets").remove([image.storage_path])
-      } catch (deleteError) {
-        console.error("Error deleting file:", deleteError)
-        // Continue even if storage delete fails
-      }
+    if (storageError) {
+      console.error("Error deleting image from storage:", storageError)
+      throw storageError
     }
 
     // Delete from database
     const { error: dbError } = await supabase.from("gallery_images").delete().eq("id", id)
 
-    if (dbError) throw dbError
+    if (dbError) {
+      console.error("Error deleting image from database:", dbError)
+      throw dbError
+    }
 
     revalidatePath("/admin/gallery")
     revalidatePath("/gallery")
 
     return { success: true }
   } catch (error) {
-    console.error(`Error deleting gallery image ${id}:`, error)
+    console.error("Error in deleteGalleryImage:", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to delete image",
@@ -227,30 +401,38 @@ export async function uploadRoomImage(file: File) {
   const supabase = createServerSupabaseClient()
 
   try {
-    if (!file) {
-      return { success: false, error: "No file provided" }
+    // Ensure bucket exists
+    const bucketExists = await ensureBucketExists(supabase, "images")
+    if (!bucketExists) {
+      throw new Error("Failed to ensure storage bucket exists")
     }
 
-    // Generate a unique filename
+    // Generate a unique file name
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`
     const fileExt = file.name.split(".").pop()
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`
-    const filePath = `rooms/${fileName}`
+    const storagePath = `rooms/${fileName}.${fileExt}`
 
     // Upload file to storage
-    const { error: uploadError } = await supabase.storage.from("hotel-assets").upload(filePath, file)
+    const { data: storageData, error: storageError } = await supabase.storage.from("images").upload(storagePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+    })
 
-    if (uploadError) throw uploadError
-
-    // Get public URL
-    const { data: urlData } = supabase.storage.from("hotel-assets").getPublicUrl(filePath)
-
-    if (!urlData || !urlData.publicUrl) {
-      throw new Error("Failed to get public URL for uploaded file")
+    if (storageError) {
+      console.error("Error uploading room image to storage:", storageError)
+      throw storageError
     }
 
-    return { success: true, url: urlData.publicUrl, path: filePath }
+    // Get public URL
+    const { data: urlData } = supabase.storage.from("images").getPublicUrl(storagePath)
+
+    return {
+      success: true,
+      url: urlData.publicUrl,
+      path: storagePath,
+    }
   } catch (error) {
-    console.error("Error uploading room image:", error)
+    console.error("Error in uploadRoomImage:", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to upload image",
@@ -259,22 +441,21 @@ export async function uploadRoomImage(file: File) {
 }
 
 // Delete room image
-export async function deleteRoomImage(path: string) {
+export async function deleteRoomImage(storagePath: string) {
   const supabase = createServerSupabaseClient()
 
   try {
-    if (!path) {
-      return { success: false, error: "No storage path provided" }
-    }
-
     // Delete from storage
-    const { error: deleteError } = await supabase.storage.from("hotel-assets").remove([path])
+    const { error: storageError } = await supabase.storage.from("images").remove([storagePath])
 
-    if (deleteError) throw deleteError
+    if (storageError) {
+      console.error("Error deleting room image from storage:", storageError)
+      throw storageError
+    }
 
     return { success: true }
   } catch (error) {
-    console.error(`Error deleting room image at ${path}:`, error)
+    console.error("Error in deleteRoomImage:", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to delete image",

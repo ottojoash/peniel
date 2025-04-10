@@ -1,447 +1,613 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import Image from "next/image"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { Trash2, Plus, Upload, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { DialogFooter } from "@/components/ui/dialog"
-import { Separator } from "@/components/ui/separator"
-import { Plus, Trash2, ImageIcon } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { toast } from "@/components/ui/use-toast"
 import { createRoom, updateRoom, getRoomById } from "@/app/actions/room-actions"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { uploadRoomImage, deleteRoomImage } from "@/app/actions/storage-actions"
 
-export default function RoomForm({ room, roomTypes, roomFeatures, onClose }) {
+// Define the form schema
+const roomFormSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  shortDescription: z.string().min(10, { message: "Short description must be at least 10 characters" }),
+  description: z.string().min(20, { message: "Description must be at least 20 characters" }),
+  basePrice: z.coerce.number().positive({ message: "Base price must be a positive number" }),
+  discountedPrice: z.coerce
+    .number()
+    .positive({ message: "Discounted price must be a positive number" })
+    .optional()
+    .nullable(),
+  capacity: z.coerce.number().int().positive({ message: "Capacity must be a positive integer" }),
+  beds: z.coerce.number().int().positive({ message: "Beds must be a positive integer" }),
+  bathrooms: z.coerce.number().int().positive({ message: "Bathrooms must be a positive integer" }),
+  size: z.coerce.number().int().positive({ message: "Size must be a positive integer" }),
+  isPublished: z.boolean().default(false),
+})
+
+// Define the feature type
+interface Feature {
+  id: string
+  name: string
+  value: string
+}
+
+// Define the image type
+interface RoomImage {
+  id: string
+  url: string
+  path: string
+  alt: string
+}
+
+// Define the room form props
+interface RoomFormProps {
+  roomId?: number
+}
+
+export default function RoomForm({ roomId }: RoomFormProps) {
+  const router = useRouter()
+  const [features, setFeatures] = useState<Feature[]>([])
+  const [images, setImages] = useState<RoomImage[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [roomData, setRoomData] = useState({
-    id: null,
-    name: "",
-    roomTypeId: "",
-    description: "",
-    longDescription: "",
-    size: "",
-    maxOccupancy: "2",
-    bedType: "",
-    isFeatured: false,
-    isPublished: false,
-    price: "",
-    currency: "USD",
-    featureIds: [],
-    policies: [""],
-    imageUrls: [""],
+  const [uploadingImage, setUploadingImage] = useState(false)
+
+  // Initialize the form
+  const form = useForm<z.infer<typeof roomFormSchema>>({
+    resolver: zodResolver(roomFormSchema),
+    defaultValues: {
+      name: "",
+      shortDescription: "",
+      description: "",
+      basePrice: 0,
+      discountedPrice: null,
+      capacity: 1,
+      beds: 1,
+      bathrooms: 1,
+      size: 0,
+      isPublished: false,
+    },
   })
 
   // Load room data if editing
   useEffect(() => {
-    let isMounted = true
-
     async function loadRoomData() {
-      if (room) {
+      if (roomId) {
+        setIsLoading(true)
         try {
-          setIsLoading(true)
-          setError("")
-          const fullRoomData = await getRoomById(room.id)
+          const roomData = await getRoomById(roomId)
 
-          if (isMounted) {
-            setRoomData({
-              id: fullRoomData.id,
-              name: fullRoomData.name || "",
-              roomTypeId: fullRoomData.room_type_id?.toString() || "",
-              description: fullRoomData.description || "",
-              longDescription: fullRoomData.long_description || "",
-              size: fullRoomData.size || "",
-              maxOccupancy: fullRoomData.max_occupancy?.toString() || "2",
-              bedType: fullRoomData.bed_type || "",
-              isFeatured: fullRoomData.is_featured || false,
-              isPublished: fullRoomData.is_published || false,
-              price: fullRoomData.rates?.[0]?.price_per_night?.toString() || "",
-              currency: fullRoomData.rates?.[0]?.currency || "USD",
-              featureIds: fullRoomData.feature_ids || [],
-              policies: fullRoomData.policies?.map((p) => p.policy_text) || [""],
-              imageUrls: fullRoomData.images?.map((img) => img.image_url) || [""],
+          if (roomData) {
+            // Set form values
+            form.reset({
+              name: roomData.name || "",
+              shortDescription: roomData.short_description || "",
+              description: roomData.description || "",
+              basePrice: roomData.base_price || 0,
+              discountedPrice: roomData.discounted_price || null,
+              capacity: roomData.capacity || 1,
+              beds: roomData.beds || 1,
+              bathrooms: roomData.bathrooms || 1,
+              size: roomData.size || 0,
+              isPublished: roomData.is_published || false,
             })
-            setIsLoading(false)
+
+            // Set features and images
+            if (roomData.features && Array.isArray(roomData.features)) {
+              setFeatures(roomData.features)
+            }
+
+            if (roomData.images && Array.isArray(roomData.images)) {
+              setImages(roomData.images)
+            }
           }
         } catch (error) {
           console.error("Error loading room data:", error)
-          if (isMounted) {
-            setError("Failed to load room data. Please try again.")
-            setIsLoading(false)
-          }
+          toast({
+            title: "Error",
+            description: "Failed to load room data. Please try again.",
+            variant: "destructive",
+          })
+        } finally {
+          setIsLoading(false)
         }
       }
     }
 
     loadRoomData()
+  }, [roomId, form])
 
-    return () => {
-      isMounted = false
-    }
-  }, [room])
-
-  const handleChange = (field, value) => {
-    setRoomData((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const handleFeatureToggle = (featureId) => {
-    setRoomData((prev) => {
-      const featureIds = [...prev.featureIds]
-
-      if (featureIds.includes(featureId)) {
-        return { ...prev, featureIds: featureIds.filter((id) => id !== featureId) }
-      } else {
-        return { ...prev, featureIds: [...featureIds, featureId] }
-      }
-    })
-  }
-
-  const addPolicy = () => {
-    setRoomData((prev) => ({
-      ...prev,
-      policies: [...prev.policies, ""],
-    }))
-  }
-
-  const updatePolicy = (index, value) => {
-    setRoomData((prev) => {
-      const policies = [...prev.policies]
-      policies[index] = value
-      return { ...prev, policies }
-    })
-  }
-
-  const removePolicy = (index) => {
-    setRoomData((prev) => {
-      const policies = [...prev.policies]
-      policies.splice(index, 1)
-      return { ...prev, policies }
-    })
-  }
-
-  const addImageUrl = () => {
-    setRoomData((prev) => ({
-      ...prev,
-      imageUrls: [...prev.imageUrls, ""],
-    }))
-  }
-
-  const updateImageUrl = (index, value) => {
-    setRoomData((prev) => {
-      const imageUrls = [...prev.imageUrls]
-      imageUrls[index] = value
-      return { ...prev, imageUrls }
-    })
-  }
-
-  const removeImageUrl = (index) => {
-    setRoomData((prev) => {
-      const imageUrls = [...prev.imageUrls]
-      imageUrls.splice(index, 1)
-      return { ...prev, imageUrls }
-    })
-  }
-
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    setError("")
+  // Handle form submission
+  async function onSubmit(values: z.infer<typeof roomFormSchema>) {
+    setIsSubmitting(true)
 
     try {
-      setIsLoading(true)
-
-      const formData = new FormData(event.target)
-
-      // Add feature IDs to form data
-      roomData.featureIds.forEach((id) => {
-        formData.append("features[]", id.toString())
-      })
-
-      // Add policies to form data
-      roomData.policies.filter(Boolean).forEach((policy) => {
-        formData.append("policies[]", policy)
-      })
-
-      // Add image URLs to form data
-      roomData.imageUrls.filter(Boolean).forEach((url) => {
-        formData.append("imageUrls[]", url)
-      })
-
-      if (roomData.id) {
-        await updateRoom(roomData.id, formData)
-      } else {
-        await createRoom(formData)
+      const formData = new FormData()
+      formData.append("name", values.name)
+      formData.append("shortDescription", values.shortDescription)
+      formData.append("description", values.description)
+      formData.append("basePrice", values.basePrice.toString())
+      if (values.discountedPrice !== null && values.discountedPrice !== undefined) {
+        formData.append("discountedPrice", values.discountedPrice.toString())
       }
+      formData.append("capacity", values.capacity.toString())
+      formData.append("beds", values.beds.toString())
+      formData.append("bathrooms", values.bathrooms.toString())
+      formData.append("size", values.size.toString())
+      formData.append("features", JSON.stringify(features))
+      formData.append("images", JSON.stringify(images))
+      formData.append("isPublished", values.isPublished.toString())
 
-      onClose(true) // Pass true to indicate data should be refreshed
+      const result = roomId ? await updateRoom(roomId, formData) : await createRoom(formData)
+
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: roomId ? "Room updated successfully" : "Room created successfully",
+        })
+        router.push("/admin/rooms")
+      } else {
+        throw new Error(result.error || "Failed to save room")
+      }
     } catch (error) {
       console.error("Error saving room:", error)
-      setError("Failed to save room. Please try again.")
-      setIsLoading(false)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save room",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
-  if (isLoading && room) {
+  // Add a new feature
+  const addFeature = () => {
+    setFeatures([
+      ...features,
+      {
+        id: crypto.randomUUID(),
+        name: "",
+        value: "",
+      },
+    ])
+  }
+
+  // Update a feature
+  const updateFeature = (id: string, field: "name" | "value", value: string) => {
+    setFeatures(features.map((feature) => (feature.id === id ? { ...feature, [field]: value } : feature)))
+  }
+
+  // Remove a feature
+  const removeFeature = (id: string) => {
+    setFeatures(features.filter((feature) => feature.id !== id))
+  }
+
+  // Handle image upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return
+
+    const file = e.target.files[0]
+    setUploadingImage(true)
+
+    try {
+      const result = await uploadRoomImage(file)
+
+      if (result.success && result.url) {
+        setImages([
+          ...images,
+          {
+            id: crypto.randomUUID(),
+            url: result.url,
+            path: result.path || "",
+            alt: file.name.split(".")[0] || "Room image",
+          },
+        ])
+        toast({
+          title: "Success",
+          description: "Image uploaded successfully",
+        })
+      } else {
+        throw new Error(result.error || "Failed to upload image")
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to upload image",
+        variant: "destructive",
+      })
+    } finally {
+      setUploadingImage(false)
+      // Reset the input
+      e.target.value = ""
+    }
+  }
+
+  // Update image alt text
+  const updateImageAlt = (id: string, alt: string) => {
+    setImages(images.map((image) => (image.id === id ? { ...image, alt } : image)))
+  }
+
+  // Remove an image
+  const removeImage = async (id: string) => {
+    const imageToRemove = images.find((image) => image.id === id)
+    if (!imageToRemove) return
+
+    try {
+      // If the image has a storage path, delete it from storage
+      if (imageToRemove.path) {
+        await deleteRoomImage(imageToRemove.path)
+      }
+
+      // Remove from state
+      setImages(images.filter((image) => image.id !== id))
+
+      toast({
+        title: "Success",
+        description: "Image removed successfully",
+      })
+    } catch (error) {
+      console.error("Error removing image:", error)
+      toast({
+        title: "Error",
+        description: "Failed to remove image. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  if (isLoading) {
     return (
-      <div className="flex justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Room Name</Label>
-          <Input
-            id="name"
-            name="name"
-            value={roomData.name}
-            onChange={(e) => handleChange("name", e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="roomTypeId">Room Type</Label>
-          <Select
-            name="roomTypeId"
-            value={roomData.roomTypeId}
-            onValueChange={(value) => handleChange("roomTypeId", value)}
-            required
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select room type" />
-            </SelectTrigger>
-            <SelectContent>
-              {roomTypes.map((type) => (
-                <SelectItem key={type.id} value={type.id.toString()}>
-                  {type.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="size">Room Size</Label>
-          <Input
-            id="size"
-            name="size"
-            placeholder="e.g., 30m²"
-            value={roomData.size}
-            onChange={(e) => handleChange("size", e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="maxOccupancy">Max Occupancy</Label>
-          <Input
-            id="maxOccupancy"
-            name="maxOccupancy"
-            type="number"
-            min="1"
-            value={roomData.maxOccupancy}
-            onChange={(e) => handleChange("maxOccupancy", e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="bedType">Bed Type</Label>
-          <Input
-            id="bedType"
-            name="bedType"
-            placeholder="e.g., King Bed, Twin Beds"
-            value={roomData.bedType}
-            onChange={(e) => handleChange("bedType", e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="price">Price Per Night</Label>
-          <div className="flex gap-2">
-            <Input
-              id="price"
-              name="price"
-              type="number"
-              min="0"
-              step="0.01"
-              value={roomData.price}
-              onChange={(e) => handleChange("price", e.target.value)}
-              required
-              className="flex-1"
-            />
-            <Select
-              name="currency"
-              value={roomData.currency}
-              onValueChange={(value) => handleChange("currency", value)}
-            >
-              <SelectTrigger className="w-24">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="USD">USD</SelectItem>
-                <SelectItem value="EUR">EUR</SelectItem>
-                <SelectItem value="GBP">GBP</SelectItem>
-                <SelectItem value="UGX">UGX</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="description">Short Description</Label>
-        <Textarea
-          id="description"
-          name="description"
-          value={roomData.description}
-          onChange={(e) => handleChange("description", e.target.value)}
-          rows={2}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="longDescription">Long Description</Label>
-        <Textarea
-          id="longDescription"
-          name="longDescription"
-          value={roomData.longDescription}
-          onChange={(e) => handleChange("longDescription", e.target.value)}
-          rows={4}
-        />
-      </div>
-
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="isFeatured"
-            name="isFeatured"
-            checked={roomData.isFeatured}
-            onCheckedChange={(checked) => handleChange("isFeatured", checked)}
-          />
-          <Label htmlFor="isFeatured">Featured Room</Label>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="isPublished"
-            name="isPublished"
-            checked={roomData.isPublished}
-            onCheckedChange={(checked) => handleChange("isPublished", checked)}
-          />
-          <Label htmlFor="isPublished">Publish Room</Label>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="space-y-4">
-        <Label>Room Features & Amenities</Label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {roomFeatures.map((feature) => (
-            <div key={feature.id} className="flex items-center space-x-2">
-              <Checkbox
-                id={`feature-${feature.id}`}
-                checked={roomData.featureIds.includes(feature.id)}
-                onCheckedChange={() => handleFeatureToggle(feature.id)}
-              />
-              <Label htmlFor={`feature-${feature.id}`}>{feature.name}</Label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <Label>Room Policies</Label>
-          <Button type="button" variant="outline" size="sm" onClick={addPolicy}>
-            <Plus className="h-4 w-4 mr-1" /> Add Policy
-          </Button>
-        </div>
-
-        {roomData.policies.map((policy, index) => (
-          <div key={`policy-${index}`} className="flex gap-2">
-            <Input
-              value={policy}
-              onChange={(e) => updatePolicy(index, e.target.value)}
-              placeholder="e.g., Check-in: 2:00 PM"
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => removePolicy(index)}
-              disabled={roomData.policies.length === 1}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        ))}
-      </div>
-
-      <Separator />
-
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <Label>Room Images</Label>
-          <Button type="button" variant="outline" size="sm" onClick={addImageUrl}>
-            <Plus className="h-4 w-4 mr-1" /> Add Image
-          </Button>
-        </div>
-
-        <div className="text-sm text-muted-foreground mb-2">
-          Enter image URLs for the room. In a production environment, you would upload images directly.
-        </div>
-
-        {roomData.imageUrls.map((url, index) => (
-          <div key={`image-${index}`} className="flex gap-2">
-            <div className="relative flex-1">
-              <Input
-                value={url}
-                onChange={(e) => updateImageUrl(index, e.target.value)}
-                placeholder="https://example.com/image.jpg"
-              />
-              {url && (
-                <div className="absolute right-2 top-2 bg-background rounded-full p-1">
-                  <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-6">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Room Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Deluxe Ocean View Room" {...field} />
+                  </FormControl>
+                  <FormDescription>The name of the room as it will appear to guests.</FormDescription>
+                  <FormMessage />
+                </FormItem>
               )}
+            />
+
+            <FormField
+              control={form.control}
+              name="shortDescription"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Short Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="A brief description of the room that will appear in listings."
+                      {...field}
+                      rows={3}
+                    />
+                  </FormControl>
+                  <FormDescription>Keep it concise and highlight key features.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Detailed description of the room, amenities, and views."
+                      {...field}
+                      rows={6}
+                    />
+                  </FormControl>
+                  <FormDescription>Provide a comprehensive description of the room.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="basePrice"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Base Price (USD)</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" step="0.01" {...field} />
+                    </FormControl>
+                    <FormDescription>Standard nightly rate.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="discountedPrice"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Discounted Price (USD)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={field.value === null || field.value === undefined ? "" : field.value}
+                        onChange={(e) => {
+                          const value = e.target.value === "" ? null : Number.parseFloat(e.target.value)
+                          field.onChange(value)
+                        }}
+                      />
+                    </FormControl>
+                    <FormDescription>Optional promotional rate.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => removeImageUrl(index)}
-              disabled={roomData.imageUrls.length === 1}
-            >
-              <Trash2 className="h-4 w-4" />
+          </div>
+
+          <div className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="capacity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Capacity</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="1" step="1" {...field} />
+                    </FormControl>
+                    <FormDescription>Maximum number of guests.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="beds"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Beds</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="1" step="1" {...field} />
+                    </FormControl>
+                    <FormDescription>Number of beds in the room.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="bathrooms"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Bathrooms</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="1" step="1" {...field} />
+                    </FormControl>
+                    <FormDescription>Number of bathrooms.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="size"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Size (sq ft)</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" step="1" {...field} />
+                    </FormControl>
+                    <FormDescription>Room size in square feet.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="isPublished"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Published</FormLabel>
+                    <FormDescription>
+                      {field.value ? "Room is visible to guests" : "Room is hidden from guests"}
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium">Room Features</h3>
+            <Button type="button" variant="outline" size="sm" onClick={addFeature}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Feature
             </Button>
           </div>
-        ))}
-      </div>
 
-      <DialogFooter>
-        <Button type="button" variant="outline" onClick={() => onClose(false)} disabled={isLoading}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading && <div className="animate-spin mr-2 h-4 w-4 border-2 border-background rounded-full" />}
-          {roomData.isPublished ? "Publish" : "Save as Draft"}
-        </Button>
-      </DialogFooter>
-    </form>
+          {features.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No features added yet. Click "Add Feature" to add room features.
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {features.map((feature) => (
+                <div key={feature.id} className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <Label htmlFor={`feature-name-${feature.id}`}>Feature</Label>
+                    <Input
+                      id={`feature-name-${feature.id}`}
+                      value={feature.name}
+                      onChange={(e) => updateFeature(feature.id, "name", e.target.value)}
+                      placeholder="e.g., Wi-Fi, Air Conditioning"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Label htmlFor={`feature-value-${feature.id}`}>Value</Label>
+                    <Input
+                      id={`feature-value-${feature.id}`}
+                      value={feature.value}
+                      onChange={(e) => updateFeature(feature.id, "value", e.target.value)}
+                      placeholder="e.g., Free, Included"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="mt-6"
+                    onClick={() => removeFeature(feature.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium">Room Images</h3>
+            <div className="relative">
+              <Input
+                type="file"
+                id="image-upload"
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={uploadingImage}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => document.getElementById("image-upload")?.click()}
+                disabled={uploadingImage}
+              >
+                {uploadingImage ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Image
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {images.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No images added yet. Click "Upload Image" to add room images.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {images.map((image) => (
+                <Card key={image.id}>
+                  <div className="relative aspect-video">
+                    <Image
+                      src={image.url || "/placeholder.svg"}
+                      alt={image.alt}
+                      fill
+                      className="object-cover rounded-t-lg"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2 h-8 w-8"
+                      onClick={() => removeImage(image.id)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <CardContent className="p-3">
+                    <div className="space-y-2">
+                      <Label htmlFor={`image-alt-${image.id}`}>Alt Text</Label>
+                      <Input
+                        id={`image-alt-${image.id}`}
+                        value={image.alt}
+                        onChange={(e) => updateImageAlt(image.id, e.target.value)}
+                        placeholder="Describe the image"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-4">
+          <Button type="button" variant="outline" onClick={() => router.push("/admin/rooms")} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {roomId ? "Updating..." : "Creating..."}
+              </>
+            ) : roomId ? (
+              "Update Room"
+            ) : (
+              "Create Room"
+            )}
+          </Button>
+        </div>
+      </form>
+    </Form>
   )
 }
-
