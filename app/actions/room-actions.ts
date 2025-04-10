@@ -9,16 +9,104 @@ export async function getRooms() {
   const supabase = createServerSupabaseClient()
 
   try {
-    const { data, error } = await supabase.from("rooms").select("*").order("created_at", { ascending: false })
+    const { data, error } = await supabase
+      .from("rooms")
+      .select(`
+        *,
+        room_type:room_type_id(id, name),
+        rates:room_rates(*),
+        features:room_features_junction(
+          feature:feature_id(id, name, icon)
+        ),
+        policies:room_policies(*)
+      `)
+      .order("created_at", { ascending: false })
 
     if (error) {
       console.error("Error fetching rooms:", error)
       throw error
     }
 
-    return data || []
+    // Transform the features array to make it easier to work with
+    const transformedData =
+      data?.map((room) => {
+        if (room && room.features) {
+          return {
+            ...room,
+            features: room.features.map((item: any) => item.feature),
+          }
+        }
+        return room
+      }) || []
+
+    return transformedData
   } catch (error) {
     console.error("Error in getRooms:", error)
+    return []
+  }
+}
+
+// Get published rooms
+export async function getPublishedRooms() {
+  const supabase = createServerSupabaseClient()
+
+  try {
+    console.log("Fetching published rooms...")
+
+    // First, get the rooms with their related data
+    const { data, error } = await supabase
+      .from("rooms")
+      .select(`
+        *,
+        room_type:room_type_id(id, name),
+        rates:room_rates(*),
+        features:room_features_junction(
+          feature:feature_id(id, name, icon)
+        ),
+        policies:room_policies(*)
+      `)
+      .eq("is_published", true)
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      console.error("Error fetching published rooms:", error)
+      throw error
+    }
+
+    // Transform the features array to make it easier to work with
+    const transformedData =
+      data?.map((room) => {
+        if (room && room.features) {
+          return {
+            ...room,
+            features: room.features.map((item: any) => item.feature),
+          }
+        }
+        return room
+      }) || []
+
+    // Now, for each room, get its images
+    const roomsWithImages = await Promise.all(
+      transformedData.map(async (room) => {
+        // Get images from the images field in the room record
+        let images = []
+
+        if (room.images && Array.isArray(room.images) && room.images.length > 0) {
+          // If images are already in the room record, use them
+          images = room.images
+          console.log(`Room ${room.id} has ${images.length} images in the room record`)
+        }
+
+        return {
+          ...room,
+          images,
+        }
+      }),
+    )
+
+    return roomsWithImages
+  } catch (error) {
+    console.error("Error in getPublishedRooms:", error)
     return []
   }
 }
@@ -28,11 +116,28 @@ export async function getRoomById(id: number) {
   const supabase = createServerSupabaseClient()
 
   try {
-    const { data, error } = await supabase.from("rooms").select("*").eq("id", id).single()
+    const { data, error } = await supabase
+      .from("rooms")
+      .select(`
+        *,
+        room_type:room_type_id(id, name),
+        rates:room_rates(*),
+        features:room_features_junction(
+          feature:feature_id(id, name, icon)
+        ),
+        policies:room_policies(*)
+      `)
+      .eq("id", id)
+      .single()
 
     if (error) {
       console.error(`Error fetching room with ID ${id}:`, error)
       throw error
+    }
+
+    // Transform the features array to make it easier to work with
+    if (data && data.features) {
+      data.features = data.features.map((item: any) => item.feature)
     }
 
     return data
@@ -57,8 +162,7 @@ export async function getRoomBySlug(slug: string) {
         features:room_features_junction(
           feature:feature_id(id, name, icon)
         ),
-        policies:room_policies(*),
-        images:room_images(*)
+        policies:room_policies(*)
       `)
       .eq("slug", slug)
       .single()
@@ -72,6 +176,9 @@ export async function getRoomBySlug(slug: string) {
     if (room && room.features) {
       room.features = room.features.map((item: any) => item.feature)
     }
+
+    // Log the room data to see its structure
+    console.log(`Room data for slug ${slug}:`, JSON.stringify(room, null, 2))
 
     return room
   } catch (error) {

@@ -12,6 +12,9 @@ export default async function RoomsPage() {
   // Fetch rooms from Supabase
   const rooms = await getPublishedRooms()
 
+  // Extract unique room types for filtering
+  const roomTypes = [...new Set(rooms.map((room: { room_type: { name: any } }) => room.room_type?.name || "Other"))]
+
   return (
     <main className="flex min-h-screen flex-col">
       {/* Hero Section */}
@@ -52,9 +55,11 @@ export default async function RoomsPage() {
             <TabsList className="mb-8">
               <TabsTrigger value="all">All Rooms</TabsTrigger>
               <TabsTrigger value="featured">Featured</TabsTrigger>
-              <TabsTrigger value="economy">Economy</TabsTrigger>
-              <TabsTrigger value="executive">Executive</TabsTrigger>
-              <TabsTrigger value="family">Family</TabsTrigger>
+              {roomTypes.map((type) => (
+                <TabsTrigger key={type} value={type.toLowerCase()}>
+                  {type}
+                </TabsTrigger>
+              ))}
             </TabsList>
 
             <TabsContent value="all" className="mt-0">
@@ -75,35 +80,17 @@ export default async function RoomsPage() {
               </div>
             </TabsContent>
 
-            <TabsContent value="economy" className="mt-0">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {rooms
-                  .filter((room) => room.name.toLowerCase().includes("economy"))
-                  .map((room) => (
-                    <RoomCard key={room.id} room={room} />
-                  ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="executive" className="mt-0">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {rooms
-                  .filter((room) => room.name.toLowerCase().includes("executive"))
-                  .map((room) => (
-                    <RoomCard key={room.id} room={room} />
-                  ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="family" className="mt-0">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {rooms
-                  .filter((room) => room.name.toLowerCase().includes("family"))
-                  .map((room) => (
-                    <RoomCard key={room.id} room={room} />
-                  ))}
-              </div>
-            </TabsContent>
+            {roomTypes.map((type) => (
+              <TabsContent key={type} value={type.toLowerCase()} className="mt-0">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {rooms
+                    .filter((room) => room.room_type?.name?.toLowerCase() === type.toLowerCase())
+                    .map((room) => (
+                      <RoomCard key={room.id} room={room} />
+                    ))}
+                </div>
+              </TabsContent>
+            ))}
           </Tabs>
         </div>
       </section>
@@ -198,9 +185,11 @@ export default async function RoomsPage() {
           <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
             Experience comfort and luxury at Peniel Beach Hotel. Book directly for the best rates and special offers.
           </p>
-          <Button size="lg" className="bg-primary hover:bg-primary/90">
-            Book Now
-          </Button>
+          <Link href="/rooms">
+            <Button size="lg" className="bg-primary hover:bg-primary/90">
+              Book Now
+            </Button>
+          </Link>
         </div>
       </section>
     </main>
@@ -221,7 +210,7 @@ function RoomCard({ room }) {
       </div>
       <div className="p-6">
         <h3 className="text-xl font-semibold mb-2">{room.name}</h3>
-        <p className="text-muted-foreground text-sm mb-4">{room.description}</p>
+        <p className="text-muted-foreground text-sm mb-4">{room.description?.substring(0, 100)}...</p>
 
         <div className="flex flex-wrap gap-4 mb-4">
           <div className="flex items-center gap-2">
@@ -255,8 +244,10 @@ function RoomCard({ room }) {
           <div>
             <span className="text-xl font-bold">
               {room.default_rate
-                ? `${room.default_rate.currency} ${room.default_rate.price_per_night}`
-                : "Price on request"}
+                ? `$${room.default_rate.price_per_night}`
+                : room.rates?.[0]
+                  ? `$${room.rates[0].price_per_night}`
+                  : "Price on request"}
             </span>
             <span className="text-muted-foreground text-sm"> / night</span>
           </div>
@@ -268,4 +259,3 @@ function RoomCard({ room }) {
     </div>
   )
 }
-

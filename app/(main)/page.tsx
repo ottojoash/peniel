@@ -1,4 +1,5 @@
 import Image from "next/image"
+import Link from "next/link"
 import { Calendar } from "lucide-react"
 import BookingForm from "@/components/booking-form"
 import FeaturedRooms from "@/components/featured-rooms"
@@ -23,12 +24,18 @@ export default function Home() {
             Experience luxury and comfort at Peniel Beach Hotel, where unforgettable memories await
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <button className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-md font-medium transition-colors">
+            <Link
+              href="/rooms"
+              className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-md font-medium transition-colors"
+            >
               Book Now
-            </button>
-            <button className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border border-white/30 px-8 py-3 rounded-md font-medium transition-colors">
+            </Link>
+            <Link
+              href="/rooms"
+              className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border border-white/30 px-8 py-3 rounded-md font-medium transition-colors"
+            >
               Explore Rooms
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -86,9 +93,12 @@ export default function Home() {
           </div>
           <FeaturedRooms />
           <div className="text-center mt-12">
-            <button className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-md font-medium transition-colors">
+            <Link
+              href="/rooms"
+              className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-md font-medium transition-colors"
+            >
               View All Rooms
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -129,12 +139,18 @@ export default function Home() {
                 Book your stay now and enjoy special rates for your dream vacation at Peniel Beach Hotel.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="bg-white text-primary hover:bg-white/90 px-8 py-3 rounded-md font-medium transition-colors">
+                <Link
+                  href="/rooms"
+                  className="bg-white text-primary hover:bg-white/90 px-8 py-3 rounded-md font-medium transition-colors"
+                >
                   Book Now
-                </button>
-                <button className="bg-transparent hover:bg-white/10 border border-white/50 px-8 py-3 rounded-md font-medium transition-colors">
+                </Link>
+                <Link
+                  href="/contact"
+                  className="bg-transparent hover:bg-white/10 border border-white/50 px-8 py-3 rounded-md font-medium transition-colors"
+                >
                   Contact Us
-                </button>
+                </Link>
               </div>
             </div>
             <div className="flex items-center justify-center">
@@ -145,9 +161,12 @@ export default function Home() {
                 </div>
                 <h3 className="text-2xl font-serif mb-2">15% Off Summer Bookings</h3>
                 <p className="text-white/80 mb-4">Valid until August 31st</p>
-                <button className="w-full bg-white text-primary hover:bg-white/90 px-4 py-2 rounded-md font-medium transition-colors">
+                <Link
+                  href="/rooms"
+                  className="block w-full bg-white text-primary hover:bg-white/90 px-4 py-2 rounded-md font-medium transition-colors text-center"
+                >
                   Claim Offer
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -156,4 +175,3 @@ export default function Home() {
     </main>
   )
 }
-
