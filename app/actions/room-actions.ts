@@ -47,17 +47,36 @@ export async function getRoomBySlug(slug: string) {
   const supabase = createServerSupabaseClient()
 
   try {
-    const { data, error } = await supabase.from("rooms").select("*").eq("slug", slug).single()
+    // First get the room
+    const { data: room, error } = await supabase
+      .from("rooms")
+      .select(`
+        *,
+        room_type:room_type_id(id, name),
+        rates:room_rates(*),
+        features:room_features_junction(
+          feature:feature_id(id, name, icon)
+        ),
+        policies:room_policies(*),
+        images:room_images(*)
+      `)
+      .eq("slug", slug)
+      .single()
 
     if (error) {
       console.error(`Error fetching room with slug ${slug}:`, error)
       throw error
     }
 
-    return data
+    // Transform the features array to make it easier to work with
+    if (room && room.features) {
+      room.features = room.features.map((item: any) => item.feature)
+    }
+
+    return room
   } catch (error) {
     console.error(`Error in getRoomBySlug for slug ${slug}:`, error)
-    return null
+    throw error
   }
 }
 
