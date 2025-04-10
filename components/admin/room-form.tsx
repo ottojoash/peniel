@@ -8,7 +8,7 @@ import Image from "next/image"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { Trash2, Plus, Upload, X, Loader2 } from "lucide-react"
+import { Trash2, Plus, Upload, X, Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { toast } from "@/components/ui/use-toast"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { createRoom, updateRoom, getRoomById } from "@/app/actions/room-actions"
 import { uploadRoomImage, deleteRoomImage } from "@/app/actions/storage-actions"
 
@@ -65,6 +66,7 @@ export default function RoomForm({ roomId }: RoomFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   // Initialize the form
   const form = useForm<z.infer<typeof roomFormSchema>>({
@@ -203,6 +205,7 @@ export default function RoomForm({ roomId }: RoomFormProps) {
 
     const file = e.target.files[0]
     setUploadingImage(true)
+    setUploadError(null)
 
     try {
       const result = await uploadRoomImage(file)
@@ -226,6 +229,7 @@ export default function RoomForm({ roomId }: RoomFormProps) {
       }
     } catch (error) {
       console.error("Error uploading image:", error)
+      setUploadError(error instanceof Error ? error.message : "Failed to upload image")
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to upload image",
@@ -547,6 +551,14 @@ export default function RoomForm({ roomId }: RoomFormProps) {
               </Button>
             </div>
           </div>
+
+          {uploadError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{uploadError}</AlertDescription>
+            </Alert>
+          )}
 
           {images.length === 0 ? (
             <p className="text-sm text-muted-foreground">
