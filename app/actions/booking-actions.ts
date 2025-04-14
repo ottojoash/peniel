@@ -1,6 +1,6 @@
 "use server"
 
-import { createServerSupabaseClient } from "@/lib/supabase"
+import { createServiceSupabaseClient } from "@/lib/supabase"
 import { revalidatePath } from "next/cache"
 
 // Generate a unique booking reference
@@ -19,7 +19,7 @@ export async function getRoomsWithRetry(retries = 3, delay = 1000) {
 
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
-      const supabase = createServerSupabaseClient()
+      const supabase = createServiceSupabaseClient()
 
       const { data, error } = await supabase
         .from("rooms")
@@ -62,7 +62,7 @@ export async function getRoomsWithRetry(retries = 3, delay = 1000) {
 // Create a new booking
 export async function createBooking(formData: FormData) {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createServiceSupabaseClient()
 
     // Extract form data
     const roomId = formData.get("roomId") as string
@@ -84,6 +84,15 @@ export async function createBooking(formData: FormData) {
 
     // Generate a unique booking reference
     const bookingReference = generateBookingReference()
+
+    console.log("Creating booking with service role client:", {
+      booking_reference: bookingReference,
+      room_id: Number.parseInt(roomId),
+      guest_name: guestName,
+      guest_email: guestEmail,
+      check_in_date: checkInDate,
+      check_out_date: checkOutDate,
+    })
 
     // Insert the booking
     const { data, error } = await supabase
@@ -130,7 +139,7 @@ export async function createBooking(formData: FormData) {
 // Get all bookings
 export async function getBookings() {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createServiceSupabaseClient()
 
     const { data, error } = await supabase
       .from("bookings")
@@ -155,7 +164,7 @@ export async function getBookings() {
 // Get a single booking by ID
 export async function getBookingById(id: string) {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createServiceSupabaseClient()
 
     const { data, error } = await supabase
       .from("bookings")
@@ -181,7 +190,7 @@ export async function getBookingById(id: string) {
 // Check room availability
 export async function checkRoomAvailability(roomId: number, startDate: string, endDate: string) {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createServiceSupabaseClient()
 
     // Check if there are any bookings for this room that overlap with the requested dates
     const { data, error } = await supabase
@@ -204,4 +213,3 @@ export async function checkRoomAvailability(roomId: number, startDate: string, e
     return { available: false, error: "Failed to check availability" }
   }
 }
-
