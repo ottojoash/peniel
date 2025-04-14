@@ -1,4 +1,3 @@
-import Image from "next/image"
 import Link from "next/link"
 import { Bed, Users, Maximize } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -6,20 +5,21 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import RoomFilters from "@/components/room-filters"
 import BookingForm from "@/components/booking-form"
-import { getPublishedRooms } from "@/app/actions/room-actions"
+import { getRooms } from "@/app/actions/room-actions"
+import ImageWithFallback from "@/components/ui/image-with-fallback"
 
 export default async function RoomsPage() {
   // Fetch rooms from Supabase
-  const rooms = await getPublishedRooms()
+  const rooms = await getRooms()
 
   // Extract unique room types for filtering
-  const roomTypes = [...new Set(rooms.map((room: { room_type: { name: any } }) => room.room_type?.name || "Other"))]
+  const roomTypes = [...new Set(rooms.map((room) => room.room_type?.name || "Other"))]
 
   return (
     <main className="flex min-h-screen flex-col">
       {/* Hero Section */}
       <section className="relative h-[40vh] w-full">
-        <Image
+        <ImageWithFallback
           src="/placeholder.svg?height=800&width=1920"
           alt="Peniel Beach Hotel Rooms"
           fill
@@ -133,7 +133,12 @@ export default async function RoomsPage() {
               </div>
             </div>
             <div className="relative h-[400px] rounded-lg overflow-hidden">
-              <Image src="/placeholder.svg?height=800&width=600" alt="Hotel lobby" fill className="object-cover" />
+              <ImageWithFallback
+                src="/placeholder.svg?height=800&width=600"
+                alt="Hotel lobby"
+                fill
+                className="object-cover"
+              />
             </div>
           </div>
         </div>
@@ -185,11 +190,9 @@ export default async function RoomsPage() {
           <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
             Experience comfort and luxury at Peniel Beach Hotel. Book directly for the best rates and special offers.
           </p>
-          <Link href="/rooms">
-            <Button size="lg" className="bg-primary hover:bg-primary/90">
-              Book Now
-            </Button>
-          </Link>
+          <Button size="lg" className="bg-primary hover:bg-primary/90">
+            Book Now
+          </Button>
         </div>
       </section>
     </main>
@@ -197,20 +200,44 @@ export default async function RoomsPage() {
 }
 
 function RoomCard({ room }) {
+  // Get the image URL with fallbacks
+  let imageUrl = "/placeholder.svg?height=600&width=800"
+
+  // Try different possible image structures
+  if (room.images && Array.isArray(room.images) && room.images.length > 0) {
+    const firstImage = room.images[0]
+
+    // If it's a string URL
+    if (typeof firstImage === "string") {
+      imageUrl = firstImage
+    }
+
+    // If it's an object with url property
+    else if (typeof firstImage === "object" && firstImage !== null) {
+      if (firstImage.url) imageUrl = firstImage.url
+      else if (firstImage.image_url) imageUrl = firstImage.image_url
+      else if (firstImage.path) imageUrl = firstImage.path
+    }
+  }
+
   return (
     <div className="border rounded-lg overflow-hidden group hover:shadow-md transition-shadow">
       <div className="relative h-64">
-        <Image
-          src={room.images?.[0]?.image_url || "/placeholder.svg?height=600&width=800"}
+        <ImageWithFallback
+          src={imageUrl || "/placeholder.svg"}
           alt={room.name}
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-105"
+          unoptimized={imageUrl.startsWith("http")}
+          fallbackSrc="/placeholder.svg?height=600&width=800"
         />
         {room.is_featured && <Badge className="absolute top-4 right-4 bg-primary">Featured</Badge>}
       </div>
       <div className="p-6">
         <h3 className="text-xl font-semibold mb-2">{room.name}</h3>
-        <p className="text-muted-foreground text-sm mb-4">{room.description?.substring(0, 100)}...</p>
+        <p className="text-muted-foreground text-sm mb-4">
+          {room.short_description || room.description?.substring(0, 100) || "No description available"}...
+        </p>
 
         <div className="flex flex-wrap gap-4 mb-4">
           <div className="flex items-center gap-2">
@@ -219,7 +246,7 @@ function RoomCard({ room }) {
           </div>
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-primary" />
-            <span className="text-sm">Max: {room.max_occupancy} people</span>
+            <span className="text-sm">Max: {room.max_occupancy || 2} people</span>
           </div>
           <div className="flex items-center gap-2">
             <Bed className="h-4 w-4 text-primary" />
@@ -228,8 +255,8 @@ function RoomCard({ room }) {
         </div>
 
         <div className="flex flex-wrap gap-2 mb-4">
-          {room.features?.slice(0, 3).map((feature) => (
-            <Badge key={feature.id} variant="outline" className="bg-muted/50">
+          {room.features?.slice(0, 3).map((feature, index) => (
+            <Badge key={index} variant="outline" className="bg-muted/50">
               {feature.name}
             </Badge>
           ))}
@@ -243,11 +270,7 @@ function RoomCard({ room }) {
         <div className="flex items-center justify-between mt-4">
           <div>
             <span className="text-xl font-bold">
-              {room.default_rate
-                ? `$${room.default_rate.price_per_night}`
-                : room.rates?.[0]
-                  ? `$${room.rates[0].price_per_night}`
-                  : "Price on request"}
+              ${room.default_rate?.price_per_night || room.rates?.[0]?.price_per_night || room.base_price || "N/A"}
             </span>
             <span className="text-muted-foreground text-sm"> / night</span>
           </div>
