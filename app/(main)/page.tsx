@@ -12,7 +12,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative h-[80vh] w-full">
         <Image
-          src="/placeholder.svg?height=1080&width=1920"
+          src="/room-exc.jpg"
           alt="Peniel Beach Hotel"
           fill
           priority
@@ -75,7 +75,7 @@ export default function Home() {
               </button>
             </div>
             <div className="relative h-[400px] rounded-lg overflow-hidden">
-              <Image src="/placeholder.svg?height=800&width=600" alt="Hotel exterior" fill className="object-cover" />
+              <Image src="/front-view.jpg?height=800&width=600" alt="Hotel exterior" fill className="object-cover" />
             </div>
           </div>
         </div>
@@ -92,14 +92,14 @@ export default function Home() {
             </p>
           </div>
           <FeaturedRooms />
-          <div className="text-center mt-12">
+          {/* <div className="text-center mt-12">
             <Link
               href="/rooms"
               className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-md font-medium transition-colors"
             >
               View All Rooms
             </Link>
-          </div>
+          </div> */}
         </div>
       </section>
 
