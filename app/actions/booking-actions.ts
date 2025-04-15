@@ -75,7 +75,7 @@ export async function createBooking(formData: FormData) {
     const specialRequests = formData.get("specialRequests") as string
     const status = (formData.get("status") as string) || "confirmed"
     const paymentStatus = (formData.get("paymentStatus") as string) || "paid"
-    const totalAmount = (formData.get("totalAmount") as string) || "0"
+    const totalAmount = formData.get("totalAmount") as string
 
     // Validate required fields
     if (!roomId || !guestName || !guestEmail || !checkInDate || !checkOutDate) {
@@ -85,6 +85,15 @@ export async function createBooking(formData: FormData) {
     // Generate a unique booking reference
     const bookingReference = generateBookingReference()
 
+    // Parse and validate the total amount
+    let parsedTotalAmount = 0
+    if (totalAmount) {
+      parsedTotalAmount = Number.parseFloat(totalAmount)
+      if (isNaN(parsedTotalAmount) || parsedTotalAmount < 0) {
+        parsedTotalAmount = 0
+      }
+    }
+
     console.log("Creating booking with service role client:", {
       booking_reference: bookingReference,
       room_id: Number.parseInt(roomId),
@@ -92,6 +101,7 @@ export async function createBooking(formData: FormData) {
       guest_email: guestEmail,
       check_in_date: checkInDate,
       check_out_date: checkOutDate,
+      total_amount: parsedTotalAmount,
     })
 
     // Insert the booking
@@ -107,7 +117,7 @@ export async function createBooking(formData: FormData) {
         check_out_date: checkOutDate,
         number_of_guests: Number.parseInt(numberOfGuests),
         special_requests: specialRequests,
-        total_amount: Number.parseFloat(totalAmount),
+        total_amount: parsedTotalAmount,
         status: status,
         payment_status: paymentStatus,
       })

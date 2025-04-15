@@ -3,12 +3,22 @@ import { getRoomBySlug } from "@/app/actions/room-actions"
 import RoomBookingForm from "@/components/room-booking-form"
 import ImageWithFallback from "@/components/ui/image-with-fallback"
 
-export default async function RoomDetailPage({ params }: { params: { slug: string } }) {
+interface RoomDetailPageProps {
+  params: {
+    slug: string
+  }
+}
+
+export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
   try {
-    const slug = params.slug
+    // Properly await params before using its properties
+    const { slug } = params
+
+    console.log(`Fetching room with slug: ${slug}`)
     const room = await getRoomBySlug(slug)
 
     if (!room) {
+      console.log(`Room not found for slug: ${slug}`)
       notFound()
     }
 
