@@ -20,7 +20,7 @@ export default async function RoomsPage() {
       {/* Hero Section */}
       <section className="relative h-[40vh] w-full">
         <ImageWithFallback
-          src="/placeholder.svg?height=800&width=1920"
+          src="/room-exc.jpg?height=800&width=1920"
           alt="Peniel Beach Hotel Rooms"
           fill
           priority
@@ -134,7 +134,7 @@ export default async function RoomsPage() {
             </div>
             <div className="relative h-[400px] rounded-lg overflow-hidden">
               <ImageWithFallback
-                src="/placeholder.svg?height=800&width=600"
+                src="/qualiy.jpg?height=800&width=600"
                 alt="Hotel lobby"
                 fill
                 className="object-cover"
