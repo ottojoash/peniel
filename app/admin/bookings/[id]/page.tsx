@@ -14,9 +14,13 @@ interface BookingDetailsPageProps {
 }
 
 export default async function BookingDetailsPage({ params }: BookingDetailsPageProps) {
-  // Validate the ID parameter
-  const bookingId = Number.parseInt(params.id)
+  // Validate the ID parameter - properly await params
+  const id = params?.id
+  if (!id) {
+    notFound() // Redirect to 404 page if ID is not provided
+  }
 
+  const bookingId = Number.parseInt(id)
   if (isNaN(bookingId)) {
     notFound() // Redirect to 404 page if ID is not a valid number
   }
@@ -24,7 +28,14 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
   // Fetch booking data
   let booking
   try {
-    booking = await getBookingById(bookingId)
+    booking = await getBookingById(bookingId.toString())
+
+    if (!booking) {
+      console.error(`Booking with ID ${bookingId} not found`)
+      notFound()
+    }
+
+    console.log(`Booking data for ID ${bookingId}:`, JSON.stringify(booking, null, 2))
   } catch (error) {
     console.error("Error fetching booking:", error)
     notFound()
@@ -68,6 +79,21 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
     }
   }
 
+  // Calculate nights
+  const calculateNights = () => {
+    try {
+      const checkIn = new Date(booking.check_in_date)
+      const checkOut = new Date(booking.check_out_date)
+      const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime())
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    } catch (error) {
+      console.error("Error calculating nights:", error)
+      return 0
+    }
+  }
+
+  const nights = calculateNights()
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -80,7 +106,7 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
             </Link>
             <h1 className="text-3xl font-bold tracking-tight">Booking Details</h1>
           </div>
-          <p className="text-muted-foreground">Booking Reference: {booking.booking_reference}</p>
+          <p className="text-muted-foreground">Booking Reference: {booking?.booking_reference || "N/A"}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline">Print</Button>
@@ -94,9 +120,11 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Booking Information</span>
-              {getStatusBadge(booking.status)}
+              {getStatusBadge(booking?.status || "unknown")}
             </CardTitle>
-            <CardDescription>Created on {new Date(booking.created_at).toLocaleString()}</CardDescription>
+            <CardDescription>
+              Created on {booking?.created_at ? new Date(booking.created_at).toLocaleString() : "N/A"}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
@@ -104,15 +132,15 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-muted-foreground" />
-                  <span>{booking.guest_name}</span>
+                  <span>{booking?.guest_name || "N/A"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span>{booking.guest_email}</span>
+                  <span>{booking?.guest_email || "N/A"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{booking.guest_phone}</span>
+                  <span>{booking?.guest_phone || "N/A"}</span>
                 </div>
               </div>
             </div>
@@ -125,8 +153,8 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                   <span>
-                    {booking.room?.name || "Room not specified"}
-                    {booking.room && (
+                    {booking?.room?.name || "Room not specified"}
+                    {booking?.room && (
                       <Link
                         href={`/admin/content?tab=rooms&edit=${booking.room.id}`}
                         className="ml-2 text-sm text-blue-500 hover:underline"
@@ -138,34 +166,32 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>Check-in: {new Date(booking.check_in_date).toLocaleDateString()}</span>
+                  <span>
+                    Check-in: {booking?.check_in_date ? new Date(booking.check_in_date).toLocaleDateString() : "N/A"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>Check-out: {new Date(booking.check_out_date).toLocaleDateString()}</span>
+                  <span>
+                    Check-out: {booking?.check_out_date ? new Date(booking.check_out_date).toLocaleDateString() : "N/A"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span>
-                    {(() => {
-                      const checkIn = new Date(booking.check_in_date)
-                      const checkOut = new Date(booking.check_out_date)
-                      const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime())
-                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-                      return `${diffDays} night${diffDays !== 1 ? "s" : ""}`
-                    })()}
+                    {nights} night{nights !== 1 ? "s" : ""}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
                   <span>
-                    {booking.number_of_guests} guest{booking.number_of_guests !== 1 ? "s" : ""}
+                    {booking?.number_of_guests || 0} guest{booking?.number_of_guests !== 1 ? "s" : ""}
                   </span>
                 </div>
               </div>
             </div>
 
-            {booking.special_requests && (
+            {booking?.special_requests && (
               <>
                 <Separator />
                 <div>
@@ -185,41 +211,25 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Status:</span>
-              {getPaymentStatusBadge(booking.payment_status)}
+              {getPaymentStatusBadge(booking?.payment_status || "unknown")}
             </div>
             <Separator />
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Room Rate:</span>
                 <span>
-                  $
-                  {(
-                    booking.total_amount /
-                    (() => {
-                      const checkIn = new Date(booking.check_in_date)
-                      const checkOut = new Date(booking.check_out_date)
-                      const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime())
-                      return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-                    })()
-                  ).toFixed(2)}
+                  ${nights > 0 && booking?.total_amount ? (booking.total_amount / nights).toFixed(2) : "0.00"}
                   <span className="text-xs text-muted-foreground"> / night</span>
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Nights:</span>
-                <span>
-                  {(() => {
-                    const checkIn = new Date(booking.check_in_date)
-                    const checkOut = new Date(booking.check_out_date)
-                    const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime())
-                    return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-                  })()}
-                </span>
+                <span>{nights}</span>
               </div>
               <Separator />
               <div className="flex justify-between font-medium">
                 <span>Total Amount:</span>
-                <span>${booking.total_amount.toFixed(2)}</span>
+                <span>${booking?.total_amount ? booking.total_amount.toFixed(2) : "0.00"}</span>
               </div>
             </div>
             <div className="pt-4">
@@ -234,4 +244,3 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
     </div>
   )
 }
-

@@ -166,11 +166,13 @@ export async function getBookingById(id: string) {
   try {
     const supabase = createServiceSupabaseClient()
 
+    console.log(`Fetching booking with ID: ${id}`)
+
     const { data, error } = await supabase
       .from("bookings")
       .select(`
         *,
-        room:rooms (id, name, description, image_url)
+        room:rooms (id, name, description, images)
       `)
       .eq("id", id)
       .single()
@@ -180,6 +182,7 @@ export async function getBookingById(id: string) {
       return null
     }
 
+    console.log(`Booking data retrieved:`, data)
     return data
   } catch (error) {
     console.error(`Error in getBookingById ${id}:`, error)
