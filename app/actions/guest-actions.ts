@@ -26,65 +26,58 @@ export async function getGuests() {
 
 // Get recent guests (checked in within the past month)
 export async function getRecentGuests(monthsBack = 1) {
-  const supabase = createServerSupabaseClient()
+  const supabase = createServerSupabaseClient();
 
   try {
-    // Calculate date range (past month from today)
-    const today = new Date()
-    const startDate = subMonths(today, monthsBack)
+    const today = new Date();
+    const startDate = subMonths(today, monthsBack);
 
-    console.log(`Fetching guests who checked in after ${format(startDate, "yyyy-MM-dd")}`)
+    console.log(`Fetching guests who checked in after ${format(startDate, "yyyy-MM-dd")}`);
 
-    // First get bookings from the past month
     const { data: recentBookings, error: bookingsError } = await supabase
       .from("bookings")
       .select("guest_id, check_in_date")
       .gte("check_in_date", startDate.toISOString())
-      .order("check_in_date", { ascending: false })
+      .order("check_in_date", { ascending: false });
 
     if (bookingsError) {
-      console.error("Error fetching recent bookings:", bookingsError)
-      return { error: bookingsError.message, data: [] }
+      console.error("Error fetching recent bookings:", bookingsError);
+      return { error: bookingsError.message, data: [] };
     }
 
     if (!recentBookings || recentBookings.length === 0) {
-      console.log("No recent bookings found")
-      return { data: [], error: null }
+      console.log("No recent bookings found");
+      return { data: [], error: null };
     }
 
-    // Extract unique guest IDs
     const guestIds = [
       ...new Set(
         recentBookings
-          .map((booking) => booking.guest_id)
-          .filter((id) => typeof id === "number" && !isNaN(id))
+          .map((b) => b.guest_id)
+          .filter((id) => id !== null && id !== undefined)
       )
-    ];
+    ]
     
 
-    console.log(`Found ${guestIds.length} unique guests with recent check-ins`)
+    console.log("Fetching guests with IDs:", guestIds);
 
-    // Get guest details for these IDs
     const { data: guests, error: guestsError } = await supabase
       .from("guests")
-      .select(`
-        *,
-        bookings(id, booking_reference, check_in_date, check_out_date, status)
-      `)
-      .in("id", guestIds)
-      .order("created_at", { ascending: false })
+      .select("*") // Start simple; add nested later if needed
+      .in("id", guestIds);
 
     if (guestsError) {
-      console.error("Error fetching guest details:", guestsError)
-      return { error: guestsError.message, data: [] }
+      console.error("Error fetching guest details:", guestsError);
+      return { error: guestsError.message, data: [] };
     }
 
-    return { data: guests || [], error: null }
+    return { data: guests || [], error: null };
   } catch (error: any) {
-    console.error("Error in getRecentGuests:", error)
-    return { error: error.message || "An unknown error occurred", data: [] }
+    console.error("Error in getRecentGuests:", error);
+    return { error: error.message || "An unknown error occurred", data: [] };
   }
 }
+
 
 // Get guest by ID
 export async function getGuestById(id: number) {
