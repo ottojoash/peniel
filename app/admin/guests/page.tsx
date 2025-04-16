@@ -29,13 +29,17 @@ import {
   Phone,
   Loader2,
   RefreshCw,
+  Calendar,
+  Users,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import GuestDetailsDialog from "@/components/admin/guest-details-dialog"
-import { getGuests } from "@/app/actions/guest-actions"
+import { getGuests, getRecentGuests } from "@/app/actions/guest-actions"
 import { toast } from "@/hooks/use-toast"
 import GuestForm from "@/components/admin/guest-form"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { format } from "date-fns"
 
 export default function GuestsPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -49,12 +53,21 @@ export default function GuestsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
   const [isEditing, setIsEditing] = useState(false)
+  const [activeTab, setActiveTab] = useState("recent")
+  const [timeRange, setTimeRange] = useState("1")
 
-  const fetchGuests = async () => {
+  const fetchGuests = async (tab: string = activeTab) => {
     setIsLoading(true)
     setError(null)
     try {
-      const result = await getGuests()
+      let result
+
+      if (tab === "recent") {
+        result = await getRecentGuests(Number.parseInt(timeRange))
+      } else {
+        result = await getGuests()
+      }
+
       if (result.error) {
         setError(result.error)
         toast({
@@ -80,6 +93,10 @@ export default function GuestsPage() {
   useEffect(() => {
     fetchGuests()
   }, [])
+
+  useEffect(() => {
+    fetchGuests(activeTab)
+  }, [activeTab, timeRange])
 
   // Filter guests based on search term and status filter
   const filteredGuests = guests.filter((guest) => {
@@ -123,6 +140,21 @@ export default function GuestsPage() {
     }
   }
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+    setCurrentPage(1) // Reset to first page when changing tabs
+  }
+
+  // Get the date range description
+  const getDateRangeDescription = () => {
+    const months = Number.parseInt(timeRange)
+    const today = new Date()
+    const startDate = new Date()
+    startDate.setMonth(today.getMonth() - months)
+
+    return `${format(startDate, "MMMM d, yyyy")} - ${format(today, "MMMM d, yyyy")}`
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -142,10 +174,56 @@ export default function GuestsPage() {
         </div>
       </div>
 
+      <Tabs defaultValue="recent" value={activeTab} onValueChange={handleTabChange}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="recent">
+            <Calendar className="h-4 w-4 mr-2" />
+            Recent Check-ins
+          </TabsTrigger>
+          <TabsTrigger value="all">
+            <Users className="h-4 w-4 mr-2" />
+            All Guests
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="recent" className="space-y-4">
+          <Card className="bg-muted/50">
+            <CardContent className="pt-6">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <h3 className="text-lg font-medium">Recent Guest Check-ins</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Showing guests who checked in during: {getDateRangeDescription()}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Time range:</span>
+                  <Select value={timeRange} onValueChange={setTimeRange}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select time range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Past month</SelectItem>
+                      <SelectItem value="3">Past 3 months</SelectItem>
+                      <SelectItem value="6">Past 6 months</SelectItem>
+                      <SelectItem value="12">Past year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
       <Card>
         <CardHeader>
-          <CardTitle>All Guests</CardTitle>
-          <CardDescription>View and manage guest profiles and preferences</CardDescription>
+          <CardTitle>{activeTab === "recent" ? "Recent Check-ins" : "All Guests"}</CardTitle>
+          <CardDescription>
+            {activeTab === "recent"
+              ? `Guests who checked in during the selected time period (${getDateRangeDescription()})`
+              : "View and manage all guest profiles and preferences"}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -202,7 +280,7 @@ export default function GuestsPage() {
                     <TableCell colSpan={7} className="text-center py-10">
                       <div className="flex flex-col items-center justify-center">
                         <p className="text-red-500 mb-2">{error}</p>
-                        <Button variant="outline" size="sm" onClick={fetchGuests}>
+                        <Button variant="outline" size="sm" onClick={() => fetchGuests(activeTab)}>
                           <RefreshCw className="h-4 w-4 mr-2" />
                           Try Again
                         </Button>
@@ -212,7 +290,9 @@ export default function GuestsPage() {
                 ) : paginatedGuests.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                      No guests found matching your search criteria
+                      {activeTab === "recent"
+                        ? `No guests checked in during ${getDateRangeDescription()}`
+                        : "No guests found matching your search criteria"}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -348,7 +428,7 @@ export default function GuestsPage() {
           guest={selectedGuest}
           open={isDetailsOpen}
           onOpenChange={setIsDetailsOpen}
-          onGuestUpdated={fetchGuests}
+          onGuestUpdated={() => fetchGuests(activeTab)}
         />
       )}
 
@@ -361,7 +441,7 @@ export default function GuestsPage() {
           <GuestForm
             onSuccess={() => {
               setIsAddGuestOpen(false)
-              fetchGuests()
+              fetchGuests(activeTab)
               toast({
                 title: "Guest created",
                 description: "The guest has been created successfully.",
