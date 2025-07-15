@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -67,9 +66,9 @@ export default function EditBookingForm({ booking, rooms }: EditBookingFormProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-
     try {
-      const response = await fetch(`/api/bookings/${booking.id}`, {
+      // Corrected API endpoint to match your route.ts file
+      const response = await fetch(`/api/admin/bookings/${booking.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -87,9 +86,7 @@ export default function EditBookingForm({ booking, rooms }: EditBookingFormProps
           specialRequests: formData.specialRequests,
         }),
       })
-
       const result = await response.json()
-
       if (result.success) {
         router.push("/admin/bookings")
         router.refresh()
@@ -147,7 +144,6 @@ export default function EditBookingForm({ booking, rooms }: EditBookingFormProps
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
               <CardTitle>Booking Details</CardTitle>
@@ -223,7 +219,6 @@ export default function EditBookingForm({ booking, rooms }: EditBookingFormProps
             </CardContent>
           </Card>
         </div>
-
         {/* Sidebar with status and actions */}
         <div className="space-y-6">
           <Card>
@@ -265,7 +260,6 @@ export default function EditBookingForm({ booking, rooms }: EditBookingFormProps
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
               <CardTitle>Booking Reference</CardTitle>
@@ -276,7 +270,6 @@ export default function EditBookingForm({ booking, rooms }: EditBookingFormProps
               </Badge>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
               <CardTitle>Total Amount</CardTitle>
@@ -288,7 +281,6 @@ export default function EditBookingForm({ booking, rooms }: EditBookingFormProps
           </Card>
         </div>
       </div>
-
       {/* Action buttons */}
       <div className="flex items-center justify-between pt-6 border-t">
         <Button variant="outline" asChild>

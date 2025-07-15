@@ -4,12 +4,32 @@ import { revalidatePath } from "next/cache"
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   console.log("PUT request received for booking ID:", params.id)
+  
+  // Add early return for invalid content type
+  const contentType = request.headers.get("content-type")
+  if (!contentType || !contentType.includes("application/json")) {
+    return NextResponse.json(
+      { success: false, error: "Content-Type must be application/json" },
+      { status: 400 }
+    )
+  }
 
   const supabase = createServerSupabaseClient()
 
   try {
     const bookingId = params.id
-    const body = await request.json()
+    let body
+    
+    // Better JSON parsing with error handling
+    try {
+      body = await request.json()
+    } catch (jsonError) {
+      console.error("JSON parsing error:", jsonError)
+      return NextResponse.json(
+        { success: false, error: "Invalid JSON in request body" },
+        { status: 400 }
+      )
+    }
 
     console.log("Request body:", body)
     console.log("Booking ID:", bookingId)
@@ -49,9 +69,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ success: false, error: "Booking not found" }, { status: 404 })
     }
 
-    // For now, let's skip the room rate recalculation to simplify
-    // We'll just update the booking without changing the total amount
-
     // Update the booking
     const updateData = {
       guest_name: guestName,
@@ -68,7 +85,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     console.log("Update data:", updateData)
 
-    const { data, error } = await supabase.from("bookings").update(updateData).eq("id", bookingId).select()
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updateData)
+      .eq("id", bookingId)
+      .select()
 
     console.log("Update result:", data)
     console.log("Update error:", error)
