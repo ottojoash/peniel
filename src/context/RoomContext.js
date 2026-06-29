@@ -13,7 +13,7 @@ const RoomProvider = ({ children }) => {
 
   useEffect(() => {
     setTotal(Number(adults[0]) + Number(kids[0]));
-  });
+  }, [adults, kids]);
 
   const handleClick = (e) => {
     e.preventDefault();
