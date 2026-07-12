@@ -3,9 +3,16 @@
   "framework": "create-react-app",
   "buildCommand": "npm run build",
   "outputDirectory": "build",
+  "functions": {
+    "api/index.js": { "maxDuration": 60 }
+  },
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/api/:path*",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]

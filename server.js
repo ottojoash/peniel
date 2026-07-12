@@ -8,12 +8,15 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const { handleUpload } = require("@vercel/blob/client");
 
 const app = express();
 const PORT = process.env.API_PORT || 5000;
 // Runtime uploads must stay outside React's watched `public` folder; otherwise
 // every upload triggers a development-server page reload.
-const UPLOAD_DIR = path.join(__dirname, "uploads");
+const UPLOAD_DIR = process.env.VERCEL
+  ? "/tmp/uploads"
+  : path.join(__dirname, "uploads");
 const SEED_FILE = path.join(__dirname, "server-data", "store.json");
 const JWT_SECRET = process.env.JWT_SECRET || "change-this-secret-in-production";
 let pool;
@@ -174,21 +177,39 @@ async function initializeDatabase() {
     port: Number(process.env.DB_PORT || 3306),
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
+    ssl:
+      process.env.DB_SSL === "true"
+        ? {
+            rejectUnauthorized:
+              process.env.DB_SSL_REJECT_UNAUTHORIZED !== "false",
+          }
+        : undefined,
   };
   const connection = await mysql.createConnection(base);
   const database = (process.env.DB_NAME || "peniel").replace(
     /[^a-zA-Z0-9_]/g,
     "",
   );
-  await connection.query(
-    `CREATE DATABASE IF NOT EXISTS \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
-  );
+  try {
+    await connection.query(
+      `CREATE DATABASE IF NOT EXISTS \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
+    );
+  } catch (error) {
+    // Managed MySQL users often cannot create databases, but can use the
+    // database provisioned by the provider.
+    if (
+      !["ER_DBACCESS_DENIED_ERROR", "ER_ACCESS_DENIED_ERROR"].includes(
+        error.code,
+      )
+    )
+      throw error;
+  }
   await connection.end();
   pool = mysql.createPool({
     ...base,
     database,
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: process.env.VERCEL ? 2 : 10,
     dateStrings: true,
   });
   await pool.query(
@@ -324,6 +345,9 @@ async function initializeDatabase() {
       [key, value],
     );
 }
+
+const databaseReady = initializeDatabase();
+app.use((_req, _res, next) => databaseReady.then(() => next()).catch(next));
 
 app.get("/", (_req, res) =>
   res.json({
@@ -817,6 +841,26 @@ app.post(
         })
       : res.status(400).json({ message: "Choose an image or video." }),
 );
+app.post(
+  "/api/admin/blob-upload",
+  wrap(async (req, res) => {
+    try {
+      jwt.verify(req.query.token, JWT_SECRET);
+    } catch {
+      return res.status(401).json({ message: "Admin sign-in required." });
+    }
+    const result = await handleUpload({
+      body: req.body,
+      request: req,
+      onBeforeGenerateToken: async () => ({
+        allowedContentTypes: allowedMedia,
+        maximumSizeInBytes: 500 * 1024 * 1024,
+        addRandomSuffix: true,
+      }),
+    });
+    res.json(result);
+  }),
+);
 app.get(
   "/api/admin/gallery",
   requireAdmin,
@@ -873,13 +917,18 @@ app.use((error, _req, res, _next) => {
       process.env.NODE_ENV === "production" ? "Server error." : error.message,
   });
 });
-initializeDatabase()
-  .then(() =>
-    app.listen(PORT, () =>
-      console.log(`Peniel API running on http://localhost:${PORT} with MySQL`),
-    ),
-  )
-  .catch((error) => {
-    console.error("Database startup failed:", error.message);
-    process.exit(1);
-  });
+if (require.main === module) {
+  databaseReady
+    .then(() =>
+      app.listen(PORT, () =>
+        console.log(
+          `Peniel API running on http://localhost:${PORT} with MySQL`,
+        ),
+      ),
+    )
+    .catch((error) => {
+      console.error("Database startup failed:", error.message);
+      process.exit(1);
+    });
+}
+module.exports = app;

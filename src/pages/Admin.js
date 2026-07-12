@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { api, imageUrl } from "../api";
+import { API_URL, api, imageUrl } from "../api";
 import DataTable from "../components/DataTable";
+import { upload as uploadToBlob } from "@vercel/blob/client";
 import {
   HiOutlineHome,
   HiOutlineOfficeBuilding,
@@ -114,6 +115,15 @@ const Admin = () => {
     }
   };
   const upload = async (file) => {
+    if (process.env.NODE_ENV === "production") {
+      const token = localStorage.getItem("peniel_admin_token");
+      const blob = await uploadToBlob(`hotel-media/${file.name}`, file, {
+        access: "public",
+        handleUploadUrl: `${API_URL}/api/admin/blob-upload?token=${encodeURIComponent(token)}`,
+        multipart: file.size > 100 * 1024 * 1024,
+      });
+      return blob.url;
+    }
     const form = new FormData();
     form.append("media", file);
     return (await api("/api/admin/upload", { method: "POST", body: form })).url;
