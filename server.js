@@ -67,6 +67,35 @@ const statusEmail = (booking, status) => {
     html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto"><h1 style="color:#a37d4c">${title}</h1><p>Hello ${booking.names},</p><p>${message}</p><table style="width:100%;border-collapse:collapse"><tr><td style="padding:8px;border-bottom:1px solid #ddd">Reservation code</td><td style="padding:8px;border-bottom:1px solid #ddd"><strong>${booking.reservationCode}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd">Room</td><td style="padding:8px;border-bottom:1px solid #ddd">${booking.type}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd">Check-in</td><td style="padding:8px;border-bottom:1px solid #ddd">${booking.checkIn}</td></tr><tr><td style="padding:8px">Check-out</td><td style="padding:8px">${booking.checkOut}</td></tr></table><p>Questions? Reply to this email and quote your PBH reference.</p></div>`,
   };
 };
+const paymentStatusEmail = (booking, paymentStatus) => {
+  const messages = {
+    paid: [
+      "Payment received",
+      "We have recorded payment for your reservation.",
+    ],
+    refunded: [
+      "Payment refunded",
+      "Your reservation payment has been marked as refunded. Allow your card provider's processing time for funds to appear.",
+    ],
+    failed: [
+      "Payment unsuccessful",
+      "Payment for your reservation was not completed. Please contact the hotel if you need assistance.",
+    ],
+    pending: [
+      "Payment pending",
+      "Your payment is still pending and the reservation is not yet payment-confirmed.",
+    ],
+    unpaid: [
+      "Payment required",
+      "Your reservation is currently marked as unpaid.",
+    ],
+  };
+  const [title, message] = messages[paymentStatus] || messages.unpaid;
+  return {
+    subject: `${title} — ${booking.reservationCode}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto"><h1 style="color:#a37d4c">${title}</h1><p>Hello ${booking.names},</p><p>${message}</p><p><strong>Reservation:</strong> ${booking.reservationCode}<br><strong>Room:</strong> ${booking.type}<br><strong>Total:</strong> ${booking.currency} ${Number(booking.price).toFixed(2)}</p><p>Thank you for choosing Peniel Beach Hotel.</p></div>`,
+  };
+};
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 app.use(cors({ origin: process.env.CLIENT_URL || true }));
@@ -446,28 +475,31 @@ app.post(
         reservationCode,
       ],
     );
+    const emailBooking = {
+      names,
+      email,
+      type: room.name,
+      checkIn,
+      checkOut,
+      currency,
+      price,
+      reservationCode,
+    };
+    const hotelInbox =
+      process.env.HOTEL_NOTIFICATION_EMAIL || "penielbeachhotel@gmail.com";
+    sendMail({
+      to: hotelInbox,
+      subject: `New reservation ${reservationCode}`,
+      html: bookingEmail(emailBooking, false),
+    }).catch((error) =>
+      console.error("Hotel reservation email failed:", error.message),
+    );
     if (!paymentEnabled) {
-      const emailBooking = {
-        names,
-        email,
-        type: room.name,
-        checkIn,
-        checkOut,
-        currency,
-        price,
-        reservationCode,
-      };
       sendMail({
         to: email,
         subject: `Reservation request ${reservationCode}`,
         html: bookingEmail(emailBooking, false),
       }).catch(console.error);
-      if (process.env.HOTEL_NOTIFICATION_EMAIL)
-        sendMail({
-          to: process.env.HOTEL_NOTIFICATION_EMAIL,
-          subject: `New reservation request ${reservationCode}`,
-          html: bookingEmail(emailBooking, false),
-        }).catch(console.error);
       return res.status(201).json({
         id,
         reservationCode,
@@ -735,6 +767,40 @@ app.patch(
     res.json({
       id: req.params.id,
       status: req.body.status,
+      emailQueued: Boolean(mailer),
+    });
+  }),
+);
+app.patch(
+  "/api/admin/bookings/:id/payment",
+  requireAdmin,
+  wrap(async (req, res) => {
+    const allowed = ["unpaid", "pending", "paid", "failed", "refunded"];
+    if (!allowed.includes(req.body.paymentStatus))
+      return res.status(400).json({ message: "Invalid payment status." });
+    const [[booking]] = await pool.execute(
+      "SELECT * FROM bookings WHERE id=?",
+      [req.params.id],
+    );
+    if (!booking)
+      return res.status(404).json({ message: "Booking not found." });
+    if (booking.paymentStatus === req.body.paymentStatus)
+      return res.json({
+        id: booking.id,
+        paymentStatus: booking.paymentStatus,
+        emailQueued: false,
+      });
+    await pool.execute("UPDATE bookings SET paymentStatus=? WHERE id=?", [
+      req.body.paymentStatus,
+      booking.id,
+    ]);
+    const notification = paymentStatusEmail(booking, req.body.paymentStatus);
+    sendMail({ to: booking.email, ...notification }).catch((error) =>
+      console.error("Guest payment email failed:", error.message),
+    );
+    res.json({
+      id: booking.id,
+      paymentStatus: req.body.paymentStatus,
       emailQueued: Boolean(mailer),
     });
   }),

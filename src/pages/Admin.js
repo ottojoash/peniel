@@ -150,6 +150,22 @@ const Admin = () => {
   };
   const requestDelete = (type, id, name) =>
     setPendingDelete({ type, id, name });
+  const changePaymentStatus = async (id, paymentStatus) => {
+    try {
+      const result = await api(`/api/admin/bookings/${id}/payment`, {
+        method: "PATCH",
+        body: JSON.stringify({ paymentStatus }),
+      });
+      setMessage(
+        result.emailQueued
+          ? `Payment marked ${paymentStatus}; guest email queued.`
+          : `Payment marked ${paymentStatus}. Gmail is not configured, so no email was sent.`,
+      );
+      await load();
+    } catch (error) {
+      setMessage(error.message);
+    }
+  };
   const confirmDelete = async () => {
     if (!pendingDelete) return;
     setBusy(true);
@@ -366,6 +382,7 @@ const Admin = () => {
                   <BookingTable
                     bookings={data.bookings.slice(0, 5)}
                     compact
+                    onPayment={changePaymentStatus}
                     onStatus={async (id, status) => {
                       await api(`/api/admin/bookings/${id}`, {
                         method: "PATCH",
@@ -646,6 +663,7 @@ const Admin = () => {
               </div>
               <BookingTable
                 bookings={data.bookings}
+                onPayment={changePaymentStatus}
                 onStatus={async (id, status) => {
                   await api(`/api/admin/bookings/${id}`, {
                     method: "PATCH",
@@ -974,7 +992,7 @@ const SettingsForm = ({ values, onChange, onSave, busy }) => {
   );
 };
 
-const BookingTable = ({ bookings, onStatus }) => {
+const BookingTable = ({ bookings, onStatus, onPayment }) => {
   const columns = [
     {
       key: "reservationCode",
@@ -1026,12 +1044,17 @@ const BookingTable = ({ bookings, onStatus }) => {
       key: "paymentStatus",
       name: "Payment",
       selector: (b) => b.paymentStatus || "unpaid",
+      sortable: false,
       cell: (b) => (
-        <span
-          className={`status-select ${b.paymentStatus === "paid" ? "status-completed" : "status-pending"}`}
+        <select
+          value={b.paymentStatus || "unpaid"}
+          onChange={(e) => onPayment(b.id, e.target.value)}
+          className={`status-select ${b.paymentStatus === "paid" ? "status-completed" : b.paymentStatus === "failed" ? "status-cancelled" : "status-pending"}`}
         >
-          {b.paymentStatus || "unpaid"}
-        </span>
+          {["unpaid", "pending", "paid", "failed", "refunded"].map((status) => (
+            <option key={status}>{status}</option>
+          ))}
+        </select>
       ),
     },
     {
