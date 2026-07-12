@@ -101,7 +101,12 @@ const paymentStatusEmail = (booking, paymentStatus) => {
 };
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-app.use(cors({ origin: process.env.CLIENT_URL || true }));
+app.use(cors({ origin: (origin, callback) => {
+  if (!origin) return callback(null, true);
+  const configured = (process.env.CLIENT_URL || '').split(',').map((item) => item.trim()).filter(Boolean);
+  const vercelOrigin = process.env.VERCEL && /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
+  callback(configured.includes(origin) || vercelOrigin ? null : new Error('Origin not allowed by CORS'), configured.includes(origin) || vercelOrigin);
+} }));
 app.use(
   express.json({
     limit: "2mb",
