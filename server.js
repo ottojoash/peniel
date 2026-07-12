@@ -7,6 +7,7 @@ const mysql = require("mysql2/promise");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 
 const app = express();
 const PORT = process.env.API_PORT || 5000;
@@ -16,6 +17,56 @@ const UPLOAD_DIR = path.join(__dirname, "uploads");
 const SEED_FILE = path.join(__dirname, "server-data", "store.json");
 const JWT_SECRET = process.env.JWT_SECRET || "change-this-secret-in-production";
 let pool;
+const mailer =
+  process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD
+    ? nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_APP_PASSWORD.replace(/\s/g, ""),
+        },
+      })
+    : null;
+const sendMail = async ({ to, subject, html }) => {
+  if (!mailer) return;
+  await mailer.sendMail({
+    from: `Peniel Beach Hotel <${process.env.GMAIL_USER}>`,
+    to,
+    subject,
+    html,
+  });
+};
+const bookingEmail = (booking, paid) =>
+  `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto"><h1 style="color:#a37d4c">${paid ? "Reservation confirmed" : "Reservation request received"}</h1><p>Hello ${booking.names},</p><p>${paid ? "Your payment has been verified and your reservation is confirmed." : "We received your reservation request and the hotel team will contact you after reviewing availability."}</p><table style="width:100%;border-collapse:collapse"><tr><td style="padding:8px;border-bottom:1px solid #ddd">Reservation code</td><td style="padding:8px;border-bottom:1px solid #ddd"><strong>${booking.reservationCode}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd">Room</td><td style="padding:8px;border-bottom:1px solid #ddd">${booking.type}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd">Stay</td><td style="padding:8px;border-bottom:1px solid #ddd">${booking.checkIn} to ${booking.checkOut}</td></tr><tr><td style="padding:8px">Total</td><td style="padding:8px">${booking.currency} ${Number(booking.price).toFixed(2)}</td></tr></table><p>Thank you for choosing Peniel Beach Hotel.</p></div>`;
+const statusEmail = (booking, status) => {
+  const messages = {
+    confirmed: [
+      "Reservation confirmed",
+      "Your reservation is confirmed. Please present the PBH reference below when contacting the hotel or checking in.",
+    ],
+    "checked-in": [
+      "You are checked in",
+      "Welcome to Peniel Beach Hotel. We hope you enjoy your stay.",
+    ],
+    completed: [
+      "Thank you for staying with us",
+      "Your stay is complete. Thank you for choosing Peniel Beach Hotel; we hope to welcome you again.",
+    ],
+    cancelled: [
+      "Reservation cancelled",
+      "Your reservation has been cancelled. Any eligible refund is handled according to the cancellation policy and original payment method.",
+    ],
+    pending: [
+      "Reservation pending",
+      "Your reservation is pending review. The hotel team will contact you when its status changes.",
+    ],
+  };
+  const [title, message] = messages[status] || messages.pending;
+  return {
+    subject: `${title} — ${booking.reservationCode}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto"><h1 style="color:#a37d4c">${title}</h1><p>Hello ${booking.names},</p><p>${message}</p><table style="width:100%;border-collapse:collapse"><tr><td style="padding:8px;border-bottom:1px solid #ddd">Reservation code</td><td style="padding:8px;border-bottom:1px solid #ddd"><strong>${booking.reservationCode}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd">Room</td><td style="padding:8px;border-bottom:1px solid #ddd">${booking.type}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd">Check-in</td><td style="padding:8px;border-bottom:1px solid #ddd">${booking.checkIn}</td></tr><tr><td style="padding:8px">Check-out</td><td style="padding:8px">${booking.checkOut}</td></tr></table><p>Questions? Reply to this email and quote your PBH reference.</p></div>`,
+  };
+};
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 app.use(cors({ origin: process.env.CLIENT_URL || true }));
@@ -144,6 +195,7 @@ async function initializeDatabase() {
     ["flutterwaveTransactionId", "VARCHAR(120) NULL"],
     ["currency", "VARCHAR(10) NULL"],
     ["termsAcceptedAt", "DATETIME NULL"],
+    ["reservationCode", "VARCHAR(32) NULL UNIQUE"],
   ];
   for (const [column, definition] of bookingColumns) {
     const [found] = await pool.query(
@@ -153,6 +205,24 @@ async function initializeDatabase() {
       await pool.query(
         `ALTER TABLE bookings ADD COLUMN ${column} ${definition}`,
       );
+  }
+  const [uncodedBookings] = await pool.query(
+    "SELECT id FROM bookings WHERE reservationCode IS NULL",
+  );
+  for (const booking of uncodedBookings) {
+    let code;
+    do {
+      code = `PBH${new Date().toISOString().slice(2, 10).replace(/-/g, "")}${Math.floor(1000 + Math.random() * 9000)}`;
+      const [[used]] = await pool.execute(
+        "SELECT id FROM bookings WHERE reservationCode=?",
+        [code],
+      );
+      if (!used) break;
+    } while (true);
+    await pool.execute("UPDATE bookings SET reservationCode=? WHERE id=?", [
+      code,
+      booking.id,
+    ]);
   }
   await pool.query(
     `CREATE TABLE IF NOT EXISTS site_content (contentKey VARCHAR(100) PRIMARY KEY, contentValue TEXT)`,
@@ -345,9 +415,18 @@ app.post(
     }
     const paymentAmount = price;
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const txRef = `PENIEL-${id}`;
+    let reservationCode;
+    do {
+      reservationCode = `PBH${new Date().toISOString().slice(2, 10).replace(/-/g, "")}${Math.floor(1000 + Math.random() * 9000)}`;
+      const [[used]] = await pool.execute(
+        "SELECT id FROM bookings WHERE reservationCode=?",
+        [reservationCode],
+      );
+      if (!used) break;
+    } while (true);
+    const txRef = reservationCode;
     await pool.execute(
-      "INSERT INTO bookings (id,names,email,checkIn,checkOut,roomId,type,adults,kids,price,notes,paymentStatus,paymentAmount,paymentReference,currency,termsAcceptedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW())",
+      "INSERT INTO bookings (id,names,email,checkIn,checkOut,roomId,type,adults,kids,price,notes,paymentStatus,paymentAmount,paymentReference,currency,reservationCode,termsAcceptedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW())",
       [
         id,
         names,
@@ -364,11 +443,34 @@ app.post(
         paymentAmount,
         txRef,
         currency,
+        reservationCode,
       ],
     );
     if (!paymentEnabled) {
+      const emailBooking = {
+        names,
+        email,
+        type: room.name,
+        checkIn,
+        checkOut,
+        currency,
+        price,
+        reservationCode,
+      };
+      sendMail({
+        to: email,
+        subject: `Reservation request ${reservationCode}`,
+        html: bookingEmail(emailBooking, false),
+      }).catch(console.error);
+      if (process.env.HOTEL_NOTIFICATION_EMAIL)
+        sendMail({
+          to: process.env.HOTEL_NOTIFICATION_EMAIL,
+          subject: `New reservation request ${reservationCode}`,
+          html: bookingEmail(emailBooking, false),
+        }).catch(console.error);
       return res.status(201).json({
         id,
+        reservationCode,
         paymentRequired: false,
         bookingTotal: price,
         currency,
@@ -407,6 +509,7 @@ app.post(
     }
     res.status(201).json({
       id,
+      reservationCode,
       paymentLink: result.data.link,
       amount: paymentAmount,
       bookingTotal: price,
@@ -427,6 +530,7 @@ async function verifyFlutterwave(transactionId, txRef) {
     [txRef],
   );
   if (!booking) return false;
+  const wasPaid = booking.paymentStatus === "paid";
   const valid =
     response.ok &&
     result.data?.status === "successful" &&
@@ -444,6 +548,19 @@ async function verifyFlutterwave(transactionId, txRef) {
       booking.id,
     ],
   );
+  if (valid && !wasPaid) {
+    sendMail({
+      to: booking.email,
+      subject: `Reservation confirmed ${booking.reservationCode}`,
+      html: bookingEmail(booking, true),
+    }).catch(console.error);
+    if (process.env.HOTEL_NOTIFICATION_EMAIL)
+      sendMail({
+        to: process.env.HOTEL_NOTIFICATION_EMAIL,
+        subject: `Paid reservation ${booking.reservationCode}`,
+        html: bookingEmail(booking, true),
+      }).catch(console.error);
+  }
   return valid;
 }
 app.get(
@@ -595,13 +712,31 @@ app.patch(
     ];
     if (!allowed.includes(req.body.status))
       return res.status(400).json({ message: "Invalid booking status." });
+    const [[booking]] = await pool.execute(
+      "SELECT * FROM bookings WHERE id=?",
+      [req.params.id],
+    );
+    if (!booking)
+      return res.status(404).json({ message: "Booking not found." });
+    if (booking.status === req.body.status)
+      return res.json({
+        id: req.params.id,
+        status: req.body.status,
+        emailQueued: false,
+      });
     const [result] = await pool.execute(
       "UPDATE bookings SET status=? WHERE id=?",
       [req.body.status, req.params.id],
     );
-    if (!result.affectedRows)
-      return res.status(404).json({ message: "Booking not found." });
-    res.json({ id: req.params.id, status: req.body.status });
+    const notification = statusEmail(booking, req.body.status);
+    sendMail({ to: booking.email, ...notification }).catch((error) =>
+      console.error("Guest status email failed:", error.message),
+    );
+    res.json({
+      id: req.params.id,
+      status: req.body.status,
+      emailQueued: Boolean(mailer),
+    });
   }),
 );
 app.post(

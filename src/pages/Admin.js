@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { api, imageUrl } from "../api";
+import DataTable from "../components/DataTable";
 import {
   HiOutlineHome,
   HiOutlineOfficeBuilding,
@@ -13,7 +14,6 @@ import {
   HiOutlineUsers,
   HiOutlineCurrencyDollar,
   HiOutlineClock,
-  HiOutlineSearch,
   HiOutlineCog,
 } from "react-icons/hi";
 
@@ -72,7 +72,6 @@ const Admin = () => {
   const [room, setRoom] = useState(emptyRoom);
   const [message, setMessage] = useState("");
   const [menu, setMenu] = useState(false);
-  const [search, setSearch] = useState("");
   const [busy, setBusy] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(null);
   const [roomModal, setRoomModal] = useState(false);
@@ -231,11 +230,6 @@ const Admin = () => {
       </main>
     );
 
-  const filteredBookings = data.bookings.filter((b) =>
-    `${b.names} ${b.email} ${b.type}`
-      .toLowerCase()
-      .includes(search.toLowerCase()),
-  );
   return (
     <div className="min-h-screen bg-[#f4f6f5] text-[#17211f]">
       <aside
@@ -642,25 +636,16 @@ const Admin = () => {
           )}
           {tab === "bookings" && (
             <section className="admin-card">
-              <div className="p-5 border-b flex flex-col sm:flex-row gap-4 justify-between">
+              <div className="p-5 border-b">
                 <div>
                   <h2 className="font-semibold text-lg">All reservations</h2>
                   <p className="text-gray-500 text-sm">
-                    {filteredBookings.length} booking records
+                    {data.bookings.length} booking records
                   </p>
-                </div>
-                <div className="relative">
-                  <HiOutlineSearch className="absolute left-3 top-3 text-gray-400" />
-                  <input
-                    className="border rounded-lg pl-10 pr-4 py-2.5"
-                    placeholder="Search guest or room"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
                 </div>
               </div>
               <BookingTable
-                bookings={filteredBookings}
+                bookings={data.bookings}
                 onStatus={async (id, status) => {
                   await api(`/api/admin/bookings/${id}`, {
                     method: "PATCH",
@@ -989,64 +974,93 @@ const SettingsForm = ({ values, onChange, onSave, busy }) => {
   );
 };
 
-const BookingTable = ({ bookings, onStatus, compact = false }) => (
-  <div className="overflow-x-auto">
-    <table className="w-full text-left">
-      <thead>
-        <tr className="text-xs uppercase tracking-wider text-gray-400 bg-gray-50">
-          {["Guest", "Stay", "Room", "Amount", "Status"].map((x) => (
-            <th key={x} className="px-5 py-4 font-medium">
-              {x}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {bookings.map((b) => (
-          <tr key={b.id} className="border-t hover:bg-gray-50/70">
-            <td className="px-5 py-4">
-              <strong className="block whitespace-nowrap">{b.names}</strong>
-              <small className="text-gray-500">{b.email}</small>
-            </td>
-            <td className="px-5 py-4 text-sm whitespace-nowrap">
-              {new Date(b.checkIn).toLocaleDateString()}
-              <span className="text-gray-400 block">
-                to {new Date(b.checkOut).toLocaleDateString()}
-              </span>
-            </td>
-            <td className="px-5 py-4 text-sm">{b.type}</td>
-            <td className="px-5 py-4 font-medium">
-              ${Number(b.price || 0).toLocaleString()}
-            </td>
-            <td className="px-5 py-4">
-              <select
-                value={b.status}
-                onChange={(e) => onStatus(b.id, e.target.value)}
-                className={`status-select status-${b.status}`}
-              >
-                {[
-                  "pending",
-                  "confirmed",
-                  "checked-in",
-                  "completed",
-                  "cancelled",
-                ].map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
-              </select>
-            </td>
-          </tr>
-        ))}
-        {!bookings.length && (
-          <tr>
-            <td colSpan="5" className="p-10 text-center text-gray-400">
-              No reservations found.
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
-    {compact && bookings.length > 5 && null}
-  </div>
-);
+const BookingTable = ({ bookings, onStatus }) => {
+  const columns = [
+    {
+      key: "reservationCode",
+      name: "Code",
+      selector: (b) => b.reservationCode || b.paymentReference || "—",
+      cell: (b) => (
+        <strong className="text-accent whitespace-nowrap">
+          {b.reservationCode || b.paymentReference || "—"}
+        </strong>
+      ),
+    },
+    {
+      key: "names",
+      name: "Guest",
+      selector: (b) => b.names,
+      searchValue: (b) => `${b.names} ${b.email}`,
+      cell: (b) => (
+        <>
+          <strong className="block whitespace-nowrap">{b.names}</strong>
+          <small className="text-gray-500">{b.email}</small>
+        </>
+      ),
+    },
+    {
+      key: "checkIn",
+      name: "Stay",
+      selector: (b) => b.checkIn,
+      cell: (b) => (
+        <span className="text-sm whitespace-nowrap">
+          {new Date(b.checkIn).toLocaleDateString()}
+          <small className="text-gray-400 block">
+            to {new Date(b.checkOut).toLocaleDateString()}
+          </small>
+        </span>
+      ),
+    },
+    { key: "type", name: "Room", selector: (b) => b.type },
+    {
+      key: "price",
+      name: "Amount",
+      selector: (b) => Number(b.price || 0),
+      cell: (b) => (
+        <strong>
+          {b.currency || "$"} {Number(b.price || 0).toLocaleString()}
+        </strong>
+      ),
+    },
+    {
+      key: "paymentStatus",
+      name: "Payment",
+      selector: (b) => b.paymentStatus || "unpaid",
+      cell: (b) => (
+        <span
+          className={`status-select ${b.paymentStatus === "paid" ? "status-completed" : "status-pending"}`}
+        >
+          {b.paymentStatus || "unpaid"}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      name: "Status",
+      selector: (b) => b.status,
+      sortable: false,
+      cell: (b) => (
+        <select
+          value={b.status}
+          onChange={(e) => onStatus(b.id, e.target.value)}
+          className={`status-select status-${b.status}`}
+        >
+          {["pending", "confirmed", "checked-in", "completed", "cancelled"].map(
+            (s) => (
+              <option key={s}>{s}</option>
+            ),
+          )}
+        </select>
+      ),
+    },
+  ];
+  return (
+    <DataTable
+      columns={columns}
+      data={bookings}
+      searchPlaceholder="Search code, guest, email, or room"
+      emptyMessage="No reservations found."
+    />
+  );
+};
 export default Admin;

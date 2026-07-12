@@ -108,7 +108,7 @@ const RoomDetails = () => {
       });
       window.location.assign(
         booking.paymentRequired === false
-          ? `/payment-result?status=pending&reference=${encodeURIComponent(booking.id)}`
+          ? `/payment-result?status=pending&reference=${encodeURIComponent(booking.reservationCode)}`
           : booking.paymentLink,
       );
       // Reset form after successful submission
