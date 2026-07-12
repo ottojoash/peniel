@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/img-redundant-alt */
 import React, { useContext, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { BsArrowRepeat } from "react-icons/bs";
 import { FaCheck } from "react-icons/fa";
 
@@ -25,7 +25,6 @@ const RoomDetails = () => {
   const { rooms, loading } = useContext(RoomContext);
   const { settings } = useSite();
   const { id } = useParams();
-  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     names: "",
@@ -35,6 +34,7 @@ const RoomDetails = () => {
     kids: 0,
     email: "",
     notes: "",
+    termsAccepted: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
@@ -98,18 +98,14 @@ const RoomDetails = () => {
     }
 
     try {
-      await api("/api/bookings", {
+      const booking = await api("/api/bookings", {
         method: "POST",
         body: JSON.stringify({
           ...formData,
           roomId: room.id,
-          price,
-          type: name,
         }),
       });
-
-      alert("Room booked successfully!");
-      navigate("/rooms");
+      window.location.assign(booking.paymentLink);
       // Reset form after successful submission
       setFormData({
         names: "",
@@ -119,10 +115,13 @@ const RoomDetails = () => {
         kids: 0,
         email: "",
         notes: "",
+        termsAccepted: false,
       });
     } catch (error) {
       console.error("Error booking room:", error);
-      alert("Failed to book room. Please try again later.");
+      alert(
+        error.message || "Failed to start payment. Please try again later.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -253,6 +252,29 @@ const RoomDetails = () => {
               <NotesInput
                 onChange={(value) => handleInputChange("notes", value)}
               />
+              <label className="flex items-start gap-3 text-sm leading-5">
+                <input
+                  type="checkbox"
+                  className="mt-1 accent-[#a37d4c]"
+                  checked={formData.termsAccepted}
+                  onChange={(e) =>
+                    handleInputChange("termsAccepted", e.target.checked)
+                  }
+                  required
+                />
+                <span>
+                  I agree to the{" "}
+                  <a
+                    className="text-accent underline"
+                    href="/terms"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    booking, cancellation, and hotel terms
+                  </a>
+                  . Card payment is required to confirm this reservation.
+                </span>
+              </label>
             </div>
             <button
               className="btn btn-lg btn-primary w-full flex justify-center items-center"

@@ -873,9 +873,12 @@ const SettingsForm = ({ values, onChange, onSave, busy }) => {
         ["hotelName", "Hotel name"],
         ["tagline", "Short tagline"],
         ["currencySymbol", "Currency symbol"],
+        ["currencyCode", "Payment currency code (e.g. USD)"],
         ["heroTitle", "Homepage hero heading"],
         ["heroButtonText", "Hero button text"],
         ["aboutText", "About the hotel"],
+        ["cancellationPolicy", "Cancellation and refund policy"],
+        ["bookingTerms", "General booking and stay terms"],
       ],
     ],
     [
@@ -912,14 +915,24 @@ const SettingsForm = ({ values, onChange, onSave, busy }) => {
             {fields.map(([key, label]) => (
               <label
                 className={
-                  key === "aboutText" || key === "mapEmbedUrl"
+                  [
+                    "aboutText",
+                    "mapEmbedUrl",
+                    "cancellationPolicy",
+                    "bookingTerms",
+                  ].includes(key)
                     ? "md:col-span-2"
                     : ""
                 }
                 key={key}
               >
                 <span className="admin-label">{label}</span>
-                {key === "aboutText" || key === "mapEmbedUrl" ? (
+                {[
+                  "aboutText",
+                  "mapEmbedUrl",
+                  "cancellationPolicy",
+                  "bookingTerms",
+                ].includes(key) ? (
                   <textarea
                     rows={key === "aboutText" ? 4 : 3}
                     className="admin-input"

@@ -1,34 +1,44 @@
-import React from 'react';
+import React from "react";
 // components
-import Header from './components/Header';
-import Footer from './components/Footer';
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 // pages
-import Home from './pages/Home';
-import RoomPages from './pages/RoomPage';
-import RoomDetails from './pages/RoomDetails';
-import Resturant from './pages/Resturant';
-import KidsPark from './pages/Kids';
+import Home from "./pages/Home";
+import RoomPages from "./pages/RoomPage";
+import RoomDetails from "./pages/RoomDetails";
+import Resturant from "./pages/Resturant";
+import KidsPark from "./pages/Kids";
 
 // react router
-import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
-import ContactForm from './pages/Contact';
-import Admin from './pages/Admin';
+import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
+import ContactForm from "./pages/Contact";
+import Admin from "./pages/Admin";
+import Terms from "./pages/Terms";
+import PaymentResult from "./pages/PaymentResult";
 
-const PublicLayout = () => <><Header /><Outlet /><Footer /></>;
+const PublicLayout = () => (
+  <>
+    <Header />
+    <Outlet />
+    <Footer />
+  </>
+);
 const router = createBrowserRouter([
   {
     element: <PublicLayout />,
     children: [
-      { path: '/', element: <Home /> },
-      { path: '/rooms', element: <RoomPages /> },
-      { path: '/resturant', element: <Resturant/> },
-      { path: '/kids', element: <KidsPark/> },
-      { path: '/contact', element: <ContactForm/> },
-      { path: '/room/:id', element: <RoomDetails /> },
+      { path: "/", element: <Home /> },
+      { path: "/rooms", element: <RoomPages /> },
+      { path: "/resturant", element: <Resturant /> },
+      { path: "/kids", element: <KidsPark /> },
+      { path: "/contact", element: <ContactForm /> },
+      { path: "/room/:id", element: <RoomDetails /> },
+      { path: "/terms", element: <Terms /> },
+      { path: "/payment-result", element: <PaymentResult /> },
     ],
   },
   {
-    path: '/admin',
+    path: "/admin",
     element: <Admin />,
   },
 ]);
