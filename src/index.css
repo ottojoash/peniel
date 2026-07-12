@@ -33,4 +33,16 @@
   .btn-white {
     @apply bg-white text-[#0a0a0a];
   }
+  .admin-input {
+    @apply w-full border border-gray-300 rounded-lg px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent;
+  }
+  .admin-dark-input { @apply w-full border border-white/20 rounded-lg px-4 py-3.5 bg-white/5 text-white focus:outline-none focus:border-accent; }
+  .admin-label { @apply block text-sm font-medium mb-1.5 text-gray-600; }
+  .admin-card { @apply bg-white border border-gray-200 rounded-xl shadow-sm; }
+  .status-select { @apply rounded-full px-3 py-1.5 text-xs font-medium border-0 capitalize focus:ring-1 focus:ring-accent; }
+  .status-pending { @apply bg-amber-100 text-amber-800; }
+  .status-confirmed { @apply bg-blue-100 text-blue-800; }
+  .status-checked-in { @apply bg-purple-100 text-purple-800; }
+  .status-completed { @apply bg-green-100 text-green-800; }
+  .status-cancelled { @apply bg-red-100 text-red-700; }
 }

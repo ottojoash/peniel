@@ -1,15 +1,21 @@
 import React, { createContext, useEffect, useState } from 'react';
 // data
-import { roomData } from '../data';
+import { api, imageUrl } from '../api';
 // create context
 export const RoomContext = createContext();
 
 const RoomProvider = ({ children }) => {
-  const [rooms, setRooms] = useState(roomData);
+  const [rooms, setRooms] = useState([]);
   const [adults, setAdults] = useState('1 Adult');
   const [kids, setKids] = useState('0 Kids');
   const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api('/api/rooms').then((items) => {
+      setRooms(items.map((room) => ({ ...room, image: imageUrl(room.image), imageLg: imageUrl(room.imageLg || room.image), images: (room.images || []).map(imageUrl), facilities: (room.facilities || []).map((name) => typeof name === 'string' ? { name } : name) })));
+    }).catch(() => setRooms([])).finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
     setTotal(Number(adults[0]) + Number(kids[0]));
@@ -19,7 +25,7 @@ const RoomProvider = ({ children }) => {
     e.preventDefault();
     setLoading(true);
     // filter rooms based on total (person)
-    const newRooms = roomData.filter((room) => {
+    const newRooms = rooms.filter((room) => {
       return total <= room.maxPerson;
     });
     setTimeout(() => {
@@ -30,7 +36,7 @@ const RoomProvider = ({ children }) => {
 
   return (
     <RoomContext.Provider
-      value={{ rooms, adults, setAdults, kids, setKids, handleClick, loading }}
+      value={{ rooms, setRooms, adults, setAdults, kids, setKids, handleClick, loading }}
     >
       {children}
     </RoomContext.Provider>

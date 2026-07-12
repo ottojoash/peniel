@@ -16,14 +16,24 @@ import ScrollToTop from '../components/ScrollToTop';
 
 // Context
 import { RoomContext } from '../context/RoomContext';
+import { api } from '../api';
+import { useSite } from '../context/SiteContext';
 
 const RoomDetails = () => {
-  const { rooms } = useContext(RoomContext);
+  const { rooms, loading } = useContext(RoomContext);
+  const { settings } = useSite();
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Get the room data based on ID
-  const room = rooms.find((room) => room.id === Number(id));
+  const [formData, setFormData] = useState({ names: '', checkIn: '', checkOut: '', adults: 0, kids: 0, email: '', notes: '' });
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
+
+  // MySQL room identifiers are strings. Wait for the API before deciding it is missing.
+  const room = rooms.find((item) => String(item.id) === String(id));
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen"><BsArrowRepeat className="animate-spin text-4xl text-accent" /></div>;
+  }
   if (!room) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -33,24 +43,8 @@ const RoomDetails = () => {
   }
 
   // Destructure room properties
-  const { name, description, facilities, imageLg, price } = room;
-
-  // Form state
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [formData, setFormData] = useState({
-    names: '',
-    checkIn: '',
-    checkOut: '',
-    adults: 0,
-    kids: 0,
-    price: price,
-    email: '',
-    type: name,
-    notes: '',
-  });
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [isLoading, setIsLoading] = useState(false);
+  const { name, description, facilities, imageLg, image, images = [], price } = room;
+  const roomImages = [...new Set([imageLg, image, ...images].filter(Boolean))];
 
   // Handle input changes
   const handleInputChange = (field, value) => {
@@ -75,17 +69,7 @@ const RoomDetails = () => {
     }
 
     try {
-      const response = await fetch('https://peniel-api.onrender.com/api/sendEmail', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to book room');
-      }
+      await api('/api/bookings', { method: 'POST', body: JSON.stringify({ ...formData, roomId: room.id, price, type: name }) });
 
       alert('Room booked successfully!');
       navigate('/rooms');
@@ -98,8 +82,6 @@ const RoomDetails = () => {
         kids: 0,
         email: '',
         notes: '',
-        price: price,
-        type: name,
       });
     } catch (error) {
       console.error('Error booking room:', error);
@@ -126,13 +108,19 @@ const RoomDetails = () => {
         <div className="w-full lg:w-[60%] px-6">
           <h2 className="h2">{name}</h2>
           <p className="mb-8" itemProp="description">{description}</p>
-          <img className="mb-8" src={imageLg} alt={`Image of ${name}`} itemProp="image" />
+          <div className="mb-10">
+            <div className="relative overflow-hidden bg-gray-100 aspect-[4/3]">
+              <img className="w-full h-full object-cover" src={roomImages[activeImage]} alt={`${name} view ${activeImage + 1}`} itemProp="image" />
+              {roomImages.length > 1 && <span className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 text-sm">{activeImage + 1} / {roomImages.length}</span>}
+            </div>
+            {roomImages.length > 1 && <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 mt-3">{roomImages.map((src, index) => <button key={src} onClick={() => setActiveImage(index)} className={`aspect-square overflow-hidden border-2 ${activeImage === index ? 'border-accent' : 'border-transparent'}`} aria-label={`View room image ${index + 1}`}><img src={src} alt="" className="w-full h-full object-cover" /></button>)}</div>}
+          </div>
           <div>
             <h3 className="h3 mb-3">Room Facilities</h3>
             <div className="grid grid-cols-3 gap-6 mb-12">
-              {facilities.map((item, index) => (
+              {(facilities || []).map((item, index) => (
                 <div className="flex items-center gap-x-3" key={index}>
-                  <div className="text-3xl text-accent">{item.icon}</div>
+                  {item.icon && <div className="text-3xl text-accent">{item.icon}</div>}
                   <div>{item.name}</div>
                 </div>
               ))}
@@ -163,7 +151,7 @@ const RoomDetails = () => {
                   <BsArrowRepeat className="animate-spin mr-2" />
                   Booking...
                 </div>
-              ) : `Book now for $${price}`}
+              ) : `Book now for ${settings.currencySymbol || '$'}${price}`}
             </button>
           </div>
 

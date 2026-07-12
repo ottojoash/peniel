@@ -9,7 +9,7 @@ const CheckoutD = ({ onChange }) => {
 
   const handleDateChange = (date) => {
     setStartDate(date); // Update local state
-    onChange(date); // Pass selected date to parent component
+    onChange?.(date); // Pass selected date to parent component
   };
 
   return (

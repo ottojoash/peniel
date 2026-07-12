@@ -6,8 +6,10 @@ import Room from '../components/Room';
 // loader
 import { SpinnerDotted } from 'spinners-react';
 import { Helmet } from 'react-helmet'; // Import Helmet for managing document head
+import { useSite } from '../context/SiteContext';
 
 const Rooms = () => {
+  const { settings } = useSite();
   const { rooms, loading } = useContext(RoomContext);
 
   return (
@@ -26,7 +28,7 @@ const Rooms = () => {
       <div className='container mx-auto lg:px-0'>
         <div className='text-center'>
           <div className='font-tertiary uppercase text-[15px] tracking-[6px]'>
-            Penial Beach Hotel
+            {settings.hotelName || 'Hotel'}
           </div>
           <h2 className='font-primary text-[45px] mb-4'>Rooms & Suites</h2>
         </div>

@@ -8,8 +8,10 @@ import ScrollToTop from '../components/ScrollToTop';
 import ContactImage from '../assets/img/heroSlider/2.webp';
 import { BsEnvelope } from 'react-icons/bs';
 import { BsArrowRepeat } from 'react-icons/bs';
+import { useSite } from '../context/SiteContext';
 
 const Contact = () => {
+  const { settings } = useSite();
   const [formData, setFormData] = useState({
     email: '',
     subject: '',
@@ -166,12 +168,11 @@ const Contact = () => {
               <div className="w-full lg:w-1/2">
                 <h2 className="text-2xl font-semibold mb-4">Our Address</h2>
                 <p className="text-gray-300">
-                  Plot 110-120 Circular Road Bugonga<br />
-                  Opposite the old Airport, Entebbe<br />
-                  Tel: +256772485887, +256752703147<br />
+                  {settings.addressLine1}<br />{settings.addressLine2}<br />{settings.country}<br />
+                  Tel: {settings.primaryPhone}{settings.secondaryPhone ? `, ${settings.secondaryPhone}` : ''}<br />
                   Email:{' '}
-                  <a href="mailto:penielbeachhotel@gmail.com" className="text-blue-500 hover:text-blue-700">
-                    penielbeachhotel@gmail.com
+                  <a href={`mailto:${settings.email}`} className="text-blue-500 hover:text-blue-700">
+                    {settings.email}
                   </a>
                 </p>
               </div>

@@ -1,40 +1,41 @@
 import React, { Suspense, lazy } from 'react';
 import { Helmet } from 'react-helmet'; // For managing the document head
+import { useSite } from '../context/SiteContext';
 
 // Lazy-loaded components
 const Rooms = lazy(() => import('../components/Rooms'));
 const BookForm = lazy(() => import('../components/BookForm'));
 const HeroSlider = lazy(() => import('../components/HeroSlider'));
-const Attract = lazy(() => import('../components/Attraction'));
 const Sfooter = lazy(() => import('../components/Sfooter'));
-const Adverts = lazy(() => import('../components/Adverts'));
+const Gallery = lazy(() => import('../components/Gallery'));
 
 // Skeleton loader for fallback
 const Loader = () => <div className="loader">Loading...</div>;
 
 const Home = () => {
+  const { settings } = useSite();
+  const hotelName = settings.hotelName || 'Peniel Beach Hotel';
+  const description = settings.aboutText || `Welcome to ${hotelName}.`;
   return (
     <>
       {/* SEO Meta Tags */}
       <Helmet>
-        <title>Peniel Beach Hotel | Welcome to Peniel Beach Hotel</title>
-        <h1>Peniel Beach Hotel | Welcome to Peniel Beach Hotel</h1>
-        <p>Welcome to Peniel Beach Hotel, your perfect getaway destination.</p>
+        <title>{hotelName} | Official Website</title>
         <meta
           name="description"
-          content="Welcome to Peniel Beach Hotel - Enjoy a luxurious stay with our comfortable rooms, exciting attractions, and more. Book now!"
+          content={description}
         />
         <meta
           name="keywords"
-          content="Peniel Beach Hotel, luxury hotel, accommodation, rooms, attractions, book now"
+          content={`${hotelName}, hotel, accommodation, rooms, Entebbe, book now`}
         />
         <meta
           property="og:title"
-          content="Peniel Beach Hotel | Welcome to Peniel Beach Hotel"
+          content={`${hotelName} | Official Website`}
         />
         <meta
           property="og:description"
-          content="Welcome to Peniel Beach Hotel - Enjoy a luxurious stay with our comfortable rooms, exciting attractions, and more. Book now!"
+          content={description}
         />
         <meta property="og:url" content="https://www.penielbeachotel.com/" />
         <meta
@@ -45,11 +46,11 @@ const Home = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="twitter:title"
-          content="Peniel Beach Hotel | Welcome to Peniel Beach Hotel"
+          content={`${hotelName} | Official Website`}
         />
         <meta
           name="twitter:description"
-          content="Welcome to Peniel Beach Hotel - Enjoy a luxurious stay with our comfortable rooms, exciting attractions, and more. Book now!"
+          content={description}
         />
         <meta
           name="twitter:image"
@@ -70,8 +71,7 @@ const Home = () => {
 
         {/* Other Sections */}
         <Rooms />
-        <Attract />
-        <Adverts />
+        <Gallery />
         <Sfooter />
       </Suspense>
     </>

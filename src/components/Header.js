@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { HiMenu } from 'react-icons/hi'; // Ensure you have 'react-icons' installed
 import LogoWhite from '../assets/img/logo.png';
 import LogoDark from '../assets/img/logo_transparent.png';
+import { useSite } from '../context/SiteContext';
 
 const Header = () => {
+  const { settings } = useSite();
   const [header, setHeader] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false); // State to manage mobile menu toggle
 
@@ -24,7 +26,7 @@ const Header = () => {
         
         {/* Text visible on mobile */}
         <span className='text-xl font-semibold lg:hidden'>
-          Welcome to Peniel Beach Hotel
+          {settings.hotelName || 'Peniel Beach Hotel'}
         </span>
 
         {/* Mobile navigation menu, hidden by default */}
@@ -36,12 +38,13 @@ const Header = () => {
             <a href='/resturant' className='hover:text-accent transition' title='Visit Our Restaurant'>Restaurant</a>
             <a href='/kids' className='hover:text-accent transition' title='Kids Park Information'>Kids Park</a>
             <a href='/contact' className='hover:text-accent transition' title='Contact Us'>Contact</a>
+            <a href='/#gallery' className='hover:text-accent transition' title='Photo Gallery'>Gallery</a>
           </nav>
         </div>
 
         {/* Logo */}
         <a href='/' className='flex-grow text-center lg:flex-grow-0' title='Peniel Beach Hotel - Home'>
-          <img className='inline-block w-[60px] lg:w-[80px]' src={header ? LogoWhite : LogoDark} alt='Peniel Beach Hotel Logo' itemprop="logo"/>
+          <img className='inline-block w-[60px] lg:w-[80px]' src={header ? LogoWhite : LogoDark} alt={`${settings.hotelName || 'Hotel'} logo`} itemProp="logo"/>
         </a>
 
         {/* Desktop navigation */}
@@ -52,6 +55,7 @@ const Header = () => {
             <a href='/resturant' className='hover:text-accent transition' title='Visit Our Restaurant'>Restaurant</a>
             <a href='/kids' className='hover:text-accent transition' title='Kids Park Information'>Kids Park</a>
             <a href='/contact' className='hover:text-accent transition' title='Contact Us'>Contact</a>
+            <a href='/#gallery' className='hover:text-accent transition' title='Photo Gallery'>Gallery</a>
         </nav>
       </div>
     </header>

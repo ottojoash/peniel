@@ -13,6 +13,7 @@ import { EffectFade, Autoplay } from 'swiper';
 import hotelview from '../assets/img/banner/rest-side.jpg';
 import room from '../assets/img/banner/room-exc.jpg'
 import hotelfront from '../assets/img/banner/front-view.jpg'
+import { useSite } from '../context/SiteContext';
 
 const slides = [
   {
@@ -33,6 +34,7 @@ const slides = [
 ];
 
 const HeroSlider = () => {
+  const { settings } = useSite();
   return (
     <>
     <Helmet>
@@ -60,14 +62,14 @@ const HeroSlider = () => {
           >
             <div className='z-20 text-white text-center'>
               <div className='uppercase font-tertiary tracking-[6px] mb-5'>
-                Peniel Beach Hotel
+                {settings.hotelName || 'Peniel Beach Hotel'}
               </div>
               <h1 className='text-[32px] font-primary uppercase tracking-[2px] max-w-[920px] lg:text-[68px] leading-tight mb-6'>
-                {title}
+                {settings.heroTitle || title}
               </h1>
               <p className='mb-6'>{desc}</p>
               <button className='btn btn-lg btn-primary mx-auto'>
-                <a href='/rooms'>{btnText}</a>
+                <a href='/rooms'>{settings.heroButtonText || btnText}</a>
               </button>
             </div>
             <img

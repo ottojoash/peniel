@@ -10,44 +10,31 @@ import Resturant from './pages/Resturant';
 import KidsPark from './pages/Kids';
 
 // react router
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import ContactForm from './pages/Contact';
+import Admin from './pages/Admin';
 
+const PublicLayout = () => <><Header /><Outlet /><Footer /></>;
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <Home />,
+    element: <PublicLayout />,
+    children: [
+      { path: '/', element: <Home /> },
+      { path: '/rooms', element: <RoomPages /> },
+      { path: '/resturant', element: <Resturant/> },
+      { path: '/kids', element: <KidsPark/> },
+      { path: '/contact', element: <ContactForm/> },
+      { path: '/room/:id', element: <RoomDetails /> },
+    ],
   },
   {
-    path: '/rooms', // Add this route for the Rooms page
-    element: <RoomPages />,
-  },
-  {
-    path: '/resturant', // Add this route for the Rooms page
-    element: <Resturant/>,
-  },
-  {
-    path: '/kids', // Add this route for the Rooms page
-    element: <KidsPark/>,
-  },
-  {
-    path: '/Contact', // Add this route for the Rooms page
-    element: <ContactForm/>,
-  },
-  {
-    path: '/room/:id',
-    element: <RoomDetails />,
+    path: '/admin',
+    element: <Admin />,
   },
 ]);
 
 const App = () => {
-  return (
-    <div>
-      <Header />
-      <RouterProvider router={router} />
-      <Footer />
-    </div>
-  );
+  return <RouterProvider router={router} />;
 };
 
 export default App;

@@ -3,8 +3,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 // icons
 import { BsArrowsFullscreen, BsPeople } from 'react-icons/bs';
+import { useSite } from '../context/SiteContext';
 
 const Room = ({ room }) => {
+  const { settings } = useSite();
   // destructure room
   const { id, name, image, size, maxPerson, description, price } = room;
   return (
@@ -56,7 +58,7 @@ const Room = ({ room }) => {
         to={`/room/${id}`}
         className='btn btn-secondary btn-sm max-w-[240px] mx-auto'
       >
-        Book now from ${price}
+        Book now from {settings.currencySymbol || '$'}{price}
       </Link>
     </div>
   );

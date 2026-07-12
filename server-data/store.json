@@ -1,0 +1,25 @@
+{
+  "rooms": [
+    { "id": 1, "name": "Executive Conference Block Double", "description": "Comfortable double room for two guests.", "size": "36", "maxPerson": 3, "price": 80, "image": "/rooms/exc-double.jpg", "imageLg": "/rooms/exc-double.jpg", "facilities": ["Wifi", "Coffee", "Bath", "Parking", "Breakfast"], "active": true },
+    { "id": 2, "name": "Executive RBLK & Cottages", "description": "A welcoming cottage for couples, families, or small groups.", "size": "70", "maxPerson": 2, "price": 65, "image": "/rooms/room-exc.jpg", "imageLg": "/rooms/room-exc.jpg", "facilities": ["Wifi", "Coffee", "Bath", "Parking", "Swimming Pool", "Breakfast"], "active": true },
+    { "id": 3, "name": "Family Room", "description": "Spacious accommodation for a family or group of four.", "size": "70", "maxPerson": 4, "price": 100, "image": "/rooms/family-room.jpg", "imageLg": "/rooms/family-room.jpg", "facilities": ["Wifi", "Bath", "Parking", "Swimming Pool", "Breakfast"], "active": true },
+    { "id": 4, "name": "Economy Room", "description": "A practical and comfortable stay for one guest.", "size": "32", "maxPerson": 1, "price": 45, "image": "/rooms/budget-family.jpg", "imageLg": "/rooms/budget-family.jpg", "facilities": ["Wifi", "Bath", "Parking", "Breakfast"], "active": true },
+    { "id": 5, "name": "Deluxe Twin Room", "description": "A bright twin room designed for two guests.", "size": "32", "maxPerson": 2, "price": 120, "image": "/rooms/twin.jpg", "imageLg": "/rooms/twin.jpg", "facilities": ["Wifi", "Coffee", "Bath", "Parking", "Breakfast"], "active": true },
+    { "id": 6, "name": "Conference Single", "description": "A peaceful single room near the conference facilities.", "size": "45", "maxPerson": 2, "price": 65, "image": "/rooms/exc-single.jpg", "imageLg": "/rooms/exc-single.jpg", "facilities": ["Wifi", "Bath", "Parking", "Breakfast", "Gym"], "active": true },
+    { "id": 7, "name": "Budget Room", "description": "Simple, good-value accommodation for one guest.", "size": "12", "maxPerson": 1, "price": 30, "image": "/rooms/keresi.jpg", "imageLg": "/rooms/keresi.jpg", "facilities": ["Wifi", "Bath", "Parking", "Breakfast"], "active": true }
+  ],
+  "gallery": [
+    { "id": "g1", "url": "/gallery/front-view.jpg", "title": "Welcome to Peniel", "category": "Hotel", "active": true },
+    { "id": "g2", "url": "/gallery/beach.jpg", "title": "Beach moments", "category": "Experience", "active": true },
+    { "id": "g3", "url": "/gallery/wide-angle-bed.jpg", "title": "Comfortable stays", "category": "Rooms", "active": true },
+    { "id": "g4", "url": "/gallery/rest-back.jpeg", "title": "Fresh dining", "category": "Dining", "active": true },
+    { "id": "g5", "url": "/gallery/kidpark.jpg", "title": "Fun for the family", "category": "Experience", "active": true },
+    { "id": "g6", "url": "/gallery/conference.jpg", "title": "Meet and celebrate", "category": "Events", "active": true }
+  ],
+  "bookings": [],
+  "content": {
+    "galleryEyebrow": "Discover Peniel",
+    "galleryTitle": "A glimpse of your stay",
+    "galleryIntro": "From restful rooms to beach days and memorable meals, explore life at Peniel Beach Hotel."
+  }
+}
