@@ -29,6 +29,7 @@ const emptyRoom = {
   facilities: "Wifi, Breakfast, Parking",
   active: true,
 };
+const isVideo = (url = "") => /\.(mp4|webm|mov)(?:$|\?)/i.test(url);
 const navigation = [
   ["overview", "Overview", HiOutlineHome],
   ["rooms", "Rooms", HiOutlineOfficeBuilding],
@@ -74,6 +75,7 @@ const Admin = () => {
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [roomModal, setRoomModal] = useState(false);
   const load = useCallback(async () => {
     try {
       const [summary, rooms, bookings, gallery, content] = await Promise.all([
@@ -114,7 +116,7 @@ const Admin = () => {
   };
   const upload = async (file) => {
     const form = new FormData();
-    form.append("image", file);
+    form.append("media", file);
     return (await api("/api/admin/upload", { method: "POST", body: form })).url;
   };
   const saveRoom = async (e) => {
@@ -138,6 +140,7 @@ const Admin = () => {
         body: JSON.stringify(payload),
       });
       setRoom(emptyRoom);
+      setRoomModal(false);
       setMessage("Room saved successfully.");
       await load();
     } catch (x) {
@@ -390,7 +393,13 @@ const Admin = () => {
                   ].map(([label, key, Icon]) => (
                     <button
                       key={key}
-                      onClick={() => choose(key)}
+                      onClick={() => {
+                        choose(key);
+                        if (key === "rooms") {
+                          setRoom(emptyRoom);
+                          setRoomModal(true);
+                        }
+                      }}
                       className="w-full border rounded-lg p-4 mb-3 flex items-center gap-3 hover:border-accent hover:bg-[#faf8f4]"
                     >
                       <Icon className="text-accent" size={21} />
@@ -402,116 +411,190 @@ const Admin = () => {
             </>
           )}
           {tab === "rooms" && (
-            <div className="grid xl:grid-cols-[400px_1fr] gap-6">
-              <form
-                onSubmit={saveRoom}
-                className="admin-card p-6 h-fit xl:sticky xl:top-28"
-              >
-                <h2 className="font-semibold text-xl">
-                  {room.id ? "Edit room" : "Create room"}
-                </h2>
-                <p className="text-sm text-gray-500 mb-6">
-                  Guest-facing room information
-                </p>
-                {[
-                  ["name", "Room name", "text"],
-                  ["description", "Description", "text"],
-                  ["size", "Size (m²)", "text"],
-                  ["maxPerson", "Maximum guests", "number"],
-                  ["price", "Nightly price ($)", "number"],
-                  ["facilities", "Facilities (comma separated)", "text"],
-                ].map(([key, label, type]) => (
-                  <label className="block mb-4" key={key}>
-                    <span className="admin-label">{label}</span>
-                    <input
-                      className="admin-input"
-                      type={type}
-                      value={
-                        Array.isArray(room[key])
-                          ? room[key].map((x) => x.name || x).join(", ")
-                          : room[key]
-                      }
-                      onChange={(e) =>
-                        setRoom({ ...room, [key]: e.target.value })
-                      }
-                      required
-                    />
-                  </label>
-                ))}
-                <label className="block border-2 border-dashed rounded-lg p-5 text-center cursor-pointer hover:border-accent">
-                  <HiOutlinePhotograph
-                    size={28}
-                    className="mx-auto text-accent"
-                  />
-                  <span className="block text-sm mt-2">
-                    Upload room photos
-                  </span>
-                  <small className="text-gray-400">Select several images at once</small>
-                  <input
-                    hidden
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={async (e) => {
-                      const files = Array.from(e.target.files || []);
-                      if (!files.length) return;
-                      setBusy(true);
-                      try {
-                        const urls = await Promise.all(files.map(upload));
-                        setRoom((r) => ({
-                          ...r,
-                          image: r.image || urls[0],
-                          imageLg: r.imageLg || urls[0],
-                          images: [...(r.images || []), ...urls],
-                        }));
-                      } finally {
-                        setBusy(false);
-                        e.target.value = "";
-                      }
-                    }}
-                  />
-                </label>
-                {(room.images || []).length > 0 && (
-                  <div className="grid grid-cols-3 gap-2 mt-3">
-                    {room.images.map((src, index) => (
-                      <div key={`${src}-${index}`} className={`relative aspect-square border-2 rounded overflow-hidden ${room.image === src ? "border-accent" : "border-transparent"}`}>
-                        <img src={imageUrl(src)} alt={`Room upload ${index + 1}`} className="w-full h-full object-cover" />
-                        <button type="button" onClick={() => setRoom((r) => ({ ...r, image: src, imageLg: src }))} className="absolute inset-x-1 bottom-1 bg-black/70 text-white text-[10px] py-1 rounded">{room.image === src ? "Cover" : "Make cover"}</button>
-                        <button type="button" aria-label="Remove image" onClick={() => setRoom((r) => { const images = r.images.filter((item) => item !== src); const nextCover = r.image === src ? (images[0] || "") : r.image; return { ...r, images, image: nextCover, imageLg: nextCover }; })} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-600 text-white">×</button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <button
-                  disabled={busy}
-                  className="w-full bg-[#10211d] text-white py-3.5 rounded-lg mt-5"
-                >
-                  {busy ? "Saving…" : "Save room"}
-                </button>
-                {room.id && (
+            <div>
+              {roomModal && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 lg:p-8">
                   <button
                     type="button"
-                    onClick={() => setRoom(emptyRoom)}
-                    className="w-full py-3 text-gray-500"
+                    className="absolute inset-0 bg-[#07100e]/70 backdrop-blur-sm"
+                    onClick={() => !busy && setRoomModal(false)}
+                    aria-label="Close room form"
+                  />
+                  <form
+                    onSubmit={saveRoom}
+                    className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] overflow-y-auto p-6 lg:p-8"
                   >
-                    Cancel editing
-                  </button>
-                )}
-              </form>
+                    <button
+                      type="button"
+                      onClick={() => !busy && setRoomModal(false)}
+                      className="absolute top-5 right-5 w-10 h-10 rounded-full bg-gray-100 grid place-items-center hover:bg-gray-200"
+                      aria-label="Close room form"
+                    >
+                      <HiOutlineX size={22} />
+                    </button>
+                    <h2 className="font-semibold text-xl">
+                      {room.id ? "Edit room" : "Create room"}
+                    </h2>
+                    <p className="text-sm text-gray-500 mb-6">
+                      Guest-facing room information
+                    </p>
+                    {[
+                      ["name", "Room name", "text"],
+                      ["description", "Description", "text"],
+                      ["size", "Size (m²)", "text"],
+                      ["maxPerson", "Maximum guests", "number"],
+                      ["price", "Nightly price ($)", "number"],
+                      ["facilities", "Facilities (comma separated)", "text"],
+                    ].map(([key, label, type]) => (
+                      <label className="block mb-4" key={key}>
+                        <span className="admin-label">{label}</span>
+                        <input
+                          className="admin-input"
+                          type={type}
+                          value={
+                            Array.isArray(room[key])
+                              ? room[key].map((x) => x.name || x).join(", ")
+                              : room[key]
+                          }
+                          onChange={(e) =>
+                            setRoom({ ...room, [key]: e.target.value })
+                          }
+                          required
+                        />
+                      </label>
+                    ))}
+                    <label className="block border-2 border-dashed rounded-lg p-5 text-center cursor-pointer hover:border-accent">
+                      <HiOutlinePhotograph
+                        size={28}
+                        className="mx-auto text-accent"
+                      />
+                      <span className="block text-sm mt-2">
+                        Upload room photos
+                      </span>
+                      <small className="text-gray-400">
+                        Select several images at once
+                      </small>
+                      <input
+                        hidden
+                        type="file"
+                        accept="image/*,video/mp4,video/webm,video/quicktime"
+                        multiple
+                        onChange={async (e) => {
+                          const files = Array.from(e.target.files || []);
+                          if (!files.length) return;
+                          setBusy(true);
+                          try {
+                            const urls = await Promise.all(files.map(upload));
+                            setRoom((r) => ({
+                              ...r,
+                              image: r.image || urls[0],
+                              imageLg: r.imageLg || urls[0],
+                              images: [...(r.images || []), ...urls],
+                            }));
+                          } finally {
+                            setBusy(false);
+                            e.target.value = "";
+                          }
+                        }}
+                      />
+                    </label>
+                    {(room.images || []).length > 0 && (
+                      <div className="grid grid-cols-3 gap-2 mt-3">
+                        {room.images.map((src, index) => (
+                          <div
+                            key={`${src}-${index}`}
+                            className={`relative aspect-square border-2 rounded overflow-hidden ${room.image === src ? "border-accent" : "border-transparent"}`}
+                          >
+                            {isVideo(src) ? (
+                              <video
+                                src={imageUrl(src)}
+                                className="w-full h-full object-cover"
+                                muted
+                              />
+                            ) : (
+                              <img
+                                src={imageUrl(src)}
+                                alt={`Room upload ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setRoom((r) => ({
+                                  ...r,
+                                  image: src,
+                                  imageLg: src,
+                                }))
+                              }
+                              className="absolute inset-x-1 bottom-1 bg-black/70 text-white text-[10px] py-1 rounded"
+                            >
+                              {room.image === src ? "Cover" : "Make cover"}
+                            </button>
+                            <button
+                              type="button"
+                              aria-label="Remove image"
+                              onClick={() =>
+                                setRoom((r) => {
+                                  const images = r.images.filter(
+                                    (item) => item !== src,
+                                  );
+                                  const nextCover =
+                                    r.image === src ? images[0] || "" : r.image;
+                                  return {
+                                    ...r,
+                                    images,
+                                    image: nextCover,
+                                    imageLg: nextCover,
+                                  };
+                                })
+                              }
+                              className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-600 text-white"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <button
+                      disabled={busy}
+                      className="w-full bg-[#10211d] text-white py-3.5 rounded-lg mt-5"
+                    >
+                      {busy ? "Saving…" : "Save room"}
+                    </button>
+                    {room.id && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRoom(emptyRoom);
+                          setRoomModal(false);
+                        }}
+                        className="w-full py-3 text-gray-500"
+                      >
+                        Cancel editing
+                      </button>
+                    )}
+                  </form>
+                </div>
+              )}
               <section>
                 <div className="flex justify-between items-center mb-5">
                   <p className="text-gray-500">
                     {data.rooms.length} room types
                   </p>
                   <button
-                    onClick={() => setRoom(emptyRoom)}
+                    onClick={() => {
+                      setRoom(emptyRoom);
+                      setRoomModal(true);
+                    }}
                     className="bg-accent text-white px-4 py-2.5 rounded-lg flex items-center gap-2"
                   >
                     <HiOutlinePlus />
                     New room
                   </button>
                 </div>
-                <div className="grid md:grid-cols-2 gap-5">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
                   {data.rooms.map((r) => (
                     <article key={r.id} className="admin-card overflow-hidden">
                       <img
@@ -537,7 +620,7 @@ const Admin = () => {
                           <button
                             onClick={() => {
                               setRoom(r);
-                              window.scrollTo({ top: 0, behavior: "smooth" });
+                              setRoomModal(true);
                             }}
                             className="text-accent"
                           >
@@ -592,11 +675,11 @@ const Admin = () => {
             <>
               <label className="inline-flex items-center gap-2 bg-[#10211d] text-white px-5 py-3 rounded-lg cursor-pointer mb-6">
                 <HiOutlinePlus />
-                Upload new photo
+                Upload image or video
                 <input
                   hidden
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/mp4,video/webm,video/quicktime"
                   onChange={async (e) => {
                     if (!e.target.files[0]) return;
                     const url = await upload(e.target.files[0]);
@@ -605,7 +688,12 @@ const Admin = () => {
                     const category = window.prompt("Category?") || "Hotel";
                     await api("/api/admin/gallery", {
                       method: "POST",
-                      body: JSON.stringify({ url, title, category }),
+                      body: JSON.stringify({
+                        url,
+                        title,
+                        category,
+                        mediaType: isVideo(url) ? "video" : "image",
+                      }),
                     });
                     load();
                   }}
@@ -618,11 +706,20 @@ const Admin = () => {
                     className="admin-card overflow-hidden group"
                   >
                     <div className="relative">
-                      <img
-                        src={imageUrl(g.url)}
-                        alt={g.title}
-                        className="h-60 w-full object-cover"
-                      />
+                      {g.mediaType === "video" || isVideo(g.url) ? (
+                        <video
+                          src={imageUrl(g.url)}
+                          className="h-60 w-full object-cover"
+                          controls
+                          preload="metadata"
+                        />
+                      ) : (
+                        <img
+                          src={imageUrl(g.url)}
+                          alt={g.title}
+                          className="h-60 w-full object-cover"
+                        />
+                      )}
                       <button
                         onClick={() => requestDelete("gallery", g.id, g.title)}
                         className="absolute top-3 right-3 bg-white/90 text-red-600 px-3 py-2 rounded opacity-0 group-hover:opacity-100"

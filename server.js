@@ -9,7 +9,9 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.API_PORT || 5000;
-const UPLOAD_DIR = path.join(__dirname, 'public', 'uploads');
+// Runtime uploads must stay outside React's watched `public` folder; otherwise
+// every upload triggers a development-server page reload.
+const UPLOAD_DIR = path.join(__dirname, 'uploads');
 const SEED_FILE = path.join(__dirname, 'server-data', 'store.json');
 const JWT_SECRET = process.env.JWT_SECRET || 'change-this-secret-in-production';
 let pool;
@@ -20,7 +22,8 @@ app.use(express.json({ limit: '2mb' }));
 app.use('/uploads', express.static(UPLOAD_DIR));
 
 const storage = multer.diskStorage({ destination: UPLOAD_DIR, filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '-')}`) });
-const upload = multer({ storage, limits: { fileSize: 8 * 1024 * 1024 }, fileFilter: (_req, file, cb) => cb(null, ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) });
+const allowedMedia = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime'];
+const upload = multer({ storage, limits: { fileSize: 100 * 1024 * 1024 }, fileFilter: (_req, file, cb) => allowedMedia.includes(file.mimetype) ? cb(null, true) : cb(new Error('Only JPG, PNG, WebP, MP4, WebM, and MOV media is allowed.')) });
 const requireAdmin = (req, res, next) => {
   try { req.admin = jwt.verify(req.headers.authorization?.replace('Bearer ', ''), JWT_SECRET); next(); }
   catch { res.status(401).json({ message: 'Admin sign-in required.' }); }
@@ -41,6 +44,8 @@ async function initializeDatabase() {
   const [imageColumns] = await pool.query("SHOW COLUMNS FROM rooms LIKE 'images'");
   if (!imageColumns.length) await pool.query('ALTER TABLE rooms ADD COLUMN images JSON NULL AFTER imageLg');
   await pool.query(`CREATE TABLE IF NOT EXISTS gallery (id VARCHAR(64) PRIMARY KEY, url TEXT NOT NULL, title VARCHAR(180), category VARCHAR(80), active BOOLEAN DEFAULT TRUE, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
+  const [mediaTypeColumns] = await pool.query("SHOW COLUMNS FROM gallery LIKE 'mediaType'");
+  if (!mediaTypeColumns.length) await pool.query("ALTER TABLE gallery ADD COLUMN mediaType ENUM('image','video') NOT NULL DEFAULT 'image' AFTER category");
   await pool.query(`CREATE TABLE IF NOT EXISTS bookings (id VARCHAR(64) PRIMARY KEY, names VARCHAR(180) NOT NULL, email VARCHAR(180) NOT NULL, checkIn DATETIME NOT NULL, checkOut DATETIME NOT NULL, roomId VARCHAR(64), type VARCHAR(180), adults INT DEFAULT 0, kids INT DEFAULT 0, price DECIMAL(10,2) DEFAULT 0, notes TEXT, status ENUM('pending','confirmed','checked-in','completed','cancelled') DEFAULT 'pending', createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
   await pool.query(`CREATE TABLE IF NOT EXISTS site_content (contentKey VARCHAR(100) PRIMARY KEY, contentValue TEXT)`);
 
@@ -93,9 +98,9 @@ app.put('/api/admin/rooms/:id', requireAdmin, wrap(async (req,res) => { const r=
 app.delete('/api/admin/rooms/:id', requireAdmin, wrap(async (req,res) => { await pool.execute('DELETE FROM rooms WHERE id=?',[req.params.id]); res.status(204).end(); }));
 app.get('/api/admin/bookings', requireAdmin, wrap(async (_req,res) => { const [rows]=await pool.query('SELECT * FROM bookings ORDER BY createdAt DESC'); res.json(rows.map((b)=>({...b,price:Number(b.price)}))); }));
 app.patch('/api/admin/bookings/:id', requireAdmin, wrap(async (req,res) => { const allowed=['pending','confirmed','checked-in','completed','cancelled']; if(!allowed.includes(req.body.status))return res.status(400).json({message:'Invalid booking status.'}); const [result]=await pool.execute('UPDATE bookings SET status=? WHERE id=?',[req.body.status,req.params.id]); if(!result.affectedRows)return res.status(404).json({message:'Booking not found.'}); res.json({id:req.params.id,status:req.body.status}); }));
-app.post('/api/admin/upload', requireAdmin, upload.single('image'), (req,res) => req.file ? res.status(201).json({url:`/uploads/${req.file.filename}`}) : res.status(400).json({message:'Choose a JPG, PNG, or WebP image.'}));
+app.post('/api/admin/upload', requireAdmin, upload.single('media'), (req,res) => req.file ? res.status(201).json({url:`/uploads/${req.file.filename}`,mediaType:req.file.mimetype.startsWith('video/')?'video':'image'}) : res.status(400).json({message:'Choose an image or video.'}));
 app.get('/api/admin/gallery', requireAdmin, wrap(async (_req,res) => { const [rows]=await pool.query('SELECT * FROM gallery ORDER BY createdAt DESC'); res.json(rows.map(parseGallery)); }));
-app.post('/api/admin/gallery', requireAdmin, wrap(async (req,res) => { const id=`${Date.now()}-${Math.random().toString(36).slice(2,8)}`; await pool.execute('INSERT INTO gallery (id,url,title,category,active) VALUES (?,?,?,?,TRUE)',[id,req.body.url,req.body.title,req.body.category]); res.status(201).json({id,...req.body,active:true}); }));
+app.post('/api/admin/gallery', requireAdmin, wrap(async (req,res) => { const id=`${Date.now()}-${Math.random().toString(36).slice(2,8)}`; await pool.execute('INSERT INTO gallery (id,url,title,category,mediaType,active) VALUES (?,?,?,?,?,TRUE)',[id,req.body.url,req.body.title,req.body.category,req.body.mediaType==='video'?'video':'image']); res.status(201).json({id,...req.body,active:true}); }));
 app.delete('/api/admin/gallery/:id', requireAdmin, wrap(async (req,res) => { await pool.execute('DELETE FROM gallery WHERE id=?',[req.params.id]); res.status(204).end(); }));
 app.put('/api/admin/content', requireAdmin, wrap(async (req,res) => { for(const [key,value] of Object.entries(req.body)) await pool.execute('INSERT INTO site_content (contentKey,contentValue) VALUES (?,?) ON DUPLICATE KEY UPDATE contentValue=VALUES(contentValue)',[key,value]); res.json(req.body); }));
 
