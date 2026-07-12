@@ -101,12 +101,26 @@ const paymentStatusEmail = (booking, paymentStatus) => {
 };
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-app.use(cors({ origin: (origin, callback) => {
-  if (!origin) return callback(null, true);
-  const configured = (process.env.CLIENT_URL || '').split(',').map((item) => item.trim()).filter(Boolean);
-  const vercelOrigin = process.env.VERCEL && /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
-  callback(configured.includes(origin) || vercelOrigin ? null : new Error('Origin not allowed by CORS'), configured.includes(origin) || vercelOrigin);
-} }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const configured = (process.env.CLIENT_URL || "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+      const vercelOrigin =
+        process.env.VERCEL &&
+        /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
+      callback(
+        configured.includes(origin) || vercelOrigin
+          ? null
+          : new Error("Origin not allowed by CORS"),
+        configured.includes(origin) || vercelOrigin,
+      );
+    },
+  }),
+);
 app.use(
   express.json({
     limit: "2mb",
@@ -182,6 +196,7 @@ async function initializeDatabase() {
     port: Number(process.env.DB_PORT || 3306),
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
+    connectTimeout: 20000,
     ssl:
       process.env.DB_SSL === "true"
         ? {
@@ -351,8 +366,33 @@ async function initializeDatabase() {
     );
 }
 
-const databaseReady = initializeDatabase();
-app.use((_req, _res, next) => databaseReady.then(() => next()).catch(next));
+let databaseStartupError = null;
+const initializeWithRetry = async () => {
+  let lastError;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      await initializeDatabase();
+      return;
+    } catch (error) {
+      lastError = error;
+      console.error(
+        `Database connection attempt ${attempt} failed:`,
+        error.message,
+      );
+      if (attempt < 3)
+        await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+    }
+  }
+  throw lastError;
+};
+const databaseReady = initializeWithRetry().catch((error) => {
+  databaseStartupError = error;
+});
+app.use(async (_req, _res, next) => {
+  await databaseReady;
+  if (databaseStartupError) return next(databaseStartupError);
+  next();
+});
 
 app.get("/", (_req, res) =>
   res.json({
