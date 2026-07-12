@@ -16,11 +16,9 @@ const Terms = () => {
           <section>
             <h2 className="h3 text-primary">Payment and confirmation</h2>
             <p>
-              A reservation is confirmed only after successful card payment and
-              payment verification. The total shown at checkout is calculated
-              from the room rate and number of nights. Your card details are
-              collected and processed by Flutterwave; the hotel website does not
-              store them.
+              {settings.paymentEnabled !== "false"
+                ? "A reservation is confirmed only after successful card payment and payment verification. The total shown at checkout is calculated from the room rate and number of nights. Your card details are collected and processed by Flutterwave; the hotel website does not store them."
+                : "Online payment is currently paused. A submitted booking is a reservation request and remains pending until the hotel reviews availability and contacts the guest with confirmation and payment instructions."}
             </p>
           </section>
           <section>

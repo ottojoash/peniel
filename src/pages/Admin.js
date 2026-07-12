@@ -874,6 +874,7 @@ const SettingsForm = ({ values, onChange, onSave, busy }) => {
         ["tagline", "Short tagline"],
         ["currencySymbol", "Currency symbol"],
         ["currencyCode", "Payment currency code (e.g. USD)"],
+        ["paymentEnabled", "Accept online card payments"],
         ["heroTitle", "Homepage hero heading"],
         ["heroButtonText", "Hero button text"],
         ["aboutText", "About the hotel"],
@@ -927,12 +928,33 @@ const SettingsForm = ({ values, onChange, onSave, busy }) => {
                 key={key}
               >
                 <span className="admin-label">{label}</span>
-                {[
-                  "aboutText",
-                  "mapEmbedUrl",
-                  "cancellationPolicy",
-                  "bookingTerms",
-                ].includes(key) ? (
+                {key === "paymentEnabled" ? (
+                  <span className="flex items-center justify-between border rounded-xl p-4 bg-gray-50">
+                    <span>
+                      <strong className="block text-sm">
+                        {values[key] !== "false"
+                          ? "Payments active"
+                          : "Payments paused"}
+                      </strong>
+                      <small className="text-gray-500">
+                        {values[key] !== "false"
+                          ? "Guests pay by card during booking."
+                          : "Bookings arrive as unpaid requests."}
+                      </small>
+                    </span>
+                    <input
+                      type="checkbox"
+                      className="w-6 h-6 accent-[#a37d4c]"
+                      checked={values[key] !== "false"}
+                      onChange={(e) => onChange(key, String(e.target.checked))}
+                    />
+                  </span>
+                ) : [
+                    "aboutText",
+                    "mapEmbedUrl",
+                    "cancellationPolicy",
+                    "bookingTerms",
+                  ].includes(key) ? (
                   <textarea
                     rows={key === "aboutText" ? 4 : 3}
                     className="admin-input"

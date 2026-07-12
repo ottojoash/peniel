@@ -24,6 +24,7 @@ const isVideo = (url = "") => /\.(mp4|webm|mov)(?:$|\?)/i.test(url);
 const RoomDetails = () => {
   const { rooms, loading } = useContext(RoomContext);
   const { settings } = useSite();
+  const paymentEnabled = settings.paymentEnabled !== "false";
   const { id } = useParams();
 
   const [formData, setFormData] = useState({
@@ -105,7 +106,11 @@ const RoomDetails = () => {
           roomId: room.id,
         }),
       });
-      window.location.assign(booking.paymentLink);
+      window.location.assign(
+        booking.paymentRequired === false
+          ? `/payment-result?status=pending&reference=${encodeURIComponent(booking.id)}`
+          : booking.paymentLink,
+      );
       // Reset form after successful submission
       setFormData({
         names: "",
@@ -272,7 +277,10 @@ const RoomDetails = () => {
                   >
                     booking, cancellation, and hotel terms
                   </a>
-                  . Card payment is required to confirm this reservation.
+                  .{" "}
+                  {paymentEnabled
+                    ? "Card payment is required to confirm this reservation."
+                    : "The hotel will review and confirm this reservation request."}
                 </span>
               </label>
             </div>
@@ -286,8 +294,10 @@ const RoomDetails = () => {
                   <BsArrowRepeat className="animate-spin mr-2" />
                   Booking...
                 </div>
+              ) : paymentEnabled ? (
+                `Pay & reserve for ${settings.currencySymbol || "$"}${price}`
               ) : (
-                `Book now for ${settings.currencySymbol || "$"}${price}`
+                "Request reservation"
               )}
             </button>
           </div>

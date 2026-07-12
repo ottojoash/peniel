@@ -207,6 +207,7 @@ async function initializeDatabase() {
       "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.8173409640895!2d32.4578450731043!3d0.040145464389186994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x177d86c52afdeed7%3A0xf99d53c25a719bcc!2sPeniel%20Beach%20Hotel!5e0!3m2!1sen!2sug!4v1707709517160!5m2!1sen!2sug",
     currencySymbol: "$",
     currencyCode: "USD",
+    paymentEnabled: "true",
     heroTitle: "Your hotel for vacation",
     heroButtonText: "See our rooms",
     cancellationPolicy:
@@ -320,18 +321,20 @@ app.post(
     );
     const price = Number(room.price) * nights;
     const [contentRows] = await pool.query(
-      "SELECT contentKey,contentValue FROM site_content WHERE contentKey IN ('currencyCode','hotelName')",
+      "SELECT contentKey,contentValue FROM site_content WHERE contentKey IN ('currencyCode','hotelName','paymentEnabled')",
     );
     const content = Object.fromEntries(
       contentRows.map((x) => [x.contentKey, x.contentValue]),
     );
     const currency = content.currencyCode || "USD";
-    if (!process.env.FLW_SECRET_KEY)
+    const paymentEnabled = content.paymentEnabled !== "false";
+    if (paymentEnabled && !process.env.FLW_SECRET_KEY)
       return res.status(503).json({
         message:
           "Online payment is not configured yet. Add the Flutterwave secret key.",
       });
     if (
+      paymentEnabled &&
       process.env.NODE_ENV === "production" &&
       process.env.FLW_SECRET_KEY.startsWith("FLWSECK_TEST-")
     ) {
@@ -357,12 +360,21 @@ app.post(
         parseInt(kids) || 0,
         price,
         notes,
-        "pending",
+        paymentEnabled ? "pending" : "unpaid",
         paymentAmount,
         txRef,
         currency,
       ],
     );
+    if (!paymentEnabled) {
+      return res.status(201).json({
+        id,
+        paymentRequired: false,
+        bookingTotal: price,
+        currency,
+        status: "pending",
+      });
+    }
     const flw = await fetch("https://api.flutterwave.com/v3/payments", {
       method: "POST",
       headers: {
@@ -399,6 +411,7 @@ app.post(
       amount: paymentAmount,
       bookingTotal: price,
       currency,
+      paymentRequired: true,
     });
   }),
 );
