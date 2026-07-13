@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { API_URL, api, imageUrl } from "../api";
 import DataTable from "../components/DataTable";
-import { upload as uploadToBlob } from "@vercel/blob/client";
 import {
   HiOutlineHome,
   HiOutlineOfficeBuilding,
@@ -57,6 +56,26 @@ const uploadLocally = (file, onProgress) =>
       else reject(new Error(body.message || "Upload failed."));
     };
     request.send(form);
+  });
+const uploadToR2 = (file, uploadUrl, onProgress) =>
+  new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open("PUT", uploadUrl);
+    request.setRequestHeader("Content-Type", file.type);
+    request.upload.onprogress = (event) => {
+      if (event.lengthComputable)
+        onProgress({
+          loaded: event.loaded,
+          total: event.total,
+          percentage: (event.loaded / event.total) * 100,
+        });
+    };
+    request.onerror = () => reject(new Error("Cloudflare upload connection failed."));
+    request.onload = () =>
+      request.status >= 200 && request.status < 300
+        ? resolve()
+        : reject(new Error(`Cloudflare upload failed (${request.status}).`));
+    request.send(file);
   });
 const navigation = [
   ["overview", "Overview", HiOutlineHome],
@@ -164,16 +183,19 @@ const Admin = () => {
     updateProgress({ loaded: 0, total: file.size, percentage: 0 });
     try {
       let url;
-      if (process.env.NODE_ENV === "production") {
-        const token = localStorage.getItem("peniel_admin_token");
-        const blob = await uploadToBlob(`hotel-media/${file.name}`, file, {
-          access: "public",
-          handleUploadUrl: `${API_URL}/api/admin/blob-upload?token=${encodeURIComponent(token)}`,
-          multipart: file.size > 100 * 1024 * 1024,
-          onUploadProgress: updateProgress,
+      try {
+        const signed = await api("/api/admin/r2-upload-url", {
+          method: "POST",
+          body: JSON.stringify({
+            fileName: file.name,
+            contentType: file.type,
+            size: file.size,
+          }),
         });
-        url = blob.url;
-      } else {
+        await uploadToR2(file, signed.uploadUrl, updateProgress);
+        url = signed.publicUrl;
+      } catch (error) {
+        if (process.env.NODE_ENV === "production") throw error;
         url = await uploadLocally(file, updateProgress);
       }
       updateProgress({ loaded: file.size, total: file.size, percentage: 100 });

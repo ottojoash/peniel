@@ -8,7 +8,8 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
-const { handleUpload } = require("@vercel/blob/client");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const app = express();
 const PORT = process.env.API_PORT || 5000;
@@ -19,6 +20,19 @@ const UPLOAD_DIR = process.env.VERCEL
   : path.join(__dirname, "uploads");
 const SEED_FILE = path.join(__dirname, "server-data", "store.json");
 const JWT_SECRET = process.env.JWT_SECRET || "change-this-secret-in-production";
+const r2 =
+  process.env.R2_ENDPOINT &&
+  process.env.R2_ACCESS_KEY_ID &&
+  process.env.R2_SECRET_ACCESS_KEY
+    ? new S3Client({
+        region: "auto",
+        endpoint: process.env.R2_ENDPOINT,
+        credentials: {
+          accessKeyId: process.env.R2_ACCESS_KEY_ID,
+          secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+        },
+      })
+    : null;
 let pool;
 const mailer =
   process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD
@@ -1026,23 +1040,38 @@ app.post(
       : res.status(400).json({ message: "Choose an image or video." }),
 );
 app.post(
-  "/api/admin/blob-upload",
+  "/api/admin/r2-upload-url",
+  requireAdmin,
   wrap(async (req, res) => {
-    try {
-      jwt.verify(req.query.token, JWT_SECRET);
-    } catch {
-      return res.status(401).json({ message: "Admin sign-in required." });
-    }
-    const result = await handleUpload({
-      body: req.body,
-      request: req,
-      onBeforeGenerateToken: async () => ({
-        allowedContentTypes: allowedMedia,
-        maximumSizeInBytes: 500 * 1024 * 1024,
-        addRandomSuffix: true,
+    const { fileName = "media", contentType = "", size = 0 } = req.body || {};
+    if (!r2 || !process.env.R2_BUCKET_NAME || !process.env.R2_PUBLIC_URL)
+      return res.status(503).json({
+        message: "Cloudflare R2 storage is not fully configured.",
+      });
+    if (!allowedMedia.includes(contentType))
+      return res.status(400).json({ message: "Unsupported image or video type." });
+    if (!Number(size) || Number(size) > 500 * 1024 * 1024)
+      return res.status(400).json({ message: "Media must be smaller than 500 MB." });
+    const safeName = String(fileName)
+      .replace(/[^a-zA-Z0-9._-]/g, "-")
+      .replace(/-+/g, "-");
+    const key = `hotel-media/${Date.now()}-${crypto.randomBytes(5).toString("hex")}-${safeName}`;
+    const uploadUrl = await getSignedUrl(
+      r2,
+      new PutObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME,
+        Key: key,
+        ContentType: contentType,
+        CacheControl: "public, max-age=31536000, immutable",
       }),
-    });
-    res.json(result);
+      { expiresIn: 900 },
+    );
+    const publicBase = process.env.R2_PUBLIC_URL.replace(/\/$/, "");
+    const publicUrl = `${publicBase}/${key
+      .split("/")
+      .map(encodeURIComponent)
+      .join("/")}`;
+    res.json({ uploadUrl, publicUrl, key });
   }),
 );
 app.get(
