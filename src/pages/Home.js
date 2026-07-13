@@ -71,7 +71,7 @@ const Home = () => {
 
         {/* Other Sections */}
         <Rooms />
-        <Gallery />
+        <Gallery homepagePreview />
         <Sfooter />
       </Suspense>
     </>

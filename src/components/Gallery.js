@@ -21,7 +21,19 @@ const GalleryMedia = ({ item, className, controls = false }) =>
     <img src={imageUrl(item.url)} alt={item.title || "Hotel gallery"} className={className} />
   );
 
-const Gallery = ({ showEmptyState = false }) => {
+const GalleryGrid = ({ items, onOpen }) => (
+  <div className="grid auto-rows-[125px] grid-cols-2 gap-2 sm:auto-rows-[170px] sm:gap-3 lg:auto-rows-[190px] lg:grid-cols-4">
+    {items.map((item, index) => (
+      <button key={item.id} type="button" onClick={() => onOpen(index)} className={`group relative overflow-hidden rounded-lg text-left ${index === 0 || index === 5 ? "col-span-2 row-span-2" : ""}`}>
+        <GalleryMedia item={item} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        <span className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
+        <span className="absolute bottom-3 left-3 right-3 text-white sm:bottom-4 sm:left-4"><small className="uppercase tracking-widest">{item.category}</small><strong className="block truncate font-primary text-base sm:text-xl">{item.title}</strong></span>
+      </button>
+    ))}
+  </div>
+);
+
+const Gallery = ({ showEmptyState = false, homepagePreview = false }) => {
   const [images, setImages] = useState([]);
   const [content, setContent] = useState({});
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -50,8 +62,17 @@ const Gallery = ({ showEmptyState = false }) => {
     ];
   }, [images]);
 
+  const randomPreview = useMemo(() => {
+    const shuffled = [...images];
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+    }
+    return shuffled.slice(0, 5);
+  }, [images]);
+
   const selected = collections.find((group) => group.key === selectedCategory);
-  const visibleItems = selected?.items || [];
+  const visibleItems = homepagePreview ? randomPreview : selected?.items || [];
   const active = activeIndex === null ? null : visibleItems[activeIndex];
 
   useEffect(() => {
@@ -97,6 +118,15 @@ const Gallery = ({ showEmptyState = false }) => {
           <div className="rounded-lg border border-black/10 bg-white px-6 py-16 text-center text-gray-500">
             Gallery media will appear here soon.
           </div>
+        ) : homepagePreview ? (
+          <>
+            <GalleryGrid items={visibleItems} onOpen={setActiveIndex} />
+            <div className="mt-8 text-center">
+              <a href="/gallery" className="inline-flex min-h-[48px] items-center justify-center rounded-lg bg-primary px-7 font-tertiary uppercase tracking-[2px] text-white transition hover:bg-accent">
+                View full gallery
+              </a>
+            </div>
+          </>
         ) : (
           <>
             <div className="mb-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -124,15 +154,7 @@ const Gallery = ({ showEmptyState = false }) => {
                     <div><p className="text-xs uppercase tracking-[3px] text-accent">Selected collection</p><h3 className="font-primary text-3xl">{selected.name}</h3></div>
                     <span className="text-sm text-gray-500">{visibleItems.length} {visibleItems.length === 1 ? "item" : "items"}</span>
                   </div>
-                  <div className="grid auto-rows-[125px] grid-cols-2 gap-2 sm:auto-rows-[170px] sm:gap-3 lg:auto-rows-[190px] lg:grid-cols-4">
-                    {visibleItems.map((item, index) => (
-                      <button key={item.id} type="button" onClick={() => setActiveIndex(index)} className={`group relative overflow-hidden rounded-lg text-left ${index === 0 || index === 5 ? "col-span-2 row-span-2" : ""}`}>
-                        <GalleryMedia item={item} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                        <span className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
-                        <span className="absolute bottom-3 left-3 right-3 text-white sm:bottom-4 sm:left-4"><small className="uppercase tracking-widest">{item.category}</small><strong className="block truncate font-primary text-base sm:text-xl">{item.title}</strong></span>
-                      </button>
-                    ))}
-                  </div>
+                  <GalleryGrid items={visibleItems} onOpen={setActiveIndex} />
                 </>
               ) : (
                 <div className="rounded-xl border border-dashed border-black/20 bg-white/50 px-6 py-10 text-center text-gray-500">Choose a gallery collection above to view its photos and videos.</div>
