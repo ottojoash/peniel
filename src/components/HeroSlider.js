@@ -14,6 +14,7 @@ import hotelview from '../assets/img/banner/rest-side.jpg';
 import room from '../assets/img/banner/room-exc.jpg'
 import hotelfront from '../assets/img/banner/front-view.jpg'
 import { useSite } from '../context/SiteContext';
+import { imageUrl } from '../api';
 
 const slides = [
   {
@@ -35,6 +36,17 @@ const slides = [
 
 const HeroSlider = () => {
   const { settings } = useSite();
+  let configuredImages = [];
+  try {
+    configuredImages = JSON.parse(settings.homeHeroImages || '[]').filter(Boolean);
+  } catch {}
+  const visibleSlides = configuredImages.length
+    ? configuredImages.map((bg) => ({
+        title: settings.heroTitle || 'Your Hotel For Vacation',
+        bg: imageUrl(bg),
+        btnText: settings.heroButtonText || 'See our rooms',
+      }))
+    : slides;
   return (
     <>
     <Helmet>
@@ -52,7 +64,7 @@ const HeroSlider = () => {
       }}
       className='heroSlider h-[520px] sm:h-[620px] lg:h-[860px]'
     >
-      {slides.map((slide, index) => {
+      {visibleSlides.map((slide, index) => {
         const { title, desc, bg, btnText, btnLink } = slide;
         return (
           <SwiperSlide

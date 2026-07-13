@@ -4,96 +4,90 @@ import 'swiper/css';
 import 'swiper/css/effect-fade';
 import { EffectFade, Autoplay } from 'swiper';
 import { Helmet } from 'react-helmet';
-import ScrollToTop from '../components/ScrollToTop';
 import RestaurantImage from '../assets/img/banner/kidpark.jpg';
 import slides from '../assets/img/kids/slides.jpg';
 import bouncing from '../assets/img/kids/bouncing.jpg';
 import Swimming from '../assets/img/imgss/29.jpg';
 import Train from '../assets/img/imgss/30.jpg';
+import { useSite } from '../context/SiteContext';
+import { imageUrl } from '../api';
+
+const fallbackActivities = [
+  { id: 'train', name: 'Caterpillar Train', description: 'A fun ride for kids to enjoy the day.', imageUrl: Train },
+  { id: 'castles', name: 'Bouncing Castles', description: 'Kids can jump and have endless fun!', imageUrl: bouncing },
+  { id: 'pool', name: 'Swimming Pool', description: 'Safe and enjoyable swimming for kids.', imageUrl: Swimming },
+  { id: 'slides', name: 'Slides', description: 'Exciting slides for endless fun.', imageUrl: slides },
+];
+
+const parseList = (value) => {
+  try {
+    const parsed = JSON.parse(value || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
 
 const Kidspark = () => {
-  const menuItems = [
-    {
-      id: 1,
-      name: 'Caterpillar Train',
-      description: 'A fun ride for kids to enjoy the day.',
-      imageUrl: Train,
-    },
-    {
-      id: 2,
-      name: 'Bouncing Castles',
-      description: 'Kids can jump and have endless fun!',
-      imageUrl: bouncing,
-    },
-    {
-      id: 3,
-      name: 'Swimming Pool',
-      description: 'Safe and enjoyable swimming for kids.',
-      imageUrl: Swimming,
-    },
-    {
-      id: 4,
-      name: 'Slides',
-      description: 'Exciting slides for endless fun.',
-      imageUrl: slides,
-    },
-  ];
+  const { settings } = useSite();
+  const configuredActivities = parseList(settings.kidsActivities);
+  const activities = configuredActivities.length
+    ? configuredActivities.map((item, index) => ({
+        ...fallbackActivities[index % fallbackActivities.length],
+        ...item,
+        imageUrl: item.imageUrl ? imageUrl(item.imageUrl) : fallbackActivities[index % fallbackActivities.length].imageUrl,
+      }))
+    : fallbackActivities;
+  const configuredBackgrounds = parseList(settings.kidsBackgroundImages);
+  const backgrounds = configuredBackgrounds.length
+    ? configuredBackgrounds.map(imageUrl)
+    : [RestaurantImage];
+  const title = settings.kidsTitle || 'Fun for every little adventurer';
+  const intro = settings.kidsIntro || 'Discover safe, exciting activities created for memorable family days.';
 
   return (
-    <section>
-      <ScrollToTop />
+    <main className="bg-[#f7f3ed]">
       <Helmet>
-        <title>Activities | Peniel Beach Hotel</title>
-        <meta
-          name="description"
-          content="Explore our fun and engaging kids' activities at Peniel Beach Hotel. Caterpillar Train, Bouncing Castles, Swimming Pool, and Slides await your little ones. Visit us now and enjoy a memorable experience."
-        />
+        <title>Kids Park | {settings.hotelName || 'Peniel Beach Hotel'}</title>
+        <meta name="description" content={intro} />
       </Helmet>
-      <Swiper
-        modules={[EffectFade, Autoplay]}
-        effect="fade"
-        loop
-        autoplay={{
-          delay: 3000,
-          disableOnInteraction: false,
-        }}
-        className="restaurantSlider"
-      >
-        <SwiperSlide className="relative">
-          <img
-            src={RestaurantImage}
-            alt="Kids Park"
-            className="object-cover w-full h-screen"
-            style={{ filter: 'brightness(0.3)' }}
-          />
-          <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center">
-            <div className="container mx-auto p-6 text-white">
-              <h2 className="text-3xl font-semibold mb-6 text-center">Our Activities</h2>
-              <div className="menu-container overflow-y-auto max-h-[80vh]">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {menuItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="menu-item relative bg-black bg-opacity-50 rounded-lg overflow-hidden shadow-lg"
-                    >
-                      <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="w-full h-40 object-cover"
-                      />
-                      <div className="p-4 z-10 relative">
-                        <h3 className="text-lg font-bold mb-2 text-white">{item.name}</h3>
-                        <p className="text-sm mb-2 text-gray-300">{item.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+
+      <section className="relative h-[520px] overflow-hidden sm:h-[620px]">
+        <Swiper modules={[EffectFade, Autoplay]} effect="fade" loop={backgrounds.length > 1} autoplay={{ delay: 4000, disableOnInteraction: false }} className="h-full">
+          {backgrounds.map((background, index) => (
+            <SwiperSlide key={`${background}-${index}`} className="relative h-full">
+              <img src={background} alt="Kids Park at Peniel Beach Hotel" className="h-full w-full object-cover" />
+              <div className="absolute inset-0 bg-black/60" />
+            </SwiperSlide>
+          ))}
+        </Swiper>
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center px-5 pt-16 text-center text-white">
+          <div className="max-w-3xl">
+            <p className="mb-3 font-tertiary text-xs uppercase tracking-[4px] text-accent sm:text-sm sm:tracking-[6px]">Family experiences</p>
+            <h1 className="font-primary text-4xl leading-tight sm:text-6xl">{title}</h1>
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">{intro}</p>
           </div>
-        </SwiperSlide>
-      </Swiper>
-    </section>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-4 py-16 sm:px-6 sm:py-20 lg:px-[15px]">
+        <div className="mb-9 text-center">
+          <p className="font-tertiary text-xs uppercase tracking-[4px] text-accent sm:text-sm sm:tracking-[6px]">Play and discover</p>
+          <h2 className="h2">Our activities</h2>
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {activities.map((item, index) => (
+            <article key={item.id || index} className="overflow-hidden rounded-xl bg-white shadow-lg">
+              <img src={item.imageUrl} alt={item.name} className="h-56 w-full object-cover" />
+              <div className="p-5">
+                <h3 className="font-primary text-2xl">{item.name}</h3>
+                <p className="mt-2 leading-6 text-gray-600">{item.description}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
   );
 };
 

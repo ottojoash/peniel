@@ -16,6 +16,7 @@ import {
   HiOutlineCurrencyDollar,
   HiOutlineClock,
   HiOutlineCog,
+  HiOutlineMail,
 } from "react-icons/hi";
 
 const emptyRoom = {
@@ -35,6 +36,7 @@ const navigation = [
   ["overview", "Overview", HiOutlineHome],
   ["rooms", "Rooms", HiOutlineOfficeBuilding],
   ["bookings", "Bookings", HiOutlineCalendar],
+  ["messages", "Messages", HiOutlineMail],
   ["gallery", "Gallery", HiOutlinePhotograph],
   ["content", "Website content", HiOutlinePencilAlt],
   ["settings", "Hotel settings", HiOutlineCog],
@@ -46,6 +48,10 @@ const labels = {
     "Manage room types, rates, capacity, and amenities.",
   ],
   bookings: ["Reservations", "Review guests and update every stay."],
+  messages: [
+    "Contact messages",
+    "Read and manage enquiries sent through the public contact page.",
+  ],
   gallery: ["Media library", "Curate the images guests see on your website."],
   content: [
     "Website content",
@@ -67,6 +73,7 @@ const Admin = () => {
     summary: {},
     rooms: [],
     bookings: [],
+    messages: [],
     gallery: [],
     content: {},
   });
@@ -78,14 +85,15 @@ const Admin = () => {
   const [roomModal, setRoomModal] = useState(false);
   const load = useCallback(async () => {
     try {
-      const [summary, rooms, bookings, gallery, content] = await Promise.all([
+      const [summary, rooms, bookings, messages, gallery, content] = await Promise.all([
         api("/api/admin/summary"),
         api("/api/admin/rooms"),
         api("/api/admin/bookings"),
+        api("/api/admin/messages"),
         api("/api/admin/gallery"),
         api("/api/content"),
       ]);
-      setData({ summary, rooms, bookings, gallery, content });
+      setData({ summary, rooms, bookings, messages, gallery, content });
     } catch (e) {
       if (e.message.includes("sign-in")) {
         localStorage.removeItem("peniel_admin_token");
@@ -291,6 +299,11 @@ const Admin = () => {
                   {data.summary.pending}
                 </small>
               )}
+              {key === "messages" && data.summary.unreadMessages > 0 && (
+                <small className="ml-auto bg-white/15 rounded-full px-2 py-0.5">
+                  {data.summary.unreadMessages}
+                </small>
+              )}
             </button>
           ))}
         </nav>
@@ -343,11 +356,12 @@ const Admin = () => {
           )}
           {tab === "overview" && (
             <>
-              <div className="grid sm:grid-cols-2 xl:grid-cols-5 gap-5">
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-5">
                 {[
                   ["Rooms", data.summary.rooms, HiOutlineOfficeBuilding],
                   ["All bookings", data.summary.bookings, HiOutlineCalendar],
                   ["Pending", data.summary.pending, HiOutlineClock],
+                  ["Unread messages", data.summary.unreadMessages, HiOutlineMail],
                   ["Gallery", data.summary.gallery, HiOutlinePhotograph],
                   [
                     "Revenue",
@@ -410,6 +424,7 @@ const Admin = () => {
                   {[
                     ["Add a new room", "rooms", HiOutlinePlus],
                     ["Review pending bookings", "bookings", HiOutlineCalendar],
+                    ["Read contact messages", "messages", HiOutlineMail],
                     ["Upload gallery photos", "gallery", HiOutlinePhotograph],
                   ].map(([label, key, Icon]) => (
                     <button
@@ -684,6 +699,28 @@ const Admin = () => {
               />
             </section>
           )}
+          {tab === "messages" && (
+            <section className="admin-card">
+              <div className="p-5 border-b">
+                <h2 className="font-semibold text-lg">Website enquiries</h2>
+                <p className="text-gray-500 text-sm">
+                  {data.messages.length} messages · {data.summary.unreadMessages || 0} unread
+                </p>
+              </div>
+              <MessageTable
+                messages={data.messages}
+                onStatus={async (id, status) => {
+                  await api(`/api/admin/messages/${id}`, {
+                    method: "PATCH",
+                    body: JSON.stringify({ status }),
+                  });
+                  setMessage(`Message marked ${status}.`);
+                  await load();
+                }}
+                onDelete={(item) => requestDelete("messages", item.id, item.subject)}
+              />
+            </section>
+          )}
           {tab === "gallery" && (
             <>
               <label className="inline-flex items-center gap-2 bg-[#10211d] text-white px-5 py-3 rounded-lg cursor-pointer mb-6">
@@ -752,45 +789,33 @@ const Admin = () => {
             </>
           )}
           {tab === "content" && (
-            <form
-              onSubmit={async (e) => {
+            <PageContentEditor
+              values={data.content}
+              onChange={(key, value) =>
+                setData((current) => ({
+                  ...current,
+                  content: { ...current.content, [key]: value },
+                }))
+              }
+              upload={upload}
+              busy={busy}
+              setBusy={setBusy}
+              onSave={async (e) => {
                 e.preventDefault();
-                await api("/api/admin/content", {
-                  method: "PUT",
-                  body: JSON.stringify(data.content),
-                });
-                setMessage("Website content published.");
+                setBusy(true);
+                try {
+                  await api("/api/admin/content", {
+                    method: "PUT",
+                    body: JSON.stringify(data.content),
+                  });
+                  setMessage("Website content published.");
+                } catch (error) {
+                  setMessage(error.message);
+                } finally {
+                  setBusy(false);
+                }
               }}
-              className="admin-card max-w-3xl p-7"
-            >
-              <h2 className="font-semibold text-xl">Gallery section</h2>
-              <p className="text-gray-500 text-sm mb-7">
-                This copy appears above the public photo gallery.
-              </p>
-              {[
-                ["galleryEyebrow", "Eyebrow"],
-                ["galleryTitle", "Main heading"],
-                ["galleryIntro", "Introduction"],
-              ].map(([key, label]) => (
-                <label className="block mb-5" key={key}>
-                  <span className="admin-label">{label}</span>
-                  <textarea
-                    rows={key === "galleryIntro" ? 4 : 2}
-                    className="admin-input"
-                    value={data.content[key] || ""}
-                    onChange={(e) =>
-                      setData({
-                        ...data,
-                        content: { ...data.content, [key]: e.target.value },
-                      })
-                    }
-                  />
-                </label>
-              ))}
-              <button className="bg-accent text-white px-6 py-3 rounded-lg">
-                Publish changes
-              </button>
-            </form>
+            />
           )}
           {tab === "settings" && (
             <SettingsForm
@@ -850,7 +875,7 @@ const DeleteModal = ({ item, busy, onCancel, onConfirm }) => (
           <HiOutlineX size={28} />
         </div>
         <h2 id="delete-title" className="text-2xl font-semibold">
-          Delete {item.type === "rooms" ? "room" : "photo"}?
+          Delete {item.type === "rooms" ? "room" : item.type === "messages" ? "message" : "media"}?
         </h2>
         <p className="text-gray-500 mt-3 leading-6">
           You are about to permanently delete{" "}
@@ -877,6 +902,179 @@ const DeleteModal = ({ item, busy, onCancel, onConfirm }) => (
     </div>
   </div>
 );
+
+const parseContentList = (value, fallback = []) => {
+  try {
+    const parsed = JSON.parse(value || "[]");
+    return Array.isArray(parsed) && parsed.length ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const defaultKidsActivities = [
+  { id: "train", name: "Caterpillar Train", description: "A fun ride for kids to enjoy the day.", imageUrl: "" },
+  { id: "castles", name: "Bouncing Castles", description: "Kids can jump and have endless fun!", imageUrl: "" },
+  { id: "pool", name: "Swimming Pool", description: "Safe and enjoyable swimming for kids.", imageUrl: "" },
+  { id: "slides", name: "Slides", description: "Exciting slides for endless fun.", imageUrl: "" },
+];
+
+const PageContentEditor = ({ values, onChange, onSave, upload, busy, setBusy }) => {
+  const [uploadError, setUploadError] = useState("");
+  const heroImages = parseContentList(values.homeHeroImages);
+  const kidsBackgrounds = parseContentList(values.kidsBackgroundImages);
+  const activities = parseContentList(values.kidsActivities, defaultKidsActivities);
+
+  const uploadFiles = async (files, key, current = []) => {
+    if (!files.length) return;
+    setBusy(true);
+    setUploadError("");
+    try {
+      const urls = await Promise.all(files.map(upload));
+      onChange(key, JSON.stringify([...current, ...urls]));
+    } catch (error) {
+      setUploadError(error.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const updateActivity = (index, changes) => {
+    const next = activities.map((item, itemIndex) =>
+      itemIndex === index ? { ...item, ...changes } : item,
+    );
+    onChange("kidsActivities", JSON.stringify(next));
+  };
+
+  return (
+    <form onSubmit={onSave} className="max-w-5xl space-y-6">
+      {uploadError && <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">{uploadError}</div>}
+      <section className="admin-card p-6 lg:p-7">
+        <h2 className="font-semibold text-xl">Homepage hero backgrounds</h2>
+        <p className="mb-6 text-sm text-gray-500">Upload one or several images for the homepage slideshow.</p>
+        <MediaListEditor
+          items={heroImages}
+          label="Upload homepage backgrounds"
+          busy={busy}
+          onFiles={(files) => uploadFiles(files, "homeHeroImages", heroImages)}
+          onRemove={(index) => onChange("homeHeroImages", JSON.stringify(heroImages.filter((_, itemIndex) => itemIndex !== index)))}
+        />
+      </section>
+
+      <section className="admin-card p-6 lg:p-7">
+        <h2 className="font-semibold text-xl">Kids Park page</h2>
+        <p className="mb-6 text-sm text-gray-500">Edit the page introduction, slideshow backgrounds, activity names, descriptions, and images.</p>
+        <div className="grid gap-5 md:grid-cols-2">
+          <label><span className="admin-label">Page heading</span><input className="admin-input" value={values.kidsTitle || ""} onChange={(e) => onChange("kidsTitle", e.target.value)} /></label>
+          <label className="md:col-span-2"><span className="admin-label">Introduction</span><textarea rows="3" className="admin-input" value={values.kidsIntro || ""} onChange={(e) => onChange("kidsIntro", e.target.value)} /></label>
+        </div>
+        <div className="mt-6">
+          <MediaListEditor
+            items={kidsBackgrounds}
+            label="Upload Kids Park backgrounds"
+            busy={busy}
+            onFiles={(files) => uploadFiles(files, "kidsBackgroundImages", kidsBackgrounds)}
+            onRemove={(index) => onChange("kidsBackgroundImages", JSON.stringify(kidsBackgrounds.filter((_, itemIndex) => itemIndex !== index)))}
+          />
+        </div>
+        <div className="mt-8 grid gap-5 md:grid-cols-2">
+          {activities.map((activity, index) => (
+            <article className="rounded-xl border bg-gray-50 p-4" key={activity.id || index}>
+              <div className="mb-4 aspect-video overflow-hidden rounded-lg bg-gray-200">
+                {activity.imageUrl ? <img src={imageUrl(activity.imageUrl)} alt={activity.name} className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-sm text-gray-400">Public page fallback image</div>}
+              </div>
+              <label className="block mb-3"><span className="admin-label">Activity name</span><input className="admin-input" value={activity.name || ""} onChange={(e) => updateActivity(index, { name: e.target.value })} /></label>
+              <label className="block mb-3"><span className="admin-label">Description</span><textarea rows="3" className="admin-input" value={activity.description || ""} onChange={(e) => updateActivity(index, { description: e.target.value })} /></label>
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm text-accent shadow-sm border">
+                <HiOutlinePhotograph /> Change activity image
+                <input hidden type="file" accept="image/*" onChange={async (e) => {
+                  const file = e.target.files[0];
+                  if (!file) return;
+                  setBusy(true);
+                  setUploadError("");
+                  try { updateActivity(index, { imageUrl: await upload(file) }); }
+                  catch (error) { setUploadError(error.message); }
+                  finally { setBusy(false); e.target.value = ""; }
+                }} />
+              </label>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="admin-card p-6 lg:p-7">
+        <h2 className="font-semibold text-xl">Contact page</h2>
+        <p className="mb-6 text-sm text-gray-500">Control the contact page heading, introduction, and background image.</p>
+        <div className="grid gap-5 md:grid-cols-2">
+          <label><span className="admin-label">Page heading</span><input className="admin-input" value={values.contactTitle || ""} onChange={(e) => onChange("contactTitle", e.target.value)} /></label>
+          <label className="md:col-span-2"><span className="admin-label">Introduction</span><textarea rows="3" className="admin-input" value={values.contactIntro || ""} onChange={(e) => onChange("contactIntro", e.target.value)} /></label>
+        </div>
+        <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center">
+          {values.contactBackgroundImage && <img src={imageUrl(values.contactBackgroundImage)} alt="Contact page background" className="h-32 w-full rounded-lg object-cover sm:w-52" />}
+          <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border px-5 py-3 text-accent">
+            <HiOutlinePhotograph /> Upload contact background
+            <input hidden type="file" accept="image/*" onChange={async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              setBusy(true);
+              setUploadError("");
+              try { onChange("contactBackgroundImage", await upload(file)); }
+              catch (error) { setUploadError(error.message); }
+              finally { setBusy(false); e.target.value = ""; }
+            }} />
+          </label>
+        </div>
+      </section>
+
+      <section className="admin-card p-6 lg:p-7">
+        <h2 className="font-semibold text-xl">Gallery section</h2>
+        <p className="mb-6 text-sm text-gray-500">Edit the copy shown above the public gallery.</p>
+        {[ ["galleryEyebrow", "Eyebrow"], ["galleryTitle", "Main heading"], ["galleryIntro", "Introduction"] ].map(([key, label]) => (
+          <label className="block mb-5" key={key}><span className="admin-label">{label}</span><textarea rows={key === "galleryIntro" ? 3 : 2} className="admin-input" value={values[key] || ""} onChange={(e) => onChange(key, e.target.value)} /></label>
+        ))}
+      </section>
+
+      <div className="sticky bottom-5 flex justify-end rounded-xl border bg-white p-4 shadow-lg">
+        <button disabled={busy} className="rounded-lg bg-accent px-7 py-3 text-white disabled:opacity-60">{busy ? "Saving..." : "Publish website content"}</button>
+      </div>
+    </form>
+  );
+};
+
+const MediaListEditor = ({ items, label, onFiles, onRemove, busy }) => (
+  <div>
+    <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border px-5 py-3 text-accent hover:border-accent">
+      <HiOutlinePlus /> {busy ? "Uploading..." : label}
+      <input hidden type="file" accept="image/*" multiple disabled={busy} onChange={(e) => { onFiles(Array.from(e.target.files || [])); e.target.value = ""; }} />
+    </label>
+    {!!items.length && <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{items.map((src, index) => (
+      <div className="relative aspect-video overflow-hidden rounded-lg bg-gray-100" key={`${src}-${index}`}><img src={imageUrl(src)} alt={`Background ${index + 1}`} className="h-full w-full object-cover" /><button type="button" onClick={() => onRemove(index)} className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-red-600 text-white" aria-label="Remove background">×</button></div>
+    ))}</div>}
+  </div>
+);
+
+const MessageTable = ({ messages, onStatus, onDelete }) => {
+  const [selected, setSelected] = useState(null);
+  const openMessage = async (item) => {
+    setSelected(item);
+    if (item.status === "unread") {
+      await onStatus(item.id, "read");
+      setSelected({ ...item, status: "read" });
+    }
+  };
+  const columns = [
+    { key: "createdAt", name: "Received", selector: (item) => item.createdAt, cell: (item) => <span className="whitespace-nowrap text-sm">{new Date(item.createdAt).toLocaleString()}</span> },
+    { key: "name", name: "Guest", searchValue: (item) => `${item.name} ${item.email} ${item.phone || ""}`, cell: (item) => <><strong className="block whitespace-nowrap">{item.name}</strong><small className="text-gray-500">{item.email}</small></> },
+    { key: "subject", name: "Subject", searchValue: (item) => `${item.subject} ${item.message}`, cell: (item) => <button onClick={() => openMessage(item)} className={`max-w-xs text-left ${item.status === "unread" ? "font-bold text-gray-900" : "text-gray-700"}`}><span className="block truncate">{item.subject}</span><small className="block truncate text-gray-400">{item.message}</small></button> },
+    { key: "status", name: "Status", cell: (item) => <select className={`status-select status-${item.status}`} value={item.status} onChange={(e) => onStatus(item.id, e.target.value)}>{["unread", "read", "replied", "archived"].map((status) => <option key={status} value={status}>{status}</option>)}</select> },
+    { key: "actions", name: "Actions", sortable: false, cell: (item) => <div className="flex gap-3 whitespace-nowrap"><button onClick={() => openMessage(item)} className="text-accent">View</button><button onClick={() => onDelete(item)} className="text-red-500">Delete</button></div> },
+  ];
+  return (
+    <>
+      <DataTable columns={columns} data={messages} searchPlaceholder="Search messages" emptyMessage="No contact messages yet." />
+      {selected && <div className="fixed inset-0 z-[120] flex items-center justify-center p-4"><button className="absolute inset-0 bg-black/60" onClick={() => setSelected(null)} aria-label="Close message" /><article className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl sm:p-8"><button onClick={() => setSelected(null)} className="absolute right-5 top-5 text-gray-400" aria-label="Close"><HiOutlineX size={25} /></button><p className="text-xs uppercase tracking-wider text-accent">{new Date(selected.createdAt).toLocaleString()}</p><h2 className="mt-2 pr-8 text-2xl font-semibold">{selected.subject}</h2><div className="mt-5 grid gap-3 rounded-lg bg-gray-50 p-4 text-sm sm:grid-cols-2"><p><strong className="block text-gray-400">From</strong>{selected.name}</p><p className="break-words"><strong className="block text-gray-400">Email</strong>{selected.email}</p>{selected.phone && <p><strong className="block text-gray-400">Phone</strong>{selected.phone}</p>}</div><p className="mt-6 whitespace-pre-wrap leading-7 text-gray-700">{selected.message}</p><div className="mt-7 flex flex-wrap gap-3 border-t pt-5"><a href={`mailto:${selected.email}?subject=${encodeURIComponent(`Re: ${selected.subject}`)}`} onClick={() => onStatus(selected.id, "replied")} className="rounded-lg bg-accent px-5 py-3 text-white">Reply by email</a><button onClick={() => { onDelete(selected); setSelected(null); }} className="rounded-lg border border-red-200 px-5 py-3 text-red-600">Delete message</button></div></article></div>}
+    </>
+  );
+};
 
 const SettingsForm = ({ values, onChange, onSave, busy }) => {
   const groups = [

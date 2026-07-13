@@ -45,4 +45,8 @@
   .status-checked-in { @apply bg-purple-100 text-purple-800; }
   .status-completed { @apply bg-green-100 text-green-800; }
   .status-cancelled { @apply bg-red-100 text-red-700; }
+  .status-unread { @apply bg-amber-100 text-amber-800; }
+  .status-read { @apply bg-blue-100 text-blue-800; }
+  .status-replied { @apply bg-green-100 text-green-800; }
+  .status-archived { @apply bg-gray-100 text-gray-600; }
 }

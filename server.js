@@ -30,15 +30,23 @@ const mailer =
         },
       })
     : null;
-const sendMail = async ({ to, subject, html }) => {
+const sendMail = async ({ to, subject, html, replyTo }) => {
   if (!mailer) return;
   await mailer.sendMail({
     from: `Peniel Beach Hotel <${process.env.GMAIL_USER}>`,
     to,
     subject,
     html,
+    ...(replyTo ? { replyTo } : {}),
   });
 };
+const escapeHtml = (value = "") =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 const bookingEmail = (booking, paid) =>
   `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto"><h1 style="color:#a37d4c">${paid ? "Reservation confirmed" : "Reservation request received"}</h1><p>Hello ${booking.names},</p><p>${paid ? "Your payment has been verified and your reservation is confirmed." : "We received your reservation request and the hotel team will contact you after reviewing availability."}</p><table style="width:100%;border-collapse:collapse"><tr><td style="padding:8px;border-bottom:1px solid #ddd">Reservation code</td><td style="padding:8px;border-bottom:1px solid #ddd"><strong>${booking.reservationCode}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd">Room</td><td style="padding:8px;border-bottom:1px solid #ddd">${booking.type}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd">Stay</td><td style="padding:8px;border-bottom:1px solid #ddd">${booking.checkIn} to ${booking.checkOut}</td></tr><tr><td style="padding:8px">Total</td><td style="padding:8px">${booking.currency} ${Number(booking.price).toFixed(2)}</td></tr></table><p>Thank you for choosing Peniel Beach Hotel.</p></div>`;
 const statusEmail = (booking, status) => {
@@ -297,6 +305,9 @@ async function initializeDatabase() {
   await pool.query(
     `CREATE TABLE IF NOT EXISTS site_content (contentKey VARCHAR(100) PRIMARY KEY, contentValue TEXT)`,
   );
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS contact_messages (id VARCHAR(64) PRIMARY KEY, name VARCHAR(180) NOT NULL, email VARCHAR(180) NOT NULL, phone VARCHAR(60), subject VARCHAR(220) NOT NULL, message TEXT NOT NULL, status ENUM('unread','read','replied','archived') NOT NULL DEFAULT 'unread', createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)`,
+  );
 
   const [[{ count }]] = await pool.query("SELECT COUNT(*) count FROM rooms");
   if (!count && fs.existsSync(SEED_FILE)) {
@@ -358,6 +369,16 @@ async function initializeDatabase() {
     galleryTitle: "A glimpse of your stay",
     galleryIntro:
       "From restful rooms to beach days and memorable meals, explore life at Peniel Beach Hotel.",
+    homeHeroImages: "[]",
+    kidsTitle: "Fun for every little adventurer",
+    kidsIntro:
+      "Discover safe, exciting activities created for memorable family days at Peniel Beach Hotel.",
+    kidsBackgroundImages: "[]",
+    kidsActivities: "[]",
+    contactTitle: "Contact us",
+    contactIntro:
+      "Send us a message and our hotel team will get back to you as soon as possible.",
+    contactBackgroundImage: "",
   };
   for (const [key, value] of Object.entries(defaults))
     await pool.execute(
@@ -451,6 +472,59 @@ app.get(
     res.json(
       Object.fromEntries(rows.map((r) => [r.contentKey, r.contentValue])),
     );
+  }),
+);
+app.post(
+  "/api/contact",
+  wrap(async (req, res) => {
+    const {
+      name = "",
+      email = "",
+      phone = "",
+      subject = "",
+      message = "",
+      website = "",
+    } = req.body || {};
+    if (website) return res.status(201).json({ message: "Message received." });
+    if (!name.trim() || !email.trim() || !subject.trim() || !message.trim())
+      return res.status(400).json({
+        message: "Name, email, subject, and message are required.",
+      });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+      return res.status(400).json({ message: "Enter a valid email address." });
+    if (
+      name.length > 180 ||
+      email.length > 180 ||
+      phone.length > 60 ||
+      subject.length > 220 ||
+      message.length > 5000
+    )
+      return res.status(400).json({ message: "One or more fields are too long." });
+
+    const id = `msg-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
+    await pool.execute(
+      "INSERT INTO contact_messages (id,name,email,phone,subject,message) VALUES (?,?,?,?,?,?)",
+      [id, name.trim(), email.trim(), phone.trim(), subject.trim(), message.trim()],
+    );
+    const recipient =
+      process.env.HOTEL_NOTIFICATION_EMAIL || "penielbeachhotel@gmail.com";
+    let emailQueued = false;
+    if (mailer) {
+      emailQueued = true;
+      sendMail({
+        to: recipient,
+        replyTo: email.trim(),
+        subject: `Website enquiry: ${subject.trim()}`,
+        html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto"><h1 style="color:#a37d4c">New website enquiry</h1><p>A guest sent a message through the Peniel Beach Hotel website.</p><table style="width:100%;border-collapse:collapse"><tr><td style="padding:8px;border-bottom:1px solid #ddd">Name</td><td style="padding:8px;border-bottom:1px solid #ddd"><strong>${escapeHtml(name.trim())}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd">Email</td><td style="padding:8px;border-bottom:1px solid #ddd">${escapeHtml(email.trim())}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd">Phone</td><td style="padding:8px;border-bottom:1px solid #ddd">${escapeHtml(phone.trim() || "Not provided")}</td></tr><tr><td style="padding:8px">Subject</td><td style="padding:8px">${escapeHtml(subject.trim())}</td></tr></table><div style="margin-top:20px;padding:18px;background:#f7f4ef;white-space:pre-wrap">${escapeHtml(message.trim())}</div><p>Reply to this email to respond directly to the guest.</p></div>`,
+      }).catch((error) =>
+        console.error("Contact notification email failed:", error.message),
+      );
+    }
+    res.status(201).json({
+      id,
+      emailQueued,
+      message: "Thank you. Your message has been sent to our hotel team.",
+    });
   }),
 );
 app.post(
@@ -698,7 +772,7 @@ app.get(
   "/api/admin/summary",
   requireAdmin,
   wrap(async (_req, res) => {
-    const [[rooms], [gallery], [bookings], [pending], [revenue]] =
+    const [[rooms], [gallery], [bookings], [pending], [revenue], [messages], [unreadMessages]] =
       await Promise.all([
         pool.query("SELECT COUNT(*) value FROM rooms"),
         pool.query("SELECT COUNT(*) value FROM gallery"),
@@ -709,6 +783,10 @@ app.get(
         pool.query(
           "SELECT COALESCE(SUM(price),0) value FROM bookings WHERE status NOT IN ('cancelled','pending')",
         ),
+        pool.query("SELECT COUNT(*) value FROM contact_messages"),
+        pool.query(
+          "SELECT COUNT(*) value FROM contact_messages WHERE status='unread'",
+        ),
       ]);
     res.json({
       rooms: rooms[0].value,
@@ -716,7 +794,45 @@ app.get(
       bookings: bookings[0].value,
       pending: pending[0].value,
       revenue: Number(revenue[0].value),
+      messages: messages[0].value,
+      unreadMessages: unreadMessages[0].value,
     });
+  }),
+);
+app.get(
+  "/api/admin/messages",
+  requireAdmin,
+  wrap(async (_req, res) => {
+    const [rows] = await pool.query(
+      "SELECT * FROM contact_messages ORDER BY createdAt DESC",
+    );
+    res.json(rows);
+  }),
+);
+app.patch(
+  "/api/admin/messages/:id",
+  requireAdmin,
+  wrap(async (req, res) => {
+    const allowed = ["unread", "read", "replied", "archived"];
+    if (!allowed.includes(req.body.status))
+      return res.status(400).json({ message: "Invalid message status." });
+    const [result] = await pool.execute(
+      "UPDATE contact_messages SET status=? WHERE id=?",
+      [req.body.status, req.params.id],
+    );
+    if (!result.affectedRows)
+      return res.status(404).json({ message: "Message not found." });
+    res.json({ id: req.params.id, status: req.body.status });
+  }),
+);
+app.delete(
+  "/api/admin/messages/:id",
+  requireAdmin,
+  wrap(async (req, res) => {
+    await pool.execute("DELETE FROM contact_messages WHERE id=?", [
+      req.params.id,
+    ]);
+    res.status(204).end();
   }),
 );
 app.get(

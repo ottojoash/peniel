@@ -1,187 +1,98 @@
 import React, { useState } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
-import 'swiper/css/effect-fade';
-import { EffectFade, Autoplay } from 'swiper';
 import { Helmet } from 'react-helmet';
-import ScrollToTop from '../components/ScrollToTop';
 import ContactImage from '../assets/img/heroSlider/2.webp';
-import { BsEnvelope } from 'react-icons/bs';
-import { BsArrowRepeat } from 'react-icons/bs';
+import { BsArrowRepeat, BsCheckCircle, BsEnvelope, BsPerson, BsTelephone } from 'react-icons/bs';
 import { useSite } from '../context/SiteContext';
+import { api, imageUrl } from '../api';
+
+const initialForm = { name: '', email: '', phone: '', subject: '', message: '', website: '' };
 
 const Contact = () => {
   const { settings } = useSite();
-  const [formData, setFormData] = useState({
-    email: '',
-    subject: '',
-    message: '',
-  });
-
+  const [formData, setFormData] = useState(initialForm);
   const [isLoading, setIsLoading] = useState(false);
+  const [notice, setNotice] = useState({ type: '', text: '' });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (event) => {
+    setFormData((current) => ({ ...current, [event.target.name]: event.target.value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setIsLoading(true);
-
-    // Email validation
-    if (!formData.email.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)) {
-      alert('Please provide a valid email address.');
-      setIsLoading(false);
-      return;
-    }
-
+    setNotice({ type: '', text: '' });
     try {
-      const response = await fetch('https://peniel-api.onrender.com/api/sendMessage', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(errorMessage || 'Server responded with an error');
-      }
-
-      const result = await response.json();
-      alert(result.message || 'Message sent successfully!');
-      setFormData({ email: '', subject: '', message: '' });
+      const result = await api('/api/contact', { method: 'POST', body: JSON.stringify(formData) });
+      setNotice({ type: 'success', text: result.message });
+      setFormData(initialForm);
     } catch (error) {
-      alert(`Error: ${error.message}`);
+      setNotice({ type: 'error', text: error.message });
     } finally {
       setIsLoading(false);
     }
   };
 
+  const background = settings.contactBackgroundImage
+    ? imageUrl(settings.contactBackgroundImage)
+    : ContactImage;
+  const title = settings.contactTitle || 'Contact us';
+  const intro = settings.contactIntro || 'Send us a message and our hotel team will get back to you as soon as possible.';
+
   return (
-    <section>
-      <ScrollToTop />
+    <main className="relative min-h-screen bg-primary bg-cover bg-center pt-28 text-white" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.78), rgba(0,0,0,.84)), url(${background})` }}>
       <Helmet>
-        <title>Contact Us | Peniel Beach Hotel</title>
-        <meta name="description" content="Reach out to us for inquiries, feedback, or reservations." />
+        <title>Contact Us | {settings.hotelName || 'Peniel Beach Hotel'}</title>
+        <meta name="description" content={intro} />
       </Helmet>
-      <Swiper
-        modules={[EffectFade, Autoplay]}
-        effect="fade"
-        loop
-        autoplay={{
-          delay: 3000,
-          disableOnInteraction: false,
-        }}
-        className="heroSlider h-[600px] lg:h-[860px]"
-      >
-        <SwiperSlide className="relative">
-          <img
-            src={ContactImage}
-            alt="Contact Us"
-            className="object-cover w-full h-full"
-            style={{ filter: 'brightness(0.1)' }}
-          />
-          <div className="absolute inset-0 flex justify-center items-center">
-            <div className="container mx-auto p-6 text-white flex flex-wrap justify-between mt-[150px]">
-              {/* Form Section */}
-              <div className="w-full lg:w-1/2 pr-8 mb-8 lg:mb-0">
-                <h2 className="text-2xl font-semibold mb-4">Contact Us</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Email Input */}
-                  <div className="mb-4">
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
-                      Email
-                    </label>
-                    <div className="relative flex items-center">
-                      <BsEnvelope className="absolute left-3 text-lg text-gray-300" />
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        onChange={handleChange}
-                        value={formData.email}
-                        className="pl-10 w-full bg-black bg-opacity-50 text-white rounded border border-gray-700 py-2"
-                        placeholder="Your Email"
-                        required
-                      />
-                    </div>
-                  </div>
+      <div className="container mx-auto grid gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1.25fr_.75fr] lg:gap-16 lg:px-[15px] lg:py-20">
+        <section>
+          <p className="font-tertiary text-xs uppercase tracking-[4px] text-accent sm:text-sm sm:tracking-[6px]">We would love to hear from you</p>
+          <h1 className="mt-2 font-primary text-4xl sm:text-6xl">{title}</h1>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-white/70 sm:text-lg">{intro}</p>
 
-                  {/* Subject Input */}
-                  <div className="mb-4">
-                    <label htmlFor="subject" className="block text-sm font-medium text-gray-300 mb-1">
-                      Subject
-                    </label>
-                    <div className="relative flex items-center">
-                      <BsEnvelope className="absolute left-3 text-lg text-gray-300" />
-                      <input
-                        type="text"
-                        id="subject"
-                        name="subject"
-                        onChange={handleChange}
-                        value={formData.subject}
-                        className="pl-10 w-full bg-black bg-opacity-50 text-white rounded border border-gray-700 py-2"
-                        placeholder="Subject"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {/* Message Input */}
-                  <div className="mb-4">
-                    <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-1">
-                      Message
-                    </label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      rows="4"
-                      onChange={handleChange}
-                      value={formData.message}
-                      className="w-full bg-black bg-opacity-50 text-white rounded border border-gray-700 py-2"
-                      placeholder="Your Message"
-                      required
-                    />
-                  </div>
-
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    className="btn btn-lg btn-primary w-full flex justify-center items-center"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center">
-                        <BsArrowRepeat className="animate-spin mr-2" />
-                        Sending...
-                      </div>
-                    ) : (
-                      'Send Message'
-                    )}
-                  </button>
-                </form>
+          <form onSubmit={handleSubmit} className="mt-9 grid gap-5 sm:grid-cols-2">
+            <input className="hidden" tabIndex="-1" autoComplete="off" name="website" value={formData.website} onChange={handleChange} aria-hidden="true" />
+            <ContactField icon={BsPerson} label="Name" name="name" value={formData.name} onChange={handleChange} placeholder="Your full name" required />
+            <ContactField icon={BsEnvelope} label="Email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="you@example.com" required />
+            <ContactField icon={BsTelephone} label="Phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="Your phone number" />
+            <ContactField icon={BsEnvelope} label="Subject" name="subject" value={formData.subject} onChange={handleChange} placeholder="How can we help?" required />
+            <label className="sm:col-span-2">
+              <span className="mb-2 block text-sm text-white/70">Message</span>
+              <textarea name="message" rows="6" maxLength="5000" value={formData.message} onChange={handleChange} className="w-full rounded-lg border border-white/20 bg-black/35 px-4 py-3 text-white outline-none placeholder:text-white/35 focus:border-accent" placeholder="Write your message here" required />
+            </label>
+            {notice.text && (
+              <div className={`sm:col-span-2 flex items-start gap-3 rounded-lg border p-4 ${notice.type === 'success' ? 'border-green-400/40 bg-green-400/10 text-green-100' : 'border-red-400/40 bg-red-400/10 text-red-100'}`} role="status">
+                {notice.type === 'success' && <BsCheckCircle className="mt-1 shrink-0" />}
+                <span>{notice.text}</span>
               </div>
+            )}
+            <button type="submit" className="btn btn-lg btn-primary sm:col-span-2 sm:max-w-xs" disabled={isLoading}>
+              {isLoading ? <><BsArrowRepeat className="mr-2 animate-spin" />Sending...</> : 'Send message'}
+            </button>
+          </form>
+        </section>
 
-              {/* Address Section */}
-              <div className="w-full lg:w-1/2">
-                <h2 className="text-2xl font-semibold mb-4">Our Address</h2>
-                <p className="text-gray-300">
-                  {settings.addressLine1}<br />{settings.addressLine2}<br />{settings.country}<br />
-                  Tel: {settings.primaryPhone}{settings.secondaryPhone ? `, ${settings.secondaryPhone}` : ''}<br />
-                  Email:{' '}
-                  <a href={`mailto:${settings.email}`} className="text-blue-500 hover:text-blue-700">
-                    {settings.email}
-                  </a>
-                </p>
-              </div>
-            </div>
+        <aside className="h-fit rounded-xl border border-white/15 bg-white/10 p-6 backdrop-blur-sm sm:p-8 lg:mt-20">
+          <h2 className="font-primary text-3xl">Our contact details</h2>
+          <div className="mt-6 space-y-5 leading-7 text-white/75">
+            <div><strong className="block text-sm uppercase tracking-wider text-accent">Address</strong>{settings.addressLine1}<br />{settings.addressLine2}<br />{settings.country}</div>
+            <div><strong className="block text-sm uppercase tracking-wider text-accent">Telephone</strong><a href={`tel:${settings.primaryPhone}`} className="hover:text-white">{settings.primaryPhone}</a>{settings.secondaryPhone && <><br /><a href={`tel:${settings.secondaryPhone}`} className="hover:text-white">{settings.secondaryPhone}</a></>}</div>
+            <div className="break-words"><strong className="block text-sm uppercase tracking-wider text-accent">Email</strong><a href={`mailto:${settings.email}`} className="hover:text-white">{settings.email}</a></div>
           </div>
-        </SwiperSlide>
-      </Swiper>
-    </section>
+        </aside>
+      </div>
+    </main>
   );
 };
+
+const ContactField = ({ icon: Icon, label, ...props }) => (
+  <label>
+    <span className="mb-2 block text-sm text-white/70">{label}</span>
+    <span className="relative block">
+      <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-accent" />
+      <input {...props} maxLength="220" className="w-full rounded-lg border border-white/20 bg-black/35 py-3 pl-11 pr-4 text-white outline-none placeholder:text-white/35 focus:border-accent" />
+    </span>
+  </label>
+);
 
 export default Contact;
