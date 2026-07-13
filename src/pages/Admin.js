@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { API_URL, api, imageUrl } from "../api";
 import DataTable from "../components/DataTable";
 import { upload as uploadToBlob } from "@vercel/blob/client";
@@ -32,6 +32,32 @@ const emptyRoom = {
   active: true,
 };
 const isVideo = (url = "") => /\.(mp4|webm|mov)(?:$|\?)/i.test(url);
+const uploadLocally = (file, onProgress) =>
+  new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    const form = new FormData();
+    form.append("media", file);
+    request.open("POST", `${API_URL}/api/admin/upload`);
+    const token = localStorage.getItem("peniel_admin_token");
+    if (token) request.setRequestHeader("Authorization", `Bearer ${token}`);
+    request.upload.onprogress = (event) => {
+      if (event.lengthComputable)
+        onProgress({
+          loaded: event.loaded,
+          total: event.total,
+          percentage: (event.loaded / event.total) * 100,
+        });
+    };
+    request.onerror = () => reject(new Error("Upload connection failed."));
+    request.onload = () => {
+      let body = {};
+      try { body = JSON.parse(request.responseText || "{}"); } catch {}
+      if (request.status >= 200 && request.status < 300 && body.url)
+        resolve(body.url);
+      else reject(new Error(body.message || "Upload failed."));
+    };
+    request.send(form);
+  });
 const navigation = [
   ["overview", "Overview", HiOutlineHome],
   ["rooms", "Rooms", HiOutlineOfficeBuilding],
@@ -83,6 +109,9 @@ const Admin = () => {
   const [busy, setBusy] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(null);
   const [roomModal, setRoomModal] = useState(false);
+  const [galleryModal, setGalleryModal] = useState(false);
+  const [galleryForm, setGalleryForm] = useState({ file: null, title: "", category: "Hotel" });
+  const [uploadStatus, setUploadStatus] = useState(null);
   const load = useCallback(async () => {
     try {
       const [summary, rooms, bookings, messages, gallery, content] = await Promise.all([
@@ -122,19 +151,45 @@ const Admin = () => {
       setBusy(false);
     }
   };
-  const upload = async (file) => {
-    if (process.env.NODE_ENV === "production") {
-      const token = localStorage.getItem("peniel_admin_token");
-      const blob = await uploadToBlob(`hotel-media/${file.name}`, file, {
-        access: "public",
-        handleUploadUrl: `${API_URL}/api/admin/blob-upload?token=${encodeURIComponent(token)}`,
-        multipart: file.size > 100 * 1024 * 1024,
+  const upload = async (file, batch = { current: 1, total: 1 }) => {
+    const updateProgress = ({ loaded = 0, total = file.size, percentage }) =>
+      setUploadStatus({
+        fileName: file.name,
+        loaded,
+        total,
+        percentage: Math.round(percentage ?? (total ? (loaded / total) * 100 : 0)),
+        current: batch.current || 1,
+        files: batch.total || 1,
       });
-      return blob.url;
+    updateProgress({ loaded: 0, total: file.size, percentage: 0 });
+    try {
+      let url;
+      if (process.env.NODE_ENV === "production") {
+        const token = localStorage.getItem("peniel_admin_token");
+        const blob = await uploadToBlob(`hotel-media/${file.name}`, file, {
+          access: "public",
+          handleUploadUrl: `${API_URL}/api/admin/blob-upload?token=${encodeURIComponent(token)}`,
+          multipart: file.size > 100 * 1024 * 1024,
+          onUploadProgress: updateProgress,
+        });
+        url = blob.url;
+      } else {
+        url = await uploadLocally(file, updateProgress);
+      }
+      updateProgress({ loaded: file.size, total: file.size, percentage: 100 });
+      if ((batch.current || 1) === (batch.total || 1))
+        window.setTimeout(() => setUploadStatus(null), 650);
+      return url;
+    } catch (error) {
+      setUploadStatus((current) => ({ ...current, error: error.message }));
+      throw error;
     }
-    const form = new FormData();
-    form.append("media", file);
-    return (await api("/api/admin/upload", { method: "POST", body: form })).url;
+  };
+  const uploadBatch = async (files) => {
+    const urls = [];
+    for (let index = 0; index < files.length; index += 1)
+      urls.push(await upload(files[index], { current: index + 1, total: files.length }));
+    return urls;
   };
   const saveRoom = async (e) => {
     e.preventDefault();
@@ -520,7 +575,7 @@ const Admin = () => {
                           if (!files.length) return;
                           setBusy(true);
                           try {
-                            const urls = await Promise.all(files.map(upload));
+                            const urls = await uploadBatch(files);
                             setRoom((r) => ({
                               ...r,
                               image: r.image || urls[0],
@@ -723,32 +778,17 @@ const Admin = () => {
           )}
           {tab === "gallery" && (
             <>
-              <label className="inline-flex items-center gap-2 bg-[#10211d] text-white px-5 py-3 rounded-lg cursor-pointer mb-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setGalleryForm({ file: null, title: "", category: "Hotel" });
+                  setGalleryModal(true);
+                }}
+                className="mb-6 inline-flex items-center gap-2 rounded-lg bg-[#10211d] px-5 py-3 text-white"
+              >
                 <HiOutlinePlus />
                 Upload image or video
-                <input
-                  hidden
-                  type="file"
-                  accept="image/*,video/mp4,video/webm,video/quicktime"
-                  onChange={async (e) => {
-                    if (!e.target.files[0]) return;
-                    const url = await upload(e.target.files[0]);
-                    const title =
-                      window.prompt("Photo title?") || "Peniel Beach Hotel";
-                    const category = window.prompt("Category?") || "Hotel";
-                    await api("/api/admin/gallery", {
-                      method: "POST",
-                      body: JSON.stringify({
-                        url,
-                        title,
-                        category,
-                        mediaType: isVideo(url) ? "video" : "image",
-                      }),
-                    });
-                    load();
-                  }}
-                />
-              </label>
+              </button>
               <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 {data.gallery.map((g) => (
                   <article
@@ -798,6 +838,7 @@ const Admin = () => {
                 }))
               }
               upload={upload}
+              uploadBatch={uploadBatch}
               busy={busy}
               setBusy={setBusy}
               onSave={async (e) => {
@@ -853,9 +894,109 @@ const Admin = () => {
           onConfirm={confirmDelete}
         />
       )}
+      {galleryModal && (
+        <GalleryUploadModal
+          form={galleryForm}
+          setForm={setGalleryForm}
+          busy={busy}
+          onClose={() => !busy && setGalleryModal(false)}
+          onSubmit={async (event) => {
+            event.preventDefault();
+            if (!galleryForm.file) return;
+            setBusy(true);
+            try {
+              const url = await upload(galleryForm.file);
+              await api("/api/admin/gallery", {
+                method: "POST",
+                body: JSON.stringify({
+                  url,
+                  title: galleryForm.title.trim(),
+                  category: galleryForm.category.trim(),
+                  mediaType: isVideo(url) ? "video" : "image",
+                }),
+              });
+              setGalleryModal(false);
+              setGalleryForm({ file: null, title: "", category: "Hotel" });
+              setMessage("Gallery media uploaded successfully.");
+              await load();
+            } catch (error) {
+              setMessage(error.message);
+            } finally {
+              setBusy(false);
+            }
+          }}
+        />
+      )}
+      {uploadStatus && (
+        <UploadProgressModal
+          status={uploadStatus}
+          onClose={() => uploadStatus.error && setUploadStatus(null)}
+        />
+      )}
     </div>
   );
 };
+
+const GalleryUploadModal = ({ form, setForm, busy, onClose, onSubmit }) => {
+  const preview = useMemo(
+    () => (form.file ? URL.createObjectURL(form.file) : ""),
+    [form.file],
+  );
+  useEffect(() => () => preview && URL.revokeObjectURL(preview), [preview]);
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="gallery-upload-title">
+      <button type="button" className="absolute inset-0 bg-[#07100e]/70 backdrop-blur-sm" onClick={onClose} aria-label="Close gallery upload" />
+      <form onSubmit={onSubmit} className="relative max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl sm:p-8">
+        <button type="button" onClick={onClose} disabled={busy} className="absolute right-5 top-5 grid h-10 w-10 place-items-center rounded-full bg-gray-100" aria-label="Close"><HiOutlineX size={22} /></button>
+        <p className="text-xs uppercase tracking-[.25em] text-accent">Media library</p>
+        <h2 id="gallery-upload-title" className="mt-2 pr-12 text-2xl font-semibold">Add gallery media</h2>
+        <p className="mt-2 text-sm text-gray-500">Choose the file and enter all guest-facing information before uploading.</p>
+
+        <label className="mt-6 block cursor-pointer overflow-hidden rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 hover:border-accent">
+          {preview ? (
+            isVideo(form.file?.name) ? <video src={preview} className="h-64 w-full object-cover" controls /> : <img src={preview} alt="Selected gallery preview" className="h-64 w-full object-cover" />
+          ) : (
+            <span className="grid h-56 place-items-center text-center text-gray-500"><span><HiOutlinePhotograph size={38} className="mx-auto mb-3 text-accent" />Select an image or video<small className="mt-1 block text-gray-400">JPG, PNG, WebP, MP4, WebM or MOV</small></span></span>
+          )}
+          <input hidden type="file" accept="image/*,video/mp4,video/webm,video/quicktime" onChange={(event) => setForm({ ...form, file: event.target.files[0] || null })} />
+        </label>
+        {form.file && <p className="mt-2 truncate text-xs text-gray-500">{form.file.name} · {formatBytes(form.file.size)}</p>}
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <label><span className="admin-label">Title</span><input className="admin-input" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="e.g. Sunset by the lake" required /></label>
+          <label><span className="admin-label">Category</span><input className="admin-input" value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} placeholder="e.g. Hotel, Dining, Rooms" required /></label>
+        </div>
+        <div className="mt-7 flex justify-end gap-3 border-t pt-5">
+          <button type="button" disabled={busy} onClick={onClose} className="rounded-lg border px-5 py-3">Cancel</button>
+          <button disabled={busy || !form.file || !form.title.trim() || !form.category.trim()} className="rounded-lg bg-accent px-6 py-3 text-white disabled:opacity-50">{busy ? "Uploading..." : "Upload media"}</button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+const formatBytes = (bytes = 0) => {
+  if (!bytes) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  const unit = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  return `${(bytes / 1024 ** unit).toFixed(unit ? 1 : 0)} ${units[unit]}`;
+};
+
+const UploadProgressModal = ({ status, onClose }) => (
+  <div className="fixed inset-0 z-[140] flex items-center justify-center bg-[#07100e]/75 p-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Upload progress">
+    <div className="w-full max-w-md rounded-2xl bg-white p-7 shadow-2xl">
+      <div className="flex items-start justify-between gap-5">
+        <div><p className="text-xs uppercase tracking-[.25em] text-accent">{status.error ? "Upload interrupted" : "Uploading media"}</p><h2 className="mt-2 text-xl font-semibold">{status.error ? "The upload could not finish" : `File ${status.current} of ${status.files}`}</h2></div>
+        <strong className={status.error ? "text-red-600" : "text-accent"}>{status.error ? "!" : `${status.percentage}%`}</strong>
+      </div>
+      <p className="mt-5 truncate text-sm text-gray-600">{status.fileName}</p>
+      <div className="mt-3 h-3 overflow-hidden rounded-full bg-gray-200" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={status.percentage}>
+        <div className={`h-full rounded-full transition-[width] duration-200 ${status.error ? "bg-red-500" : "bg-accent"}`} style={{ width: `${status.percentage}%` }} />
+      </div>
+      <div className="mt-2 flex justify-between text-xs text-gray-400"><span>{formatBytes(status.loaded)} uploaded</span><span>{formatBytes(status.total)}</span></div>
+      {status.error ? <><p className="mt-5 rounded-lg bg-red-50 p-4 text-sm text-red-700">{status.error}</p><button onClick={onClose} className="mt-4 w-full rounded-lg bg-primary py-3 text-white">Close</button></> : <p className="mt-5 text-center text-sm text-gray-500">Please keep this window open until the upload finishes.</p>}
+    </div>
+  </div>
+);
 
 const DeleteModal = ({ item, busy, onCancel, onConfirm }) => (
   <div
@@ -919,7 +1060,7 @@ const defaultKidsActivities = [
   { id: "slides", name: "Slides", description: "Exciting slides for endless fun.", imageUrl: "" },
 ];
 
-const PageContentEditor = ({ values, onChange, onSave, upload, busy, setBusy }) => {
+const PageContentEditor = ({ values, onChange, onSave, upload, uploadBatch, busy, setBusy }) => {
   const [uploadError, setUploadError] = useState("");
   const heroImages = parseContentList(values.homeHeroImages);
   const kidsBackgrounds = parseContentList(values.kidsBackgroundImages);
@@ -930,7 +1071,7 @@ const PageContentEditor = ({ values, onChange, onSave, upload, busy, setBusy }) 
     setBusy(true);
     setUploadError("");
     try {
-      const urls = await Promise.all(files.map(upload));
+      const urls = await uploadBatch(files);
       onChange(key, JSON.stringify([...current, ...urls]));
     } catch (error) {
       setUploadError(error.message);
