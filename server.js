@@ -1060,17 +1060,24 @@ app.post(
   requireAdmin,
   wrap(async (req, res) => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const requestedCategory = String(req.body.category || "Hotel").trim() || "Hotel";
+    const [[existingCategory]] = await pool.execute(
+      "SELECT category FROM gallery WHERE LOWER(TRIM(category))=LOWER(?) LIMIT 1",
+      [requestedCategory],
+    );
+    const category = existingCategory?.category || requestedCategory;
+    const title = String(req.body.title || "Peniel Beach Hotel").trim();
     await pool.execute(
       "INSERT INTO gallery (id,url,title,category,mediaType,active) VALUES (?,?,?,?,?,TRUE)",
       [
         id,
         req.body.url,
-        req.body.title,
-        req.body.category,
+        title,
+        category,
         req.body.mediaType === "video" ? "video" : "image",
       ],
     );
-    res.status(201).json({ id, ...req.body, active: true });
+    res.status(201).json({ id, ...req.body, title, category, active: true });
   }),
 );
 app.delete(

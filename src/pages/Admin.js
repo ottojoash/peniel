@@ -898,6 +898,7 @@ const Admin = () => {
         <GalleryUploadModal
           form={galleryForm}
           setForm={setGalleryForm}
+          categories={[...new Set(data.gallery.map((item) => (item.category || "").trim()).filter(Boolean))]}
           busy={busy}
           onClose={() => !busy && setGalleryModal(false)}
           onSubmit={async (event) => {
@@ -937,7 +938,7 @@ const Admin = () => {
   );
 };
 
-const GalleryUploadModal = ({ form, setForm, busy, onClose, onSubmit }) => {
+const GalleryUploadModal = ({ form, setForm, categories, busy, onClose, onSubmit }) => {
   const preview = useMemo(
     () => (form.file ? URL.createObjectURL(form.file) : ""),
     [form.file],
@@ -963,7 +964,7 @@ const GalleryUploadModal = ({ form, setForm, busy, onClose, onSubmit }) => {
         {form.file && <p className="mt-2 truncate text-xs text-gray-500">{form.file.name} · {formatBytes(form.file.size)}</p>}
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <label><span className="admin-label">Title</span><input className="admin-input" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="e.g. Sunset by the lake" required /></label>
-          <label><span className="admin-label">Category</span><input className="admin-input" value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} placeholder="e.g. Hotel, Dining, Rooms" required /></label>
+          <label><span className="admin-label">Category</span><input className="admin-input" list="gallery-categories" value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} placeholder="e.g. Hotel, Dining, Rooms" required /><datalist id="gallery-categories">{categories.map((category) => <option value={category} key={category} />)}</datalist><small className="mt-1 block text-gray-400">Use an existing category name to group related media.</small></label>
         </div>
         <div className="mt-7 flex justify-end gap-3 border-t pt-5">
           <button type="button" disabled={busy} onClick={onClose} className="rounded-lg border px-5 py-3">Cancel</button>
