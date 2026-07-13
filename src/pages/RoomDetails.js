@@ -20,6 +20,10 @@ import { api } from "../api";
 import { useSite } from "../context/SiteContext";
 
 const isVideo = (url = "") => /\.(mp4|webm|mov)(?:$|\?)/i.test(url);
+const toDateOnly = (date) =>
+  date instanceof Date
+    ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+    : date;
 
 const RoomDetails = () => {
   const { rooms, loading } = useContext(RoomContext);
@@ -71,7 +75,12 @@ const RoomDetails = () => {
 
   // Handle input changes
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => {
+      const next = { ...prev, [field]: value };
+      if (field === "checkIn" && prev.checkOut && prev.checkOut <= value)
+        next.checkOut = "";
+      return next;
+    });
   };
 
   // Form submission
@@ -103,6 +112,8 @@ const RoomDetails = () => {
         method: "POST",
         body: JSON.stringify({
           ...formData,
+          checkIn: toDateOnly(formData.checkIn),
+          checkOut: toDateOnly(formData.checkOut),
           roomId: room.id,
         }),
       });
@@ -243,9 +254,20 @@ const RoomDetails = () => {
                 onChange={(value) => handleInputChange("email", value)}
               />
               <CheckIn
+                value={formData.checkIn}
                 onChange={(value) => handleInputChange("checkIn", value)}
               />
               <CheckOut
+                value={formData.checkOut}
+                minDate={
+                  formData.checkIn
+                    ? new Date(
+                        formData.checkIn.getFullYear(),
+                        formData.checkIn.getMonth(),
+                        formData.checkIn.getDate() + 1,
+                      )
+                    : undefined
+                }
                 onChange={(value) => handleInputChange("checkOut", value)}
               />
               <AdultsDropdown

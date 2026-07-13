@@ -4,8 +4,15 @@ import 'react-datepicker/dist/react-datepicker.css';
 import '../datepicker.css';
 import { BsCalendar } from 'react-icons/bs';
 
-const CheckoutD = ({ onChange }) => {
+const startOfToday = () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+};
+
+const CheckoutD = ({ onChange, value, minDate }) => {
   const [startDate, setStartDate] = useState(null);
+  const selected = value === undefined ? startDate : value;
 
   const handleDateChange = (date) => {
     setStartDate(date); // Update local state
@@ -19,7 +26,8 @@ const CheckoutD = ({ onChange }) => {
     </div>
       <DatePicker
         className='w-full h-full'
-        selected={startDate}
+        selected={selected || null}
+        minDate={minDate || startOfToday()}
         placeholderText='Check out'
         onChange={handleDateChange}
         

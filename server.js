@@ -47,6 +47,20 @@ const escapeHtml = (value = "") =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+const hotelDateKey = (value = new Date()) => {
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value))
+    return value;
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Kampala",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const get = (type) => parts.find((part) => part.type === type)?.value;
+  return `${get("year")}-${get("month")}-${get("day")}`;
+};
 const bookingEmail = (booking, paid) =>
   `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto"><h1 style="color:#a37d4c">${paid ? "Reservation confirmed" : "Reservation request received"}</h1><p>Hello ${booking.names},</p><p>${paid ? "Your payment has been verified and your reservation is confirmed." : "We received your reservation request and the hotel team will contact you after reviewing availability."}</p><table style="width:100%;border-collapse:collapse"><tr><td style="padding:8px;border-bottom:1px solid #ddd">Reservation code</td><td style="padding:8px;border-bottom:1px solid #ddd"><strong>${booking.reservationCode}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd">Room</td><td style="padding:8px;border-bottom:1px solid #ddd">${booking.type}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd">Stay</td><td style="padding:8px;border-bottom:1px solid #ddd">${booking.checkIn} to ${booking.checkOut}</td></tr><tr><td style="padding:8px">Total</td><td style="padding:8px">${booking.currency} ${Number(booking.price).toFixed(2)}</td></tr></table><p>Thank you for choosing Peniel Beach Hotel.</p></div>`;
 const statusEmail = (booking, status) => {
@@ -549,7 +563,16 @@ app.post(
       return res.status(400).json({
         message: "You must accept the booking and cancellation terms.",
       });
-    if (new Date(checkOut) <= new Date(checkIn))
+    const checkInDate = hotelDateKey(checkIn);
+    const checkOutDate = hotelDateKey(checkOut);
+    const today = hotelDateKey();
+    if (!checkInDate || !checkOutDate)
+      return res.status(400).json({ message: "Enter valid booking dates." });
+    if (checkInDate < today)
+      return res.status(400).json({
+        message: "Check-in cannot be earlier than today.",
+      });
+    if (checkOutDate <= checkInDate)
       return res
         .status(400)
         .json({ message: "Check-out must be after check-in." });
