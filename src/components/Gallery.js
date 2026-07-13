@@ -5,7 +5,7 @@ const isVideo = (item) =>
   item.mediaType === "video" ||
   /\.(mp4|webm|mov)(?:$|\?)/i.test(item.url || "");
 
-const Gallery = () => {
+const Gallery = ({ showEmptyState = false }) => {
   const [images, setImages] = useState([]);
   const [content, setContent] = useState({});
   const [active, setActive] = useState(null);
@@ -17,18 +17,22 @@ const Gallery = () => {
       })
       .catch(() => {});
   }, []);
-  if (!images.length) return null;
   return (
-    <section id="gallery" className="py-24 bg-[#f5f1eb]">
-      <div className="container mx-auto px-4">
-        <div className="max-w-2xl mb-10">
-          <div className="font-tertiary uppercase text-accent tracking-[6px] text-sm">
+    <section id="gallery" className="bg-[#f5f1eb] py-16 sm:py-20 lg:py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-[15px]">
+        <div className="mb-8 max-w-2xl sm:mb-10">
+          <div className="font-tertiary text-xs uppercase tracking-[4px] text-accent sm:text-sm sm:tracking-[6px]">
             {content.galleryEyebrow}
           </div>
           <h2 className="h2">{content.galleryTitle}</h2>
-          <p className="text-lg text-gray-600">{content.galleryIntro}</p>
+          <p className="text-base leading-7 text-gray-600 sm:text-lg">{content.galleryIntro}</p>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-[190px] gap-3">
+        {!images.length && showEmptyState ? (
+          <div className="rounded-lg border border-black/10 bg-white px-6 py-16 text-center text-gray-500">
+            Gallery media will appear here soon.
+          </div>
+        ) : (
+        <div className="grid auto-rows-[125px] grid-cols-2 gap-2 sm:auto-rows-[170px] sm:gap-3 lg:auto-rows-[190px] lg:grid-cols-4">
           {images.map((item, index) => (
             <button
               key={item.id}
@@ -51,22 +55,23 @@ const Gallery = () => {
                 />
               )}
               <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-              <span className="absolute bottom-4 left-4 text-white">
+              <span className="absolute bottom-3 left-3 right-3 text-white sm:bottom-4 sm:left-4">
                 <small className="uppercase tracking-widest">
                   {item.category}
                 </small>
-                <strong className="block font-primary text-xl">
+                <strong className="block truncate font-primary text-base sm:text-xl">
                   {item.title}
                 </strong>
               </span>
             </button>
           ))}
         </div>
+        )}
       </div>
       {active && (
         <div
           onClick={() => setActive(null)}
-          className="fixed inset-0 z-[100] bg-black/90 p-6 flex items-center justify-center cursor-zoom-out"
+          className="fixed inset-0 z-[100] flex cursor-zoom-out items-center justify-center bg-black/90 p-3 sm:p-6"
         >
           {isVideo(active) ? (
             <video

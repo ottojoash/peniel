@@ -18,22 +18,22 @@ const Rooms = () => {
                 <title>Rooms | Peniel Beach Hotel</title>
                 <meta name="description" content="Explore our comfortable and luxurious rooms at Peniel Beach Hotel. Book now for a relaxing stay!" />
     </Helmet>
-    <section className='py-24'>
+    <section className='py-16 sm:py-20 lg:py-24'>
       {/* overlay & spinner */}
       {loading && (
         <div className='h-screen fixed bottom-0 top-0 bg-black/90 w-full z-50 flex justify-center items-center'>
           <SpinnerDotted color='white' />
         </div>
       )}
-      <div className='container mx-auto lg:px-0'>
+      <div className='container mx-auto px-4 sm:px-6 lg:px-[15px]'>
         <div className='text-center'>
-          <div className='font-tertiary uppercase text-[15px] tracking-[6px]'>
+          <div className='font-tertiary uppercase text-xs tracking-[4px] sm:text-[15px] sm:tracking-[6px]'>
             {settings.hotelName || 'Hotel'}
           </div>
-          <h2 className='font-primary text-[45px] mb-4'>Rooms & Suites</h2>
+          <h2 className='mb-7 font-primary text-[36px] sm:text-[45px]'>Rooms & Suites</h2>
         </div>
         {/* grid */}
-        <div className='grid grid-cols-1 max-w-sm mx-auto gap-[30px] lg:grid-cols-3 lg:max-w-none lg:mx-0'>
+        <div className='mx-auto grid max-w-sm grid-cols-1 gap-6 md:max-w-none md:grid-cols-2 lg:grid-cols-3 lg:gap-[30px]'>
           {rooms.map((room) => {
             return <Room room={room} key={room.id} />;
           })}

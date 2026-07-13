@@ -15,9 +15,12 @@ import ContactForm from "./pages/Contact";
 import Admin from "./pages/Admin";
 import Terms from "./pages/Terms";
 import PaymentResult from "./pages/PaymentResult";
+import GalleryPage from "./pages/GalleryPage";
+import ScrollToTop from "./components/ScrollToTop";
 
 const PublicLayout = () => (
   <>
+    <ScrollToTop />
     <Header />
     <Outlet />
     <Footer />
@@ -32,6 +35,7 @@ const router = createBrowserRouter([
       { path: "/resturant", element: <Resturant /> },
       { path: "/kids", element: <KidsPark /> },
       { path: "/contact", element: <ContactForm /> },
+      { path: "/gallery", element: <GalleryPage /> },
       { path: "/room/:id", element: <RoomDetails /> },
       { path: "/terms", element: <Terms /> },
       { path: "/payment-result", element: <PaymentResult /> },

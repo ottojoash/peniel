@@ -62,9 +62,9 @@ const Home = () => {
       {/* Main Content */}
       <Suspense fallback={<Loader />}>
         <HeroSlider />
-        <div className="container mx-auto relative">
+        <div className="container mx-auto relative px-4 sm:px-6 lg:px-[15px]">
           {/* Booking Form Section */}
-          <div className="bg-accent/20 mt-4 p-4 lg:shadow-xl lg:absolute lg:left-0 lg:right-0 lg:p-0 lg:z-30 lg:-top-12">
+          <div className="relative z-30 -mt-7 overflow-visible bg-white p-3 shadow-xl sm:-mt-10 sm:p-4 lg:absolute lg:left-[15px] lg:right-[15px] lg:-top-12 lg:mt-0 lg:p-0">
             <BookForm />
           </div>
         </div>

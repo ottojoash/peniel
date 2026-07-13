@@ -19,13 +19,13 @@ const AdultsDropdown = ({ onChange, value }) => {
 
   const handleInputChange = (value) => {
     setSelectedValue(value); // Update the local state
-    onChange(value); // Invoke the onChange prop with the selected value
+    onChange?.(value); // Invoke the onChange prop with the selected value
     setAdults(value); // Optionally, update the local context state
   };
 
   return (
     <Menu as='div' className='w-full h-full bg-white relative'>
-      <Menu.Button className='w-full h-full flex items-center justify-between px-8'>
+      <Menu.Button className='w-full h-full flex items-center justify-between px-5 sm:px-6 lg:px-8'>
       {selectedValue === '' || selectedValue === null || selectedValue === undefined
           ? 'No Adults'
           : selectedValue}

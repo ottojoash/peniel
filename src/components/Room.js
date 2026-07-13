@@ -10,9 +10,9 @@ const Room = ({ room }) => {
   // destructure room
   const { id, name, image, size, maxPerson, description, price } = room;
   return (
-    <div className="bg-white shadow-2xl min-h-[500px] group">
+    <article className="group flex min-h-[480px] flex-col overflow-hidden bg-white shadow-xl sm:min-h-[500px]">
       {/* img */}
-      <div className="overflow-hidden h-[200px] w-full relative">
+      <div className="relative h-[210px] w-full overflow-hidden sm:h-[230px] lg:h-[200px]">
         {/\.(mp4|webm|mov)(?:$|\?)/i.test(image) ? (
           <video
             className="absolute inset-0 w-full h-full object-cover"
@@ -31,8 +31,8 @@ const Room = ({ room }) => {
         )}
       </div>
       {/* details */}
-      <div className="bg-white shadow-lg max-w-[300px] mx-auto h-[60px] -translate-y-1/2 flex justify-center items-center uppercase font-tertiary tracking-[1px] font-semibold text-base">
-        <div className="flex justify-between w-[80%]">
+      <div className="mx-4 flex h-[60px] -translate-y-1/2 items-center justify-center bg-white font-tertiary text-sm font-semibold uppercase tracking-[1px] shadow-lg sm:mx-auto sm:w-[calc(100%-2rem)] sm:max-w-[300px] sm:text-base">
+        <div className="flex w-[88%] justify-between gap-3 sm:w-[80%]">
           {/* size */}
           <div className="flex items-center gap-x-2">
             <div className="text-accent">
@@ -56,23 +56,23 @@ const Room = ({ room }) => {
         </div>
       </div>
       {/* name & description */}
-      <div className="text-center">
+      <div className="-mt-2 px-5 text-center">
         <Link to={`/room/${id}`}>
           <h3 className="h3">{name}</h3>
         </Link>
-        <p className="max-w-[300px] mx-auto mb-3 lg:mb-6">
+        <p className="mx-auto mb-5 max-w-[300px] text-gray-600 lg:mb-6">
           {description.slice(0, 56)}
         </p>
       </div>
       {/* btn */}
       <Link
         to={`/room/${id}`}
-        className="btn btn-secondary btn-sm max-w-[240px] mx-auto"
+        className="btn btn-secondary btn-sm mb-7 mt-auto w-[calc(100%-2.5rem)] max-w-[260px] mx-auto px-4 text-center"
       >
         Book now from {settings.currencySymbol || "$"}
         {price}
       </Link>
-    </div>
+    </article>
   );
 };
 

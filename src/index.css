@@ -4,19 +4,19 @@
 
 @layer base {
   body {
-    @apply font-secondary text-primary;
+    @apply overflow-x-hidden font-secondary text-primary;
   }
   input::placeholder {
     @apply text-primary;
   }
   .h2 {
-    @apply font-primary text-[45px] mb-4;
+    @apply mb-4 font-primary text-[36px] leading-tight sm:text-[45px];
   }
   .h3 {
     @apply text-2xl font-primary font-semibold tracking-[1px] mb-2;
   }
   .btn {
-    @apply text-[15px] tracking-[3px] font-tertiary uppercase text-white flex-1 transition-all px-8 flex justify-center items-center;
+    @apply flex flex-1 items-center justify-center px-6 font-tertiary text-[14px] uppercase tracking-[2px] text-white transition-all sm:px-8 sm:text-[15px] sm:tracking-[3px];
   }
   .btn-sm {
     @apply h-[48px];

@@ -9,7 +9,7 @@ const Footer = () => {
   const { settings } = useSite();
   return (
     <footer className='bg-primary py-4'>
-      <div className='container mx-auto text-white flex flex-col sm:flex-row justify-between items-center text-center sm:text-left'>
+      <div className='container mx-auto flex flex-col items-center justify-between gap-3 px-4 text-center text-sm text-white sm:flex-row sm:gap-6 sm:px-6 sm:text-left lg:px-[15px]'>
         {/* logo */}
         <a href='/' className='flex items-center justify-center mb-4 sm:mb-0'>
           <img src={LogoWhite} alt='Logo' className='w-20' />
@@ -32,7 +32,7 @@ const Footer = () => {
         </div>
 
         {/* Copyright text */}
-        <span className='block sm:inline'>
+        <span className='block max-w-sm leading-6 sm:inline sm:text-right'>
           Copyright &copy; {new Date().getFullYear()}. All rights reserved {settings.hotelName || 'Peniel Beach Hotel'}.
         </span>
       </div>

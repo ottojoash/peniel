@@ -50,7 +50,7 @@ const HeroSlider = () => {
         delay: 3000,
         disableOnInteraction: false,
       }}
-      className='heroSlider h-[600px] lg:h-[860px]'
+      className='heroSlider h-[520px] sm:h-[620px] lg:h-[860px]'
     >
       {slides.map((slide, index) => {
         const { title, desc, bg, btnText, btnLink } = slide;
@@ -60,17 +60,17 @@ const HeroSlider = () => {
             key={index}
             aria-label={`${title} - ${desc}`}
           >
-            <div className='z-20 text-white text-center'>
-              <div className='uppercase font-tertiary tracking-[6px] mb-5'>
+            <div className='z-20 px-5 pt-14 text-center text-white sm:px-8'>
+              <div className='mb-4 font-tertiary text-xs uppercase tracking-[4px] sm:text-base sm:tracking-[6px]'>
                 {settings.hotelName || 'Peniel Beach Hotel'}
               </div>
-              <h1 className='text-[32px] font-primary uppercase tracking-[2px] max-w-[920px] lg:text-[68px] leading-tight mb-6'>
+              <h1 className='mx-auto mb-7 max-w-[920px] font-primary text-[34px] uppercase leading-[1.12] tracking-[1px] sm:text-[48px] lg:text-[68px] lg:tracking-[2px]'>
                 {settings.heroTitle || title}
               </h1>
               <p className='mb-6'>{desc}</p>
-              <button className='btn btn-lg btn-primary mx-auto'>
-                <a href='/rooms'>{settings.heroButtonText || btnText}</a>
-              </button>
+              <a href='/rooms' className='btn btn-lg btn-primary mx-auto max-w-[240px]'>
+                {settings.heroButtonText || btnText}
+              </a>
             </div>
             <img
               className='absolute top-0 object-cover h-full w-full'
