@@ -110,7 +110,7 @@ const Admin = () => {
   const [pendingDelete, setPendingDelete] = useState(null);
   const [roomModal, setRoomModal] = useState(false);
   const [galleryModal, setGalleryModal] = useState(false);
-  const [galleryForm, setGalleryForm] = useState({ file: null, title: "", category: "Hotel" });
+  const [galleryForm, setGalleryForm] = useState({ items: [], category: "Hotel" });
   const [uploadStatus, setUploadStatus] = useState(null);
   const load = useCallback(async () => {
     try {
@@ -781,7 +781,7 @@ const Admin = () => {
               <button
                 type="button"
                 onClick={() => {
-                  setGalleryForm({ file: null, title: "", category: "Hotel" });
+                  setGalleryForm({ items: [], category: "Hotel" });
                   setGalleryModal(true);
                 }}
                 className="mb-6 inline-flex items-center gap-2 rounded-lg bg-[#10211d] px-5 py-3 text-white"
@@ -903,22 +903,29 @@ const Admin = () => {
           onClose={() => !busy && setGalleryModal(false)}
           onSubmit={async (event) => {
             event.preventDefault();
-            if (!galleryForm.file) return;
+            if (!galleryForm.items.length) return;
             setBusy(true);
             try {
-              const url = await upload(galleryForm.file);
-              await api("/api/admin/gallery", {
-                method: "POST",
-                body: JSON.stringify({
-                  url,
-                  title: galleryForm.title.trim(),
-                  category: galleryForm.category.trim(),
-                  mediaType: isVideo(url) ? "video" : "image",
-                }),
-              });
+              const urls = await uploadBatch(
+                galleryForm.items.map((item) => item.file),
+              );
+              for (let index = 0; index < urls.length; index += 1) {
+                const url = urls[index];
+                await api("/api/admin/gallery", {
+                  method: "POST",
+                  body: JSON.stringify({
+                    url,
+                    title: galleryForm.items[index].title.trim(),
+                    category: galleryForm.category.trim(),
+                    mediaType: isVideo(url) ? "video" : "image",
+                  }),
+                });
+              }
               setGalleryModal(false);
-              setGalleryForm({ file: null, title: "", category: "Hotel" });
-              setMessage("Gallery media uploaded successfully.");
+              setGalleryForm({ items: [], category: "Hotel" });
+              setMessage(
+                `${urls.length} gallery ${urls.length === 1 ? "item" : "items"} uploaded successfully.`,
+              );
               await load();
             } catch (error) {
               setMessage(error.message);
@@ -939,39 +946,57 @@ const Admin = () => {
 };
 
 const GalleryUploadModal = ({ form, setForm, categories, busy, onClose, onSubmit }) => {
-  const preview = useMemo(
-    () => (form.file ? URL.createObjectURL(form.file) : ""),
-    [form.file],
-  );
-  useEffect(() => () => preview && URL.revokeObjectURL(preview), [preview]);
+  const addFiles = (files) => {
+    const items = files.map((file) => ({
+      file,
+      title: file.name
+        .replace(/\.[^.]+$/, "")
+        .replace(/[-_]+/g, " ")
+        .replace(/\b\w/g, (letter) => letter.toUpperCase()),
+    }));
+    setForm({ ...form, items: [...form.items, ...items] });
+  };
+  const updateTitle = (index, title) =>
+    setForm({ ...form, items: form.items.map((item, itemIndex) => itemIndex === index ? { ...item, title } : item) });
+  const removeItem = (index) =>
+    setForm({ ...form, items: form.items.filter((_, itemIndex) => itemIndex !== index) });
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="gallery-upload-title">
       <button type="button" className="absolute inset-0 bg-[#07100e]/70 backdrop-blur-sm" onClick={onClose} aria-label="Close gallery upload" />
-      <form onSubmit={onSubmit} className="relative max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl sm:p-8">
+      <form onSubmit={onSubmit} className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl sm:p-8">
         <button type="button" onClick={onClose} disabled={busy} className="absolute right-5 top-5 grid h-10 w-10 place-items-center rounded-full bg-gray-100" aria-label="Close"><HiOutlineX size={22} /></button>
         <p className="text-xs uppercase tracking-[.25em] text-accent">Media library</p>
         <h2 id="gallery-upload-title" className="mt-2 pr-12 text-2xl font-semibold">Add gallery media</h2>
-        <p className="mt-2 text-sm text-gray-500">Choose the file and enter all guest-facing information before uploading.</p>
+        <p className="mt-2 text-sm text-gray-500">Choose one or several files, review each title, and place them in one shared category.</p>
 
-        <label className="mt-6 block cursor-pointer overflow-hidden rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 hover:border-accent">
-          {preview ? (
-            isVideo(form.file?.name) ? <video src={preview} className="h-64 w-full object-cover" controls /> : <img src={preview} alt="Selected gallery preview" className="h-64 w-full object-cover" />
-          ) : (
-            <span className="grid h-56 place-items-center text-center text-gray-500"><span><HiOutlinePhotograph size={38} className="mx-auto mb-3 text-accent" />Select an image or video<small className="mt-1 block text-gray-400">JPG, PNG, WebP, MP4, WebM or MOV</small></span></span>
-          )}
-          <input hidden type="file" accept="image/*,video/mp4,video/webm,video/quicktime" onChange={(event) => setForm({ ...form, file: event.target.files[0] || null })} />
+        <label className="mt-6 grid h-40 cursor-pointer place-items-center overflow-hidden rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 text-center text-gray-500 hover:border-accent">
+          <span><HiOutlinePhotograph size={38} className="mx-auto mb-3 text-accent" />Select images or videos<small className="mt-1 block text-gray-400">Choose multiple files at once · JPG, PNG, WebP, MP4, WebM or MOV</small></span>
+          <input hidden multiple type="file" accept="image/*,video/mp4,video/webm,video/quicktime" onChange={(event) => { addFiles(Array.from(event.target.files || [])); event.target.value = ""; }} />
         </label>
-        {form.file && <p className="mt-2 truncate text-xs text-gray-500">{form.file.name} · {formatBytes(form.file.size)}</p>}
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <label><span className="admin-label">Title</span><input className="admin-input" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="e.g. Sunset by the lake" required /></label>
-          <label><span className="admin-label">Category</span><input className="admin-input" list="gallery-categories" value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} placeholder="e.g. Hotel, Dining, Rooms" required /><datalist id="gallery-categories">{categories.map((category) => <option value={category} key={category} />)}</datalist><small className="mt-1 block text-gray-400">Use an existing category name to group related media.</small></label>
+        {!!form.items.length && <div className="mt-5 grid gap-4 sm:grid-cols-2">{form.items.map((item, index) => <GalleryFileCard key={`${item.file.name}-${item.file.lastModified}-${index}`} item={item} index={index} onTitle={updateTitle} onRemove={removeItem} />)}</div>}
+        <div className="mt-5">
+          <label><span className="admin-label">Shared category for all selected files</span><input className="admin-input" list="gallery-categories" value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} placeholder="e.g. Hotel, Dining, Rooms" required /><datalist id="gallery-categories">{categories.map((category) => <option value={category} key={category} />)}</datalist><small className="mt-1 block text-gray-400">Use an existing category name to group related media.</small></label>
         </div>
         <div className="mt-7 flex justify-end gap-3 border-t pt-5">
           <button type="button" disabled={busy} onClick={onClose} className="rounded-lg border px-5 py-3">Cancel</button>
-          <button disabled={busy || !form.file || !form.title.trim() || !form.category.trim()} className="rounded-lg bg-accent px-6 py-3 text-white disabled:opacity-50">{busy ? "Uploading..." : "Upload media"}</button>
+          <button disabled={busy || !form.items.length || form.items.some((item) => !item.title.trim()) || !form.category.trim()} className="rounded-lg bg-accent px-6 py-3 text-white disabled:opacity-50">{busy ? "Uploading..." : `Upload ${form.items.length || ""} ${form.items.length === 1 ? "item" : "items"}`}</button>
         </div>
       </form>
     </div>
+  );
+};
+
+const GalleryFileCard = ({ item, index, onTitle, onRemove }) => {
+  const preview = useMemo(() => URL.createObjectURL(item.file), [item.file]);
+  useEffect(() => () => URL.revokeObjectURL(preview), [preview]);
+  return (
+    <article className="overflow-hidden rounded-xl border bg-gray-50">
+      <div className="relative h-36 bg-gray-200">
+        {isVideo(item.file.name) ? <video src={preview} className="h-full w-full object-cover" muted /> : <img src={preview} alt={`Selected upload ${index + 1}`} className="h-full w-full object-cover" />}
+        <button type="button" onClick={() => onRemove(index)} className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-red-600 text-white" aria-label={`Remove ${item.file.name}`}>×</button>
+      </div>
+      <div className="p-3"><p className="mb-2 truncate text-xs text-gray-400">{item.file.name} · {formatBytes(item.file.size)}</p><label><span className="admin-label">Title</span><input className="admin-input" value={item.title} onChange={(event) => onTitle(index, event.target.value)} required /></label></div>
+    </article>
   );
 };
 
