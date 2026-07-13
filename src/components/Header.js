@@ -27,7 +27,7 @@ const Header = () => {
   const navItems = [
     ['/', 'Home'],
     ['/rooms', 'Rooms'],
-    ['/resturant', 'Restaurant'],
+    ['/restaurant', 'Restaurant'],
     ['/kids', 'Kids Park'],
     ['/contact', 'Contact'],
     ['/gallery', 'Gallery'],

@@ -10,7 +10,7 @@ import Resturant from "./pages/Resturant";
 import KidsPark from "./pages/Kids";
 
 // react router
-import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Outlet, Navigate } from "react-router-dom";
 import ContactForm from "./pages/Contact";
 import Admin from "./pages/Admin";
 import Terms from "./pages/Terms";
@@ -32,7 +32,8 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <Home /> },
       { path: "/rooms", element: <RoomPages /> },
-      { path: "/resturant", element: <Resturant /> },
+      { path: "/restaurant", element: <Resturant /> },
+      { path: "/resturant", element: <Navigate to="/restaurant" replace /> },
       { path: "/kids", element: <KidsPark /> },
       { path: "/contact", element: <ContactForm /> },
       { path: "/gallery", element: <GalleryPage /> },
