@@ -9,6 +9,10 @@
   },
   "rewrites": [
     {
+      "source": "/media/:path*",
+      "destination": "https://media.penielbeachotel.com/:path*"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/index.js"
     },

@@ -2,6 +2,8 @@ export const API_URL =
   process.env.REACT_APP_API_URL ||
   (process.env.NODE_ENV === "production" ? "" : "http://localhost:5000");
 
+const R2_PUBLIC_ORIGIN = "https://media.penielbeachotel.com";
+
 export const api = async (path, options = {}) => {
   const token = localStorage.getItem("peniel_admin_token");
   const response = await fetch(`${API_URL}${path}`, {
@@ -23,5 +25,12 @@ export const api = async (path, options = {}) => {
   return response.status === 204 ? null : response.json();
 };
 
-export const imageUrl = (url) =>
-  url?.startsWith("/uploads/") ? `${API_URL}${url}` : url;
+export const imageUrl = (url) => {
+  if (url?.startsWith("/uploads/")) return `${API_URL}${url}`;
+  if (
+    process.env.NODE_ENV === "production" &&
+    url?.startsWith(`${R2_PUBLIC_ORIGIN}/`)
+  )
+    return `/media/${url.slice(R2_PUBLIC_ORIGIN.length + 1)}`;
+  return url;
+};
