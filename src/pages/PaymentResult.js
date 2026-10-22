@@ -23,10 +23,10 @@ const PaymentResult = () => {
         </h1>
         <p className="text-gray-600 mt-4">
           {paid
-            ? "Your card payment was verified and your room is reserved. Please keep your Flutterwave receipt."
+            ? "Your PesaPal payment was verified and your room is reserved. Please keep your PesaPal receipt."
             : pending
-              ? "Online payment is currently paused. The hotel has received your request and will contact you after reviewing availability."
-              : "Your reservation has not been confirmed. No room will be held until payment is successfully verified."}
+              ? "Your reservation request was received. If you started a PesaPal payment, it is still being processed; the hotel will confirm it as soon as the final status arrives."
+              : "Your reservation has not been confirmed. If you completed payment, allow a moment for PesaPal to send the final status, then contact the hotel with your reference if needed."}
         </p>
         <p className="text-xs text-gray-400 mt-4">
           Reference: {params.get("reference") || "Not available"}

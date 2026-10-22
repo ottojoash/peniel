@@ -1274,7 +1274,7 @@ const SettingsForm = ({ values, onChange, onSave, busy }) => {
         ["tagline", "Short tagline"],
         ["currencySymbol", "Currency symbol"],
         ["currencyCode", "Payment currency code (e.g. USD)"],
-        ["paymentEnabled", "Accept online card payments"],
+        ["paymentEnabled", "Accept online payments through PesaPal"],
         ["heroTitle", "Homepage hero heading"],
         ["heroButtonText", "Hero button text"],
         ["aboutText", "About the hotel"],

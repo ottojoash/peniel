@@ -11,12 +11,12 @@ The hotel website includes a React guest experience and a persistent Express adm
 
 The temporary development login is `admin` / `peniel2026` when no `.env` file is present. Never use those defaults in production.
 
-The dashboard manages rooms, prices, capacity, facilities, photos, gallery content, and booking statuses. Hotel data is stored in MySQL; `server-data/store.json` is used only to seed a new empty database. Runtime images are stored in `uploads` and served by the API at `/uploads`.
+The dashboard manages rooms, prices, capacity, facilities, photos, gallery content, and booking statuses. Hotel data is stored in MySQL; `server-data/store.json` is used only to seed a new empty database. Production media is stored in Cloudflare R2.
 
-Configure `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` in `.env`. The API creates the database tables automatically. For a multi-instance production deployment, move local uploads to object storage. Set `REACT_APP_API_URL` to the deployed API address when building the frontend.
+Configure `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` in `.env`. The API creates the database tables automatically. Set `REACT_APP_API_URL` to the deployed API address when the frontend and API use separate origins.
 
-## Flutterwave card payments
+## PesaPal payments
 
-Live payments require a live `FLWSECK-...` secret key, `NODE_ENV=production`, and public HTTPS values for `API_PUBLIC_URL` and `CLIENT_URL`. The API rejects Flutterwave test keys in production.
+Configure `PESAPAL_CONSUMER_KEY`, `PESAPAL_CONSUMER_SECRET`, and `PESAPAL_IPN_ID` on the server. Set `PESAPAL_ENV=live` for production or `PESAPAL_ENV=sandbox` for the PesaPal demo environment. Never place either credential in a `REACT_APP_*` variable.
 
-Set `FLW_SECRET_KEY`, `FLW_SECRET_HASH`, and the public backend URL in `API_PUBLIC_URL`. In Flutterwave, configure the webhook URL as `https://your-api-domain/api/payments/webhook`, use the same secret hash, enable webhook retries, and turn off “Disable preferred payment methods” so the API's card-only payment option is respected. Never place a Flutterwave secret key in a `REACT_APP_*` variable.
+Register the public HTTPS endpoint `https://your-domain/api/payments/ipn` as a GET IPN URL in PesaPal and place its generated ID in `PESAPAL_IPN_ID`. `API_PUBLIC_URL` is used for the customer callback, and `CLIENT_URL` is used for the final payment-result redirect. Both the callback and IPN query PesaPal before changing a booking's payment status.

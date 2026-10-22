@@ -301,7 +301,7 @@ const RoomDetails = () => {
                   </a>
                   .{" "}
                   {paymentEnabled
-                    ? "Card payment is required to confirm this reservation."
+                    ? "Secure payment through PesaPal is required to confirm this reservation."
                     : "The hotel will review and confirm this reservation request."}
                 </span>
               </label>
@@ -317,7 +317,7 @@ const RoomDetails = () => {
                   Booking...
                 </div>
               ) : paymentEnabled ? (
-                `Pay & reserve for ${settings.currencySymbol || "$"}${price}`
+                `Pay with PesaPal & reserve for ${settings.currencySymbol || "$"}${price}`
               ) : (
                 "Request reservation"
               )}

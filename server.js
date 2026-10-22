@@ -20,6 +20,16 @@ const UPLOAD_DIR = process.env.VERCEL
   : path.join(__dirname, "uploads");
 const SEED_FILE = path.join(__dirname, "server-data", "store.json");
 const JWT_SECRET = process.env.JWT_SECRET || "change-this-secret-in-production";
+const PESAPAL_BASE_URL =
+  process.env.PESAPAL_ENV === "sandbox"
+    ? "https://cybqa.pesapal.com/pesapalv3"
+    : "https://pay.pesapal.com/v3";
+const firstConfiguredUrl = (value, fallback) =>
+  (value || fallback).split(",")[0].trim().replace(/\/$/, "");
+const clientUrl = () =>
+  firstConfiguredUrl(process.env.CLIENT_URL, "http://localhost:3000");
+const apiPublicUrl = () =>
+  firstConfiguredUrl(process.env.API_PUBLIC_URL, `http://localhost:${PORT}`);
 const r2 =
   process.env.R2_ENDPOINT &&
   process.env.R2_ACCESS_KEY_ID &&
@@ -208,6 +218,39 @@ const requireAdmin = (req, res, next) => {
 };
 const wrap = (handler) => (req, res, next) =>
   Promise.resolve(handler(req, res, next)).catch(next);
+const pesapalRequest = async (path, options = {}) => {
+  const response = await fetch(`${PESAPAL_BASE_URL}${path}`, {
+    ...options,
+    signal: options.signal || AbortSignal.timeout(15000),
+    headers: {
+      Accept: "application/json",
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...options.headers,
+    },
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.error?.message)
+    throw new Error(
+      result.error?.message ||
+        result.message ||
+        `PesaPal returned ${response.status}.`,
+    );
+  return result;
+};
+const getPesapalToken = async () => {
+  if (!process.env.PESAPAL_CONSUMER_KEY || !process.env.PESAPAL_CONSUMER_SECRET)
+    throw new Error("PesaPal credentials are not configured.");
+  const result = await pesapalRequest("/api/Auth/RequestToken", {
+    method: "POST",
+    body: JSON.stringify({
+      consumer_key: process.env.PESAPAL_CONSUMER_KEY,
+      consumer_secret: process.env.PESAPAL_CONSUMER_SECRET,
+    }),
+  });
+  if (!result.token)
+    throw new Error("PesaPal did not return an authentication token.");
+  return result.token;
+};
 const parseJson = (value, fallback = []) => {
   try {
     return typeof value === "string"
@@ -299,6 +342,9 @@ async function initializeDatabase() {
     ["paymentAmount", "DECIMAL(10,2) NULL"],
     ["paymentReference", "VARCHAR(120) NULL"],
     ["flutterwaveTransactionId", "VARCHAR(120) NULL"],
+    ["pesapalTrackingId", "VARCHAR(120) NULL"],
+    ["pesapalConfirmationCode", "VARCHAR(120) NULL"],
+    ["paymentMethod", "VARCHAR(80) NULL"],
     ["currency", "VARCHAR(10) NULL"],
     ["termsAcceptedAt", "DATETIME NULL"],
     ["reservationCode", "VARCHAR(32) NULL UNIQUE"],
@@ -527,12 +573,21 @@ app.post(
       subject.length > 220 ||
       message.length > 5000
     )
-      return res.status(400).json({ message: "One or more fields are too long." });
+      return res
+        .status(400)
+        .json({ message: "One or more fields are too long." });
 
     const id = `msg-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
     await pool.execute(
       "INSERT INTO contact_messages (id,name,email,phone,subject,message) VALUES (?,?,?,?,?,?)",
-      [id, name.trim(), email.trim(), phone.trim(), subject.trim(), message.trim()],
+      [
+        id,
+        name.trim(),
+        email.trim(),
+        phone.trim(),
+        subject.trim(),
+        message.trim(),
+      ],
     );
     const recipient =
       process.env.HOTEL_NOTIFICATION_EMAIL || "penielbeachhotel@gmail.com";
@@ -607,19 +662,22 @@ app.post(
     );
     const currency = content.currencyCode || "USD";
     const paymentEnabled = content.paymentEnabled !== "false";
-    if (paymentEnabled && !process.env.FLW_SECRET_KEY)
+    if (
+      paymentEnabled &&
+      (!process.env.PESAPAL_CONSUMER_KEY ||
+        !process.env.PESAPAL_CONSUMER_SECRET ||
+        !process.env.PESAPAL_IPN_ID)
+    )
       return res.status(503).json({
-        message:
-          "Online payment is not configured yet. Add the Flutterwave secret key.",
+        message: "Online payment is not fully configured for PesaPal.",
       });
     if (
       paymentEnabled &&
       process.env.NODE_ENV === "production" &&
-      process.env.FLW_SECRET_KEY.startsWith("FLWSECK_TEST-")
+      process.env.PESAPAL_ENV === "sandbox"
     ) {
       return res.status(503).json({
-        message:
-          "Live payments require a Flutterwave live secret key. Test keys are disabled in production.",
+        message: "PesaPal sandbox payments are disabled in production.",
       });
     }
     const paymentAmount = price;
@@ -689,40 +747,69 @@ app.post(
         status: "pending",
       });
     }
-    const flw = await fetch("https://api.flutterwave.com/v3/payments", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        tx_ref: txRef,
-        amount: paymentAmount,
-        currency,
-        redirect_url: `${process.env.API_PUBLIC_URL || `http://localhost:${PORT}`}/api/payments/callback`,
-        payment_options: "card",
-        customer: { email, name: names },
-        customizations: {
-          title: content.hotelName || "Hotel reservation",
-          description: `${room.name} - ${nights} night${nights === 1 ? "" : "s"}`,
-        },
-        meta: { bookingId: id },
-      }),
-    });
-    const result = await flw.json();
-    if (!flw.ok || !result.data?.link) {
+    const nameParts = names.trim().split(/\s+/);
+    let result;
+    try {
+      const token = await getPesapalToken();
+      result = await pesapalRequest("/api/Transactions/SubmitOrderRequest", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          id: txRef,
+          currency,
+          amount: paymentAmount,
+          description:
+            `${room.name} - ${nights} night${nights === 1 ? "" : "s"}`.slice(
+              0,
+              100,
+            ),
+          callback_url: `${apiPublicUrl()}/api/payments/callback`,
+          cancellation_url: `${clientUrl()}/payment-result?status=failed&reference=${encodeURIComponent(txRef)}`,
+          notification_id: process.env.PESAPAL_IPN_ID,
+          branch: content.hotelName || "Peniel Beach Hotel",
+          billing_address: {
+            email_address: email,
+            phone_number: "",
+            country_code: "UG",
+            first_name: nameParts[0] || names,
+            middle_name: "",
+            last_name: nameParts.slice(1).join(" "),
+            line_1: content.hotelName || "Peniel Beach Hotel",
+            line_2: "",
+            city: "Entebbe",
+            state: "",
+            postal_code: "",
+            zip_code: "",
+          },
+        }),
+      });
+    } catch (error) {
+      await pool.execute(
+        "UPDATE bookings SET paymentStatus='failed' WHERE id=?",
+        [id],
+      );
+      console.error("PesaPal order submission failed:", error.message);
+      return res.status(502).json({
+        message: "Unable to start PesaPal payment. Please try again.",
+      });
+    }
+    if (!result.redirect_url || !result.order_tracking_id) {
       await pool.execute(
         "UPDATE bookings SET paymentStatus='failed' WHERE id=?",
         [id],
       );
       return res
         .status(502)
-        .json({ message: result.message || "Unable to start card payment." });
+        .json({ message: "PesaPal did not return a payment link." });
     }
+    await pool.execute("UPDATE bookings SET pesapalTrackingId=? WHERE id=?", [
+      result.order_tracking_id,
+      id,
+    ]);
     res.status(201).json({
       id,
       reservationCode,
-      paymentLink: result.data.link,
+      paymentLink: result.redirect_url,
       amount: paymentAmount,
       bookingTotal: price,
       currency,
@@ -731,36 +818,51 @@ app.post(
   }),
 );
 
-async function verifyFlutterwave(transactionId, txRef) {
-  const response = await fetch(
-    `https://api.flutterwave.com/v3/transactions/${transactionId}/verify`,
-    { headers: { Authorization: `Bearer ${process.env.FLW_SECRET_KEY}` } },
+async function verifyPesapal(orderTrackingId, merchantReference) {
+  const token = await getPesapalToken();
+  const result = await pesapalRequest(
+    `/api/Transactions/GetTransactionStatus?orderTrackingId=${encodeURIComponent(orderTrackingId)}`,
+    { headers: { Authorization: `Bearer ${token}` } },
   );
-  const result = await response.json();
+  const txRef = merchantReference || result.merchant_reference;
   const [[booking]] = await pool.execute(
     "SELECT * FROM bookings WHERE paymentReference=?",
     [txRef],
   );
-  if (!booking) return false;
+  if (!booking) return { status: "failed", reference: txRef || "" };
+  if (
+    result.merchant_reference !== booking.paymentReference ||
+    (booking.pesapalTrackingId && booking.pesapalTrackingId !== orderTrackingId)
+  )
+    return { status: "failed", reference: booking.paymentReference };
   const wasPaid = booking.paymentStatus === "paid";
-  const valid =
-    response.ok &&
-    result.data?.status === "successful" &&
-    result.data.tx_ref === txRef &&
-    Number(result.data.amount) >=
-      Number(booking.paymentAmount || booking.price) &&
-    result.data.currency === booking.currency &&
-    result.data.payment_type === "card";
+  const completed =
+    String(result.payment_status_description).toLowerCase() === "completed";
+  const validAmount =
+    Number(result.amount) >= Number(booking.paymentAmount || booking.price) &&
+    result.currency === booking.currency;
+  const paid = completed && validAmount;
+  const providerStatus = String(
+    result.payment_status_description || "pending",
+  ).toLowerCase();
+  const nextPaymentStatus = paid
+    ? "paid"
+    : providerStatus === "failed" || providerStatus === "invalid"
+      ? "failed"
+      : "pending";
+  const finalPaymentStatus = wasPaid ? "paid" : nextPaymentStatus;
   await pool.execute(
-    "UPDATE bookings SET paymentStatus=?,status=?,flutterwaveTransactionId=? WHERE id=?",
+    "UPDATE bookings SET paymentStatus=?,status=?,pesapalTrackingId=?,pesapalConfirmationCode=?,paymentMethod=? WHERE id=?",
     [
-      valid ? "paid" : "failed",
-      valid ? "confirmed" : "pending",
-      String(transactionId),
+      finalPaymentStatus,
+      finalPaymentStatus === "paid" ? "confirmed" : booking.status,
+      String(orderTrackingId),
+      result.confirmation_code || null,
+      result.payment_method || null,
       booking.id,
     ],
   );
-  if (valid && !wasPaid) {
+  if (paid && !wasPaid) {
     sendMail({
       to: booking.email,
       subject: `Reservation confirmed ${booking.reservationCode}`,
@@ -773,35 +875,56 @@ async function verifyFlutterwave(transactionId, txRef) {
         html: bookingEmail(booking, true),
       }).catch(console.error);
   }
-  return valid;
+  return {
+    status: finalPaymentStatus === "paid" ? "successful" : finalPaymentStatus,
+    reference: booking.paymentReference,
+  };
 }
 app.get(
   "/api/payments/callback",
   wrap(async (req, res) => {
-    const { status, tx_ref, transaction_id } = req.query;
-    let paid = false;
-    if (status === "successful" && transaction_id && tx_ref)
-      paid = await verifyFlutterwave(transaction_id, tx_ref);
+    const orderTrackingId =
+      req.query.OrderTrackingId || req.query.orderTrackingId;
+    const merchantReference =
+      req.query.OrderMerchantReference || req.query.orderMerchantReference;
+    let result = { status: "failed", reference: merchantReference || "" };
+    if (orderTrackingId)
+      try {
+        result = await verifyPesapal(orderTrackingId, merchantReference);
+      } catch (error) {
+        console.error("PesaPal callback verification failed:", error.message);
+        result = { status: "pending", reference: merchantReference || "" };
+      }
     res.redirect(
-      `${process.env.CLIENT_URL || "http://localhost:3000"}/payment-result?status=${paid ? "successful" : "failed"}&reference=${encodeURIComponent(tx_ref || "")}`,
+      `${clientUrl()}/payment-result?status=${encodeURIComponent(result.status)}&reference=${encodeURIComponent(result.reference)}`,
     );
   }),
 );
-app.post(
-  "/api/payments/webhook",
+app.all(
+  "/api/payments/ipn",
   wrap(async (req, res) => {
-    const signature = req.headers["flutterwave-signature"];
-    const expected = crypto
-      .createHmac("sha256", process.env.FLW_SECRET_HASH || "")
-      .update(req.rawBody || Buffer.from(""))
-      .digest("base64");
-    if (!process.env.FLW_SECRET_HASH || signature !== expected)
-      return res.status(401).end();
-    res.sendStatus(200);
-    if (req.body?.data?.id && req.body?.data?.tx_ref)
-      verifyFlutterwave(req.body.data.id, req.body.data.tx_ref).catch(
-        console.error,
-      );
+    const values = { ...req.query, ...(req.body || {}) };
+    const orderTrackingId = values.OrderTrackingId || values.orderTrackingId;
+    const merchantReference =
+      values.OrderMerchantReference || values.orderMerchantReference;
+    const orderNotificationType =
+      values.OrderNotificationType ||
+      values.orderNotificationType ||
+      "IPNCHANGE";
+    if (!orderTrackingId || !merchantReference)
+      return res.status(400).json({
+        orderNotificationType,
+        orderTrackingId: orderTrackingId || "",
+        orderMerchantReference: merchantReference || "",
+        status: 500,
+      });
+    await verifyPesapal(orderTrackingId, merchantReference);
+    res.json({
+      orderNotificationType,
+      orderTrackingId,
+      orderMerchantReference: merchantReference,
+      status: 200,
+    });
   }),
 );
 
@@ -809,22 +932,27 @@ app.get(
   "/api/admin/summary",
   requireAdmin,
   wrap(async (_req, res) => {
-    const [[rooms], [gallery], [bookings], [pending], [revenue], [messages], [unreadMessages]] =
-      await Promise.all([
-        pool.query("SELECT COUNT(*) value FROM rooms"),
-        pool.query("SELECT COUNT(*) value FROM gallery"),
-        pool.query("SELECT COUNT(*) value FROM bookings"),
-        pool.query(
-          "SELECT COUNT(*) value FROM bookings WHERE status='pending'",
-        ),
-        pool.query(
-          "SELECT COALESCE(SUM(price),0) value FROM bookings WHERE status NOT IN ('cancelled','pending')",
-        ),
-        pool.query("SELECT COUNT(*) value FROM contact_messages"),
-        pool.query(
-          "SELECT COUNT(*) value FROM contact_messages WHERE status='unread'",
-        ),
-      ]);
+    const [
+      [rooms],
+      [gallery],
+      [bookings],
+      [pending],
+      [revenue],
+      [messages],
+      [unreadMessages],
+    ] = await Promise.all([
+      pool.query("SELECT COUNT(*) value FROM rooms"),
+      pool.query("SELECT COUNT(*) value FROM gallery"),
+      pool.query("SELECT COUNT(*) value FROM bookings"),
+      pool.query("SELECT COUNT(*) value FROM bookings WHERE status='pending'"),
+      pool.query(
+        "SELECT COALESCE(SUM(price),0) value FROM bookings WHERE status NOT IN ('cancelled','pending')",
+      ),
+      pool.query("SELECT COUNT(*) value FROM contact_messages"),
+      pool.query(
+        "SELECT COUNT(*) value FROM contact_messages WHERE status='unread'",
+      ),
+    ]);
     res.json({
       rooms: rooms[0].value,
       gallery: gallery[0].value,
@@ -1049,9 +1177,13 @@ app.post(
         message: "Cloudflare R2 storage is not fully configured.",
       });
     if (!allowedMedia.includes(contentType))
-      return res.status(400).json({ message: "Unsupported image or video type." });
+      return res
+        .status(400)
+        .json({ message: "Unsupported image or video type." });
     if (!Number(size) || Number(size) > 500 * 1024 * 1024)
-      return res.status(400).json({ message: "Media must be smaller than 500 MB." });
+      return res
+        .status(400)
+        .json({ message: "Media must be smaller than 500 MB." });
     const safeName = String(fileName)
       .replace(/[^a-zA-Z0-9._-]/g, "-")
       .replace(/-+/g, "-");
@@ -1089,7 +1221,8 @@ app.post(
   requireAdmin,
   wrap(async (req, res) => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const requestedCategory = String(req.body.category || "Hotel").trim() || "Hotel";
+    const requestedCategory =
+      String(req.body.category || "Hotel").trim() || "Hotel";
     const [[existingCategory]] = await pool.execute(
       "SELECT category FROM gallery WHERE LOWER(TRIM(category))=LOWER(?) LIMIT 1",
       [requestedCategory],
